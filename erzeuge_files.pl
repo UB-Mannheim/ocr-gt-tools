@@ -185,11 +185,11 @@ my $json = $op->encode({
     result => $url,
     hocr => $hocr_file,
     correction => $www_basedir_tmp . '/gt/' . $cPage . '/' . $correction_file_withRemarks,
-    correction_path => $www_basedir_tmp . '/gt/' . $cPage . '/',
-    image_url => $url,
-    path_section => $cSection,
-    path_id => $cID,
-    path_page => $cPage,
+    correctionPath => $www_basedir_tmp . '/gt/' . $cPage . '/',
+    imageUrl => $url,
+    pathSection => $cSection,
+    pathId => $cID,
+    pathPage => $cPage,
     reload => $lReload
 });
 
