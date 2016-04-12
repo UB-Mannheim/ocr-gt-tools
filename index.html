@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="de">
+
+<head>
+    <script src="js/jquery-1.12.3.min.js" />
+    <script src="js/jquery.getimagedata.js" ></script>
+    <script src="js/ocr-gt-tools.js" ></script>
+    <link href="css/ocr-gt-tools.css" rel="stylesheet">
+    <link rel="stylesheet" href="css/font-awesome-4.5.0/css/font-awesome.min.css">
+</head>
+
+<script>
+
+$( document ).ready(function() {
+
+    hashChanged();
+
+    window.onhashchange = hashChanged;
+
+});
+</script>
+
+<body>
+    <div id="toolbar" class="">
+
+        <div id="delete_button" class="button inaktiv hidden" onclick="SetzeEingabeZurueck()">
+            <span id="delete_save" class="hidden">
+                <i class="fa fa-spinner fa-pulse fa-fw"></i>
+            </span>
+            <span id="delete">
+                <i class="fa fa-trash fa-fw"></i>
+            </span>Zurücksetzen
+        </div>
+
+        <div id="save_button" class="button inaktiv hidden">
+            <span id="wait_save" class="hidden">
+                <i class="fa fa-spinner fa-pulse fa-fw"></i>
+            </span>
+            <span id="disk">
+                <i class="fa fa-floppy-o fa-fw"></i>
+            </span>Speichern
+        </div>
+
+        <div id="zoom_button_plus" class="button hidden">
+            Zoom +
+        </div>
+
+        <div id="zoom_button_minus" class="button hidden">
+            Zoom -
+        </div>
+
+    </div>
+    <!--the mouse over and dragging class are defined on each item-->
+    <div id="root" style="margin:70px 0 0 10px;">
+        <div id="drop">
+            <span id="wait_load" class="hidden">
+                <i class="fa fa-spinner fa-pulse fa-fw"></i>
+            </span>Grafik auf dem Dokument ablegen
+        </div>
+        <div id="file_links"></div>
+        <div id="file_name"></div>
+        <div id="file_image"></div>
+
+        <div id="file_correction"></div>
+
+    </div>
+</body>
+</html>

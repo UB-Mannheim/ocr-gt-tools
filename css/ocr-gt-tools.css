@@ -1,0 +1,101 @@
+/*
+    Name: git-gt-tools.css
+*/
+.dropzone {
+  text-align: center;
+  background: #EEE;
+  border: 0.2em solid #000;
+  padding: 3em;
+}
+
+.hidden {
+    display: none;
+}
+
+.button {
+    background-color: #993333;
+    color: #ffffff;
+    width: auto;
+    margin: 12px;
+    padding: 12px;
+    font-weight: bold;
+    font-family: sans-serif;
+    font-size: 1.2rem;
+    position: fixed;
+    right: 0;
+    top: 0;
+    cursor: pointer;
+    margin-top: 0px;
+    margin-bottom: 0px;
+}
+
+.inaktiv {
+    background-color: gray;
+}
+
+
+.editable {
+    border: solid 1px #808080;
+    color: #000060;
+    font-size:20px;
+    min-height:20px;
+}
+
+.remarks {
+    background-color: lightyellow;
+    height: 24px; /* FF sonst nur Fehler bei Zeilenhöhe */
+}
+
+/* Einstellungen für Toolbar */
+#toolbar {
+    padding: 4px;
+    display: inline-block;
+}
+/* support: IE7 */
+*+html #toolbar {
+    display: inline;
+}
+
+#toolbar {
+    display: inline-block;
+    background-color: lightgray;
+    border-radius: 0;
+    border: 0;
+    position: fixed;
+    top: 0px;
+    width: 100%;
+    left: 0;
+}
+
+
+#toolbar .button {
+    position: relative;
+}
+
+#zoom_button_plus,
+#zoom_button_minus,
+#save_button {
+    width: auto;
+    float: right;
+}
+
+#delete_button {
+    top: 0;
+    width: auto;
+    float: left;
+}
+
+#file_correction {
+    zoom: 1.4;
+}
+
+#seitenkommentar {
+    height: auto;
+    margin-bottom: 34px;
+    min-height: 20px;
+}
+
+#file_links {
+    float: right;
+    text-align: right;
+}
