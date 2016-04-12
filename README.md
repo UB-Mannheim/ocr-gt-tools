@@ -1,28 +1,28 @@
 # ocr-gt-tools
 
+A web interface for creating ground truth for improving OCR 
+
+<img src="./screenshot.png" height="300"/>
+
+## Table of Contents
+
   * [Summary](#summary)
     * [About the code](#about-the-code)
   * [Installation](#installation)
 
-Copyright (C) 2014–2016 Universitätsbibliothek Mannheim
-
-Authors: Bernd Fallert (UB Mannheim)
-
-This is free software. You may use it under the terms of the
-GNU General Public License (GPL). See [LICENSE](LICENSE) for details.
-
-
 ## Summary
 
-ocr-gt-tools
-
-
-
+ocr-gt-tools allows editing
+[hOCR](https://github.com/kba/hocr-spec/blob/master/hocr-spec.md) hOCR files,
+such as those produced by the
+[tesseract](https://github.com/tesseract-ocr/tesseract) or
+[ocropy](https://github.com/tmbdev/ocropy) OCR frameworks.
 
 ### About the code
 
-I use html javascript perl
+The server-side code is written in Perl.
 
+The frontend is made up of HTML and Javascript.
 
 ### Installation
 
@@ -30,12 +30,12 @@ See [INSTALL.md](INSTALL.md) for details.
 
 ## Usage
 
-- you must previously have created the hocr file, for example with Tesseract
+- you must previously have created the hOCR file, for example with [Tesseract](https://github.com/tesseract-ocr/tesseract).
 - Open 'ocr-gt-tools/index.html' with Google Chrome. The 2 Buttons (Zoom + and Zoom -) will not work in Firefox, so at the moment they are not shown in Firefox
 - open in a second Window 'Page Previews' from Goobi
-- search the book from which you created the hocr file
-- drag and drop a image from the Goobi 'Page Preview' Window to the Window with 'ocr-gt-tools/index.html'
-- the perl script erzeuge_files.pl will create in the background all files, which takes a few seconds
+- Search the book from which you created the hOCR file
+- Drag and drop a image from the Goobi 'Page Preview' Window to the Window with 'ocr-gt-tools/index.html'
+- The perl script erzeuge_files.pl will create in the background all files, which takes a few seconds
 - with ajax a json objects will be returned to index.html
 - index.html will load with ajax the created 'correction.html' inline
 - in Google Chrome you get three buttons
@@ -60,14 +60,21 @@ Bug fixes, new functions, suggestions for new features and
 other user feedback are appreciated.
 
 The source code is available from https://github.com/UB-Mannheim/ocr-gt-tools.
-Please prepare your code contributions also on GitHub.
+Please prepare your code contributions also on Github.
 
 
 ## Acknowledgments
 
+Copyright (C) 2016 Universitätsbibliothek Mannheim
+
+Authors: Bernd Fallert (UB Mannheim)
+
+This is free software. You may use it under the terms of the
+GNU General Public License (GPL). See [LICENSE](LICENSE) for details.
+
 This project uses other free software:
 
-* Font Awesome by Dave Gandy – http://fontawesome.io/ (SIL OFL 1.1, MIT License)
-* jQuery - http://jquery.com/ (Mit License)
-* hocr-extract-images
-* ocropus-gtedit
+* [Font Awesome by Dave Gandy](http://fontawesome.io/) (SIL OFL 1.1, MIT License)
+* [jQuery](http://jquery.com/) (MIT License)
+* [hocr-extract-images](https://github.com/tmbdev/hocr-tools) (Apache License)
+* [ocropus-gtedit](https://github.com/tmbdev/ocropy) (Apache License)
