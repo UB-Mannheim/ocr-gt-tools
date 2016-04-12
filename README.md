@@ -4,7 +4,7 @@
     * [About the code](#about-the-code)
   * [Installation](#installation)
 
-Copyright (C) 2014–2016 Universitätsbibliothek Mannheim
+Copyright (C) 2014â€“2016 UniversitÃ¤tsbibliothek Mannheim
 
 Authors: Bernd Fallert (UB Mannheim)
 
@@ -28,6 +28,24 @@ I use html javascript perl
 
 See [INSTALL.md](INSTALL.md) for details.
 
+## Usage
+
+- you must previously have created the hocr file, for example with Tesseract
+- Open 'ocr-gt-tools/index.html' with Google Chrome. The 2 Buttons (Zoom + and Zoom -) will not work in Firefox, so at the moment they are not shown in Firefox
+- open in a second Window 'Page Previews' from Goobi
+- search the book from which you created the hocr file
+- drag and drop a image from the Goobi 'Page Preview' Window to the Window with 'ocr-gt-tools/index.html'
+- the perl script erzeuge_files.pl will create in the background all files, which takes a few seconds
+- with ajax a json objects will be returned to index.html
+- index.html will load with ajax the created 'correction.html' inline
+- in Google Chrome you get three buttons
+  - Zoom -
+  - Zoom +
+  - Speichern
+- 'Speichern' will get active if you have written a comment or a text line
+- when a new image is dropped and it is unsaved content available a warning is issued, same as if the hash is changed in the url
+
+
 
 ## Bug reports
 
@@ -49,7 +67,7 @@ Please prepare your code contributions also on GitHub.
 
 This project uses other free software:
 
-* Font Awesome by Dave Gandy – http://fontawesome.io/ (SIL OFL 1.1, MIT License)
+* Font Awesome by Dave Gandy â€“ http://fontawesome.io/ (SIL OFL 1.1, MIT License)
 * jQuery - http://jquery.com/ (Mit License)
 * hocr-extract-images
 * ocropus-gtedit
