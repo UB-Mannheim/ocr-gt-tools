@@ -1,20 +1,20 @@
 [PATH]
-# with leading and finaly '/'
+# absolute path (with leading and trailing '/')
 images-source=/var/www/html/path_to_scans/
 
-# with leading and finaly '/'
+# absolute path (with leading and trailing '/')
 filesystem-web-root=/var/www/html/
 
-# without leading and finaly '/'
-# name in filesystem-web-root for files from and for ocr-gt-tools
-# Scripts creates in subdir of this folder for every page files for
-# this page
+# relative path (without leading and trailing '/')
+# Directory relative to 'filesystem-web-root' for correction data storage.
+# ocr-gt-tools will create subdirectories for page data here.
 gtToolsData=ocr-fehler
 
-
-# with leading and finaly '/'
-# path to script 'hocr-extract-images'
+# absolute path (with leading and trailing '/')
+# path to directory containing 'hocr-extract-images' 
+# (see https://github.com/tmbdev/hocr-tools)
 hocr-extract-imagesPath=/path/to/hocr-extract-images/bin/
 
 # path to script 'ocropus-gtedit'
+# (see https://github.com/tmbdev/ocropy)
 ocropus-gteditPath=/path/to/ocropy/
