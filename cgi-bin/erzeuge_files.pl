@@ -1,6 +1,8 @@
+#!/usr/bin/perl
 use strict;
 use warnings;
 our $OCR_GT_BASEDIR;
+our $cgi;
 BEGIN {
     use CGI::Carp qw(carpout);
 
@@ -21,10 +23,23 @@ use CGI;
 use File::Path qw(make_path);
 use Config::IniFiles qw( :all);                 # wg. Ini-Files
 
-
+$cgi = CGI->new;
 my $iniFile = "$OCR_GT_BASEDIR/conf/ocr-gt-tools.ini";
 
 my $cfg = new Config::IniFiles( -file => $iniFile );
+
+sub errorHttp {
+    my $status = shift;
+    print ERRORLOG sprintf(@_);
+    print $cgi->header(
+        -type   => 'text/plain',
+        -status => $status
+    );
+    printf @_;
+    exit 1;
+}
+sub error500 { errorHttp('500 Internal Server Error', @_); }
+sub error400 { errorHttp('400 Method Not Allowed', @_); }
 
 #
 # All PATH properties can be either relative (to OCR_GT_BASEDIR, the base of this repository) or absolute.
@@ -48,9 +63,7 @@ my $ocropusGteditPath = $cfg->val( 'PATH', 'ocropus-gteditPath' );
 #ocr-fehler
 my $gtToolsData = $cfg->val( 'PATH', 'gtToolsData' );
 
-
 my $lReload = 0;
-my $cgi = CGI->new;
 
 
 my $url = $cgi->param('data_url');
@@ -58,15 +71,10 @@ my $hocr_file = $cgi->param('data_hocr');
 
 my @missing;
 push @missing, 'data_url' unless ($url);
-# push @missing, 'data_hocr' unless ($hocr_file);
+push @missing, 'data_hocr' unless ($hocr_file);
 
 if (scalar @missing) {
-    print $cgi->header(
-        -type=>'text/plain',
-        -status=> '400 Method Not Allowed'
-    );
-    printf "Missing params: %s\n\n", join(', ', @missing);
-    exit;
+    error400("Missing params: %s\n\n", join(', ', @missing));
 }
 
 # bilde lokalen Dateinamen
@@ -96,11 +104,9 @@ $cFile =~ m/$cID\_([0-9]{4})/;
 my $cPage = $1;
 
 print ERRORLOG "\$url: $url\n";
-
 print ERRORLOG "\$cSection: $cSection\n";
 print ERRORLOG "\$cID: $cID\n";
 print ERRORLOG "\$cFile: $cFile\n";
-
 print ERRORLOG "\$cPage: $cPage\n";
 
 # Path to source files
@@ -153,12 +159,7 @@ if (!-e $pagedir . '/' . $correction_file_withRemarks ) {
     # Seiten in Bildzeilen und Textzeilen aufteilen
     chdir $pagedir;
     open(my $EXTRACT, "-|", $hocrExtractImagesPath . 'hocr-extract-images -b ' . $basedir . '/max ' . $basedir . '/hocr/' . $cFile . '.hocr') or do {
-        print $cgi->header(
-            -type=>'text/plain',
-            -status=> '500 Method Not Allowed'
-        );
-        print "Could not run hocr-extract-images: $!\n\n";
-        exit 1;
+        error500("Could not run hocr-extract-images: $!\n\n");
     };
     while( <$EXTRACT>) {
         print ERRORLOG $_;
@@ -166,15 +167,21 @@ if (!-e $pagedir . '/' . $correction_file_withRemarks ) {
     close $EXTRACT;
 
     # Korrigierwebseite erstellen
-    open( my $GTEDIT, "-|", $ocropusGteditPath . 'ocropus-gtedit html -x xxx ' . 'line*.png -o ' . $correction_file);
+    open( my $GTEDIT, "-|", $ocropusGteditPath . 'ocropus-gtedit html -x xxx ' . 'line*.png -o ' . $correction_file)or do {
+        error500("Could not run ocropus-gtedit: $!\n\n");
+    };
     while( <$GTEDIT>) {
         print ERRORLOG $_;
     }
     close $GTEDIT;
 
 
-    open( my $CORR, "<", $correction_file);
-    open( my $CORRNEU, ">", $correction_file_withRemarks );
+    open( my $CORR, "<", $correction_file)or do {
+        error500("Could not read from '$correction_file' $!\n\n");
+    };
+    open( my $CORRNEU, ">", $correction_file_withRemarks )or do {
+        error500("Could not write to '$correction_file_withRemarks' $!\n\n");
+    };
     my $nIndex = 0;
     my $nLineIndex = 0;
 
