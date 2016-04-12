@@ -13,5 +13,10 @@ my $app = Plack::App::CGIBin->new(
     root => $CGI_DIR
 )->to_app;
 builder {
+    enable(
+        "Plack::Middleware::Static",
+        path => qr{^/(images|js|css)/},
+        root => './htdocs/'
+    );
     mount "/cgi-bin" => $app;
 };
