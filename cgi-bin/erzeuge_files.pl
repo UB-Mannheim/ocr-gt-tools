@@ -1,4 +1,3 @@
-#!/usr/bin/perl -w
 use strict;
 use warnings;
 our $OCR_GT_BASEDIR;
@@ -10,15 +9,16 @@ BEGIN {
     #-----------------------------------------------
     $OCR_GT_BASEDIR = $ENV{OCR_GT_BASEDIR} // $ENV{PWD};
     my $log = "$OCR_GT_BASEDIR/log/erzeuge_files.log";
-    open( ERRORLOG, ">>$log" ) or die "Cannot write to log file '$log': $!\n";
+    open( ERRORLOG, ">>", $log ) or die "Cannot write to log file '$log': $!\n";
     carpout(*ERRORLOG);
 }
 
 use strict;
 use warnings;
+use Data::Dumper;
 use JSON;
 use CGI;
-use File::Path;
+use File::Path qw(make_path);
 use Config::IniFiles qw( :all);                 # wg. Ini-Files
 
 
@@ -28,8 +28,9 @@ my $cfg = new Config::IniFiles( -file => $iniFile );
 
 #
 # All PATH properties can be either relative (to OCR_GT_BASEDIR, the base of this repository) or absolute.
+# Except 'gtToolsData' which is just a path segment of a URL, not a file path
 #
-for my $pathProperty ('images-source', 'filesystem-web-root', 'gtToolsData', 'hocr-extract-imagesPath', 'ocropus-gteditPath') {
+for my $pathProperty ('images-source', 'filesystem-web-root', 'hocr-extract-imagesPath', 'ocropus-gteditPath') {
     unless ($cfg->val('PATH', $pathProperty) =~ m,^/,mx) {
         $cfg->setval('PATH', $pathProperty, $OCR_GT_BASEDIR . '/' . $cfg->val('PATH', $pathProperty));
     }
@@ -40,22 +41,33 @@ my $imageSourcePath = $cfg->val( 'PATH', 'images-source' );
 
 #'/var/www/html/
 my $fileSystemWebRootPath = $cfg->val( 'PATH', 'filesystem-web-root' );
-#ocr-fehler
-my $gtToolsData = $cfg->val( 'PATH', 'gtToolsData' );
 
 my $hocrExtractImagesPath = $cfg->val( 'PATH', 'hocr-extract-imagesPath' );
 my $ocropusGteditPath = $cfg->val( 'PATH', 'ocropus-gteditPath' );
 
+#ocr-fehler
+my $gtToolsData = $cfg->val( 'PATH', 'gtToolsData' );
 
 
 my $lReload = 0;
 my $cgi = CGI->new;
 
-print $cgi->header( -type => 'application/json', -charset => 'utf-8');
 
 my $url = $cgi->param('data_url');
 my $hocr_file = $cgi->param('data_hocr');
 
+my @missing;
+push @missing, 'data_url' unless ($url);
+# push @missing, 'data_hocr' unless ($hocr_file);
+
+if (scalar @missing) {
+    print $cgi->header(
+        -type=>'text/plain',
+        -status=> '400 Method Not Allowed'
+    );
+    printf "Missing params: %s\n\n", join(', ', @missing);
+    exit;
+}
 
 # bilde lokalen Dateinamen
 # http://digi.bib.uni-mannheim.de/fileadmin/digi/445442158/thumbs/445442158_0126.jpg
@@ -82,7 +94,6 @@ my $cFile = $4;
 
 $cFile =~ m/$cID\_([0-9]{4})/;
 my $cPage = $1;
-
 
 print ERRORLOG "\$url: $url\n";
 
@@ -112,18 +123,21 @@ print ERRORLOG __LINE__ . " \$pagedir: $pagedir\n";
 
 if (!-e $pagedir) {
     print ERRORLOG __LINE__ . "lege gleich $pagedir an\n";
-    my @okFile = mkpath($pagedir,
-        {
-            mode => 0777,
-            verbose => 0,
-            owner => 'www-data',
-            group => 'www-data'
-        });
+    my $mkdirSpec =  {
+        mode => oct(777),
+        verbose => 0,
+    };
+    if ($cfg->val('MISC', 'owner')) {
+        $mkdirSpec->{owner} = $cfg->val('MISC', 'owner');
+    }
+    if ($cfg->val('MISC', 'group')) {
+        $mkdirSpec->{group} = $cfg->val('MISC', 'group');
+    }
+    my @okFile = make_path($pagedir, $mkdirSpec);
+    if (-e $pagedir) {
+        print ERRORLOG "Created directory '$pagedir'\n";
+    }
 }
-
-if (-e $pagedir) {
-    print ERRORLOG __LINE__ . "$pagedir existiert jetzt\n";
-};
 
 my $correction_file = 'correction.html';
 my $correction_file_withRemarks = 'correction_remarks.html';
@@ -138,26 +152,33 @@ if (!-e $pagedir . '/' . $correction_file_withRemarks ) {
 
     # Seiten in Bildzeilen und Textzeilen aufteilen
     chdir $pagedir;
-    open( EXTRACT, $hocrExtractImagesPath . 'hocr-extract-images -b ' . $basedir . '/max ' . $basedir . '/hocr/' . $cFile . '.hocr' . " |");
-    while( <EXTRACT>) {
+    open(my $EXTRACT, "-|", $hocrExtractImagesPath . 'hocr-extract-images -b ' . $basedir . '/max ' . $basedir . '/hocr/' . $cFile . '.hocr') or do {
+        print $cgi->header(
+            -type=>'text/plain',
+            -status=> '500 Method Not Allowed'
+        );
+        print "Could not run hocr-extract-images: $!\n\n";
+        exit 1;
+    };
+    while( <$EXTRACT>) {
         print ERRORLOG $_;
     }
-    close EXTRACT;
+    close $EXTRACT;
 
     # Korrigierwebseite erstellen
-    open( GTEDIT, $ocropusGteditPath . 'ocropus-gtedit html -x xxx ' . 'line*.png -o ' . $correction_file . " |");
-    while( <GTEDIT>) {
+    open( my $GTEDIT, "-|", $ocropusGteditPath . 'ocropus-gtedit html -x xxx ' . 'line*.png -o ' . $correction_file);
+    while( <$GTEDIT>) {
         print ERRORLOG $_;
     }
-    close GTEDIT;
+    close $GTEDIT;
 
 
-    open( CORR, "<$correction_file" );
-    open( CORRNEU, ">$correction_file_withRemarks" );
+    open( my $CORR, "<", $correction_file);
+    open( my $CORRNEU, ">", $correction_file_withRemarks );
     my $nIndex = 0;
     my $nLineIndex = 0;
 
-    while( <CORR> ) {
+    while( <$CORR> ) {
         #-------------------------------------------
         # Anpassungen an der Datei vornehmen
         #-------------------------------------------
@@ -169,15 +190,15 @@ if (!-e $pagedir . '/' . $correction_file_withRemarks ) {
             # Seitenkommentar einfügen => Index 0
             #-------------------------------------------------------------------
             if ($nLineIndex == 0) {
-                print CORRNEU '<div id=' . "'seitenkommentar'" . '>' . "\n";
-                print CORRNEU '<span class="label">Seitenkommentar:</span>' . "\n";
-                print CORRNEU '<div id=' . "'0' class='remarks editable'" .
+                print $CORRNEU '<div id=' . "'seitenkommentar'" . '>' . "\n";
+                print $CORRNEU '<span class="label">Seitenkommentar:</span>' . "\n";
+                print $CORRNEU '<div id=' . "'0' class='remarks editable'" .
                               ' contenteditable="true"' . '></div>' . "\n";
                 #===============================================================
                 # wichtig letztes schliessende div muss in eigener Zeile
                 # ausgegeben werden
                 #===============================================================
-                print CORRNEU '</div>' . "\n";
+                print $CORRNEU '</div>' . "\n";
             }
         } elsif (($aktZeile =~ /\<tr\>/) and ($nIndex < 2)) {
             $nIndex++;
@@ -194,12 +215,12 @@ if (!-e $pagedir . '/' . $correction_file_withRemarks ) {
             $aktZeile .= '<tr id="' . $nLineIndex . '" class="hidden tr_remarks"><td id="LineIndex_' . $nLineIndex . '" class="remarks editable" contenteditable="true" spellcheck="true"></td></tr>' . "\n";
         }
 
-        print CORRNEU $aktZeile;
+        print $CORRNEU $aktZeile;
 
     }
 
-        close CORR;
-        close CORRNEU;
+    close $CORR;
+    close $CORRNEU;
 
     } else {
         $lReload = 1;
@@ -224,6 +245,7 @@ my $json = $op->encode({
 
 print ERRORLOG __LINE__ .  " JSON: " . $json . "\n";
 
+print $cgi->header( -type => 'application/json', -charset => 'utf-8');
 print $json;
 
 

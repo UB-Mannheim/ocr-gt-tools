@@ -25,5 +25,5 @@ conf/ocr-gt-tools.ini:
 	@echo "Copy conf/ocr-gt-tools.ini_tmpl to conf/ocr-gt-tools.ini and set paths."
 	exit 1
 
-dev-server: conf/ocr-gt-tools.ini
+dev-server: conf/ocr-gt-tools.ini vendor
 	$(PLACKUP) -R cgi-bin dev-server.pl
