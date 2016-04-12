@@ -2,6 +2,7 @@
 use strict;
 use warnings;
 our $OCR_GT_BASEDIR;
+our $config = {};
 our $cgi;
 BEGIN {
     use CGI::Carp qw(carpout);
@@ -28,6 +29,11 @@ my $iniFile = "$OCR_GT_BASEDIR/conf/ocr-gt-tools.ini";
 
 my $cfg = new Config::IniFiles( -file => $iniFile );
 
+=h2 errorHttp
+
+Send an HTTP error message
+
+=cut
 sub errorHttp {
     my $status = shift;
     print ERRORLOG sprintf(@_);
@@ -38,143 +44,29 @@ sub errorHttp {
     printf @_;
     exit 1;
 }
+
+=h2 error500
+
+Send a server error message
+
+=cut
 sub error500 { errorHttp('500 Internal Server Error', @_); }
+
+=h2 error400
+
+Send a client error message
+
+=cut
 sub error400 { errorHttp('400 Method Not Allowed', @_); }
 
-#
-# All PATH properties can be either relative (to OCR_GT_BASEDIR, the base of this repository) or absolute.
-# Except 'gtToolsData' which is just a path segment of a URL, not a file path
-#
-for my $pathProperty ('images-source', 'filesystem-web-root', 'hocr-extract-imagesPath', 'ocropus-gteditPath') {
-    unless ($cfg->val('PATH', $pathProperty) =~ m,^/,mx) {
-        $cfg->setval('PATH', $pathProperty, $OCR_GT_BASEDIR . '/' . $cfg->val('PATH', $pathProperty));
-    }
-}
+=h2 enhanceCorrectionHtml
 
-#'/var/www/html/fileadmin/'
-my $imageSourcePath = $cfg->val( 'PATH', 'images-source' );
+Add HTML for commenting line input.
 
-#'/var/www/html/
-my $fileSystemWebRootPath = $cfg->val( 'PATH', 'filesystem-web-root' );
-
-my $hocrExtractImagesPath = $cfg->val( 'PATH', 'hocr-extract-imagesPath' );
-my $ocropusGteditPath = $cfg->val( 'PATH', 'ocropus-gteditPath' );
-
-#ocr-fehler
-my $gtToolsData = $cfg->val( 'PATH', 'gtToolsData' );
-
-my $lReload = 0;
-
-
-my $url = $cgi->param('data_url');
-my $hocr_file = $cgi->param('data_hocr');
-
-my @missing;
-push @missing, 'data_url' unless ($url);
-push @missing, 'data_hocr' unless ($hocr_file);
-
-if (scalar @missing) {
-    error400("Missing params: %s\n\n", join(', ', @missing));
-}
-
-# bilde lokalen Dateinamen
-# http://digi.bib.uni-mannheim.de/fileadmin/digi/445442158/thumbs/445442158_0126.jpg
-#                    servername        bereich
-#                     $1                $2         $3                  $4
-$url =~ m,
-    https?://
-    (.*?)               # servername
-    /
-    fileadmin           # '/fileadmin/'
-    /
-    ([^/]*?)            # cSection (e.g. 'digi')
-    /
-    ([^/]*?)            # cID (e.g. '445442158')
-    /
-    thumbs              # 'thumbs'
-    /
-    ([^\.]*?)           # cFile (e.g. '445442158_0126') -> '0126'
-    \.jpg
-    ,mx;
-my $cSection = $2;
-my $cID = $3;
-my $cFile = $4;
-
-$cFile =~ m/$cID\_([0-9]{4})/;
-my $cPage = $1;
-
-print ERRORLOG "\$url: $url\n";
-print ERRORLOG "\$cSection: $cSection\n";
-print ERRORLOG "\$cID: $cID\n";
-print ERRORLOG "\$cFile: $cFile\n";
-print ERRORLOG "\$cPage: $cPage\n";
-
-# Path to source files
-my $basedir = $imageSourcePath . $cSection . '/' . $cID;
-
-#-------------------------------------------------------------------------------
-# path to created files and working directory base
-# should be readable for apache!
-#-------------------------------------------------------------------------------
-my $basedir_tmp = $fileSystemWebRootPath . $gtToolsData . '/' . $cSection . '/' . $cID;
-
-my $www_basedir_tmp = '/' . $gtToolsData . '/' . $cSection . '/' . $cID;
-
-my $gtdir   = $basedir_tmp . '/gt';
-my $pagedir = $gtdir . '/' . $cPage;
-
-
-print ERRORLOG __LINE__ . " \$pagedir: $pagedir\n";
-
-
-if (!-e $pagedir) {
-    print ERRORLOG __LINE__ . "lege gleich $pagedir an\n";
-    my $mkdirSpec =  {
-        mode => oct(777),
-        verbose => 0,
-    };
-    if ($cfg->val('MISC', 'owner')) {
-        $mkdirSpec->{owner} = $cfg->val('MISC', 'owner');
-    }
-    if ($cfg->val('MISC', 'group')) {
-        $mkdirSpec->{group} = $cfg->val('MISC', 'group');
-    }
-    my @okFile = make_path($pagedir, $mkdirSpec);
-    if (-e $pagedir) {
-        print ERRORLOG "Created directory '$pagedir'\n";
-    }
-}
-
-my $correction_file = 'correction.html';
-my $correction_file_withRemarks = 'correction_remarks.html';
-
-
-print ERRORLOG __LINE__ . ": " . $pagedir . '/' . $correction_file_withRemarks . "\n";
-
-# Wenn Datei schon existiert dann einfach anzeigen und nicht neu erzeugen
-if (!-e $pagedir . '/' . $correction_file_withRemarks ) {
-
-    $lReload = 0;
-
-    # Seiten in Bildzeilen und Textzeilen aufteilen
-    chdir $pagedir;
-    open(my $EXTRACT, "-|", $hocrExtractImagesPath . 'hocr-extract-images -b ' . $basedir . '/max ' . $basedir . '/hocr/' . $cFile . '.hocr') or do {
-        error500("Could not run hocr-extract-images: $!\n\n");
-    };
-    while( <$EXTRACT>) {
-        print ERRORLOG $_;
-    }
-    close $EXTRACT;
-
-    # Korrigierwebseite erstellen
-    open( my $GTEDIT, "-|", $ocropusGteditPath . 'ocropus-gtedit html -x xxx ' . 'line*.png -o ' . $correction_file)or do {
-        error500("Could not run ocropus-gtedit: $!\n\n");
-    };
-    while( <$GTEDIT>) {
-        print ERRORLOG $_;
-    }
-    close $GTEDIT;
-
+=cut
+sub enhanceCorrectionHtml
+{
+    my ($correction_file, $correction_file_withRemarks) = @_;
 
     open( my $CORR, "<", $correction_file)or do {
         error500("Could not read from '$correction_file' $!\n\n");
@@ -228,9 +120,182 @@ if (!-e $pagedir . '/' . $correction_file_withRemarks ) {
 
     close $CORR;
     close $CORRNEU;
+}
 
-    } else {
-        $lReload = 1;
+=h2 loadConfig
+
+Load the configuration from the ini file
+
+=cut
+sub loadConfig
+{
+
+    #
+    # All PATH properties can be either relative (to OCR_GT_BASEDIR, the base of this repository) or absolute.
+    # Except 'gtToolsData' which is just a path segment of a URL, not a file path
+    #
+    for my $pathProperty ('images-source', 'filesystem-web-root', 'hocr-extract-imagesPath', 'ocropus-gteditPath') {
+        unless ($cfg->val('PATH', $pathProperty) =~ m,^/,mx) {
+            $cfg->setval('PATH', $pathProperty, $OCR_GT_BASEDIR . '/' . $cfg->val('PATH', $pathProperty));
+        }
+    }
+
+    my $config = {
+
+        #'/var/www/html/fileadmin/'
+        imageSourcePath => $cfg->val( 'PATH', 'images-source' ),
+
+        #'/var/www/html/
+        fileSystemWebRootPath => $cfg->val( 'PATH', 'filesystem-web-root' ),
+
+        hocrExtractImagesPath => $cfg->val( 'PATH', 'hocr-extract-imagesPath' ),
+
+        ocropusGteditPath => $cfg->val( 'PATH', 'ocropus-gteditPath' ),
+
+        #ocr-fehler
+        gtToolsData => $cfg->val( 'PATH', 'gtToolsData' );
+    };
+
+    return $config;
+}
+
+sub mapUrltoFile
+{
+    my ($config, $url) = @_;
+    # bilde lokalen Dateinamen
+    # http://digi.bib.uni-mannheim.de/fileadmin/digi/445442158/thumbs/445442158_0126.jpg
+    #                    servername        bereich
+    #                     $1                $2         $3                  $4
+    $url =~ m,
+        https?://
+        (.*?)               # servername
+        /
+        fileadmin           # '/fileadmin/'
+        /
+        ([^/]*?)            # cSection (e.g. 'digi')
+        /
+        ([^/]*?)            # cID (e.g. '445442158')
+        /
+        thumbs              # 'thumbs'
+        /
+        ([^\.]*?)           # cFile (e.g. '445442158_0126') -> '0126'
+        \.jpg
+        ,mx;
+    my $cSection = $2;
+    my $cID = $3;
+    my $cFile = $4;
+
+    $cFile =~ m/$cID\_([0-9]{4})/;
+    my $cPage = $1;
+
+    print ERRORLOG "\$url: $url\n";
+    print ERRORLOG "\$cSection: $cSection\n";
+    print ERRORLOG "\$cID: $cID\n";
+    print ERRORLOG "\$cFile: $cFile\n";
+    print ERRORLOG "\$cPage: $cPage\n";
+
+    my $file = {
+        cSection => $cSection,
+        cID => $cID,
+        cFile => $cFile,
+        cPage => $cPage,
+    };
+    # Path to source files
+    $file->{basedir} = $config->{imageSourcePath} . $file->{cSection} . '/' . $file->{cID};
+
+    #-------------------------------------------------------------------------------
+    # path to created files and working directory base
+    # should be readable for apache!
+    #-------------------------------------------------------------------------------
+    $file->{basedir_tmp} = $config->{fileSystemWebRootPath} . $config->{gtToolsData} . '/' . $file->{cSection} . '/' . $file->{cID};
+    $file->{www_basedir_tmp} = '/' . $config->{gtToolsData} . '/' . $file->{cSection} . '/' . $file->{cID};
+    my $file->{pagedir}   = $file->{basedir_tmp} . '/gt/' . $file->{cPage};
+
+    print ERRORLOG __LINE__ . ' $pagedir: ' . $file->{pagedir} . "\n";
+
+    return $file;
+}
+sub ensurePageDir
+{
+    my ($config, $file) = @_;
+    if (!-e $file->{pagedir}) {
+        print ERRORLOG __LINE__ . ': about to create ' . $file->{pagedir} . "\n";
+        my $mkdirSpec =  {
+            mode => oct(777),
+            verbose => 0,
+        };
+        if ($cfg->val('MISC', 'owner')) {
+            $mkdirSpec->{owner} = $cfg->val('MISC', 'owner');
+        }
+        if ($cfg->val('MISC', 'group')) {
+            $mkdirSpec->{group} = $cfg->val('MISC', 'group');
+        }
+        my @okFile = make_path($file->{pagedir}, $mkdirSpec);
+        if (-e $file->{pagedir}) {
+            print ERRORLOG "Created directory '$file->{pagedir}'\n";
+        }
+    }
+}
+
+
+my $config = loadConfig();
+my $lReload = 0;
+
+#
+# Start processing CGI request
+#
+
+my $url = $cgi->param('data_url');
+my $hocr_file = $cgi->param('data_hocr');
+
+my @missing;
+push @missing, 'data_url' unless ($url);
+push @missing, 'data_hocr' unless ($hocr_file);
+
+if (scalar @missing) {
+    error400("Missing params: %s\n\n", join(', ', @missing));
+}
+
+# Create file object
+my $file = mapUrltoFile($config, $url);
+# Make sure the pagedir exists
+ensurePageDir($config, $file);
+
+my $correction_file = 'correction.html';
+my $correction_file_withRemarks = 'correction_remarks.html';
+
+
+print ERRORLOG __LINE__ . ": " . $file->{pagedir} . '/' . $correction_file_withRemarks . "\n";
+
+# Wenn Datei schon existiert dann einfach anzeigen und nicht neu erzeugen
+if (-e $file->{pagedir} . '/' . $correction_file_withRemarks ) {
+
+    $lReload = 1;
+
+} else {
+
+    $lReload = 0;
+
+    # TODO get rid of the chdir
+    # Seiten in Bildzeilen und Textzeilen aufteilen
+    chdir $file->{pagedir};
+    open(my $EXTRACT, "-|", $config->{hocrExtractImagesPath} . 'hocr-extract-images -b ' . $file->{basedir} . '/max ' . $file->{basedir} . '/hocr/' . $file->{cFile} . '.hocr') or do {
+        error500("Could not run hocr-extract-images: $!\n\n");
+    };
+    while( <$EXTRACT>) {
+        print ERRORLOG $_;
+    }
+    close $EXTRACT;
+
+    # Korrigierwebseite erstellen
+    open( my $GTEDIT, "-|", $config->{ocropusGteditPath} . 'ocropus-gtedit html -x xxx ' . 'line*.png -o ' . $correction_file)or do {
+        error500("Could not run ocropus-gtedit: $!\n\n");
+    };
+    while( <$GTEDIT>) {
+        print ERRORLOG $_;
+    }
+    close $GTEDIT;
+    enhanceCorrectionHtml($correction_file, $correction_file_withRemarks);
 }
 
 
@@ -240,12 +305,12 @@ my $op = JSON->new->utf8->pretty(1);
 my $json = $op->encode({
     result => $url,
     hocr => $hocr_file,
-    correction => $www_basedir_tmp . '/gt/' . $cPage . '/' . $correction_file_withRemarks,
-    correctionPath => $www_basedir_tmp . '/gt/' . $cPage . '/',
+    correction => $file->{www_basedir_tmp} . '/gt/' . $file->{cPage} . '/' . $correction_file_withRemarks,
+    correctionPath => $file->{www_basedir_tmp} . '/gt/' . $file->{cPage} . '/',
     imageUrl => $url,
-    pathSection => $cSection,
-    pathId => $cID,
-    pathPage => $cPage,
+    pathSection => $file->{cSection},
+    pathId => $file->{cID},
+    pathPage => $file->{cPage},
     reload => $lReload
 });
 

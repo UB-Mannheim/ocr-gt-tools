@@ -1,9 +1,9 @@
 [PATH]
 # absolute path (with leading and trailing '/')
-images-source=/var/www/html/path_to_scans/
+images-source=htdocs/scans/
 
 # absolute path (with leading and trailing '/')
-filesystem-web-root=/var/www/html/
+filesystem-web-root=htdocs/hocr/
 
 # relative path (without leading and trailing '/')
 # Directory relative to 'filesystem-web-root' for correction data storage.
@@ -13,8 +13,8 @@ gtToolsData=ocr-fehler
 # absolute path (with leading and trailing '/')
 # path to directory containing 'hocr-extract-images' 
 # (see https://github.com/tmbdev/hocr-tools)
-hocr-extract-imagesPath=/path/to/hocr-extract-images/bin/
+hocr-extract-imagesPath=vendor/hocr-tools/
 
 # path to script 'ocropus-gtedit'
 # (see https://github.com/tmbdev/ocropy)
-ocropus-gteditPath=/path/to/ocropy/
+ocropus-gteditPath=vendor/ocropy

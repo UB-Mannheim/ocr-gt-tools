@@ -3,6 +3,7 @@ use warnings;
 
 use File::Basename qw(dirname);
 use Cwd qw(abs_path);
+use Config::IniFiles qw( :all);
 
 use Plack::App::CGIBin;
 use Plack::Builder;
