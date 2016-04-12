@@ -1,3 +1,5 @@
-*.*~
-log/
-conf/*.ini
+*~
+/log
+/conf/ocr-gt-tools.ini
+/vendor
+/www-*

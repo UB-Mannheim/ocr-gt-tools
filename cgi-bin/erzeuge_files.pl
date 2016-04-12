@@ -1,12 +1,16 @@
 #!/usr/bin/perl -w
+use strict;
+use warnings;
+our $OCR_GT_BASEDIR;
 BEGIN {
     use CGI::Carp qw(carpout);
 
     #-----------------------------------------------
     # die Datei muss fuer OTHER schreibbar sein!
     #-----------------------------------------------
-    my $log = 'log/erzeuge_files.log';
-    open( ERRORLOG, ">>$log" ) or die "Kann nicht in $log schreiben $!\n";
+    $OCR_GT_BASEDIR = $ENV{OCR_GT_BASEDIR} // $ENV{PWD};
+    my $log = "$OCR_GT_BASEDIR/log/erzeuge_files.log";
+    open( ERRORLOG, ">>$log" ) or die "Cannot write to log file '$log': $!\n";
     carpout(*ERRORLOG);
 }
 
@@ -18,9 +22,18 @@ use File::Path;
 use Config::IniFiles qw( :all);                 # wg. Ini-Files
 
 
-my $iniFile = 'conf/ocr-gt-tools.ini';
+my $iniFile = "$OCR_GT_BASEDIR/conf/ocr-gt-tools.ini";
 
 my $cfg = new Config::IniFiles( -file => $iniFile );
+
+#
+# All PATH properties can be either relative (to OCR_GT_BASEDIR, the base of this repository) or absolute.
+#
+for my $pathProperty ('images-source', 'filesystem-web-root', 'gtToolsData', 'hocr-extract-imagesPath', 'ocropus-gteditPath') {
+    unless ($cfg->val('PATH', $pathProperty) =~ m,^/,mx) {
+        $cfg->setval('PATH', $pathProperty, $OCR_GT_BASEDIR . '/' . $cfg->val('PATH', $pathProperty));
+    }
+}
 
 #'/var/www/html/fileadmin/'
 my $imageSourcePath = $cfg->val( 'PATH', 'images-source' );
@@ -45,9 +58,24 @@ my $hocr_file = $cgi->param('data_hocr');
 
 
 # bilde lokalen Dateinamen
+# http://digi.bib.uni-mannheim.de/fileadmin/digi/445442158/thumbs/445442158_0126.jpg
 #                    servername        bereich
 #                     $1                $2         $3                  $4
-$url =~ m/http:\/\/(.*?)\/fileadmin\/([^\/]*?)\/([^\/]*?)\/thumbs\/([^\.]*?)\.jpg/;
+$url =~ m,
+    https?://
+    (.*?)               # servername
+    /
+    fileadmin           # '/fileadmin/'
+    /
+    ([^/]*?)            # cSection (e.g. 'digi')
+    /
+    ([^/]*?)            # cID (e.g. '445442158')
+    /
+    thumbs              # 'thumbs'
+    /
+    ([^\.]*?)           # cFile (e.g. '445442158_0126') -> '0126'
+    \.jpg
+    ,mx;
 my $cSection = $2;
 my $cID = $3;
 my $cFile = $4;
@@ -69,7 +97,7 @@ my $basedir = $imageSourcePath . $cSection . '/' . $cID;
 
 #-------------------------------------------------------------------------------
 # path to created files and working directory base
-# shoud readable for apache!
+# should be readable for apache!
 #-------------------------------------------------------------------------------
 my $basedir_tmp = $fileSystemWebRootPath . $gtToolsData . '/' . $cSection . '/' . $cID;
 
