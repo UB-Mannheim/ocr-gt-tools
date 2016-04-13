@@ -262,8 +262,6 @@ sub mapUrltoFile
         . '/';
     $file{hocr_file} = join '/'
         , $file{basedir}
-        , 'max'
-        , $file{cFile}
         , 'hocr'
         , $file{cFile} . '.hocr';
 
