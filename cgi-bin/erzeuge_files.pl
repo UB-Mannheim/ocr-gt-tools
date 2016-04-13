@@ -10,15 +10,12 @@ use CGI;
 use File::Path qw(make_path);
 use Config::IniFiles qw( :all);                 # wg. Ini-Files
 
-
 BEGIN {
     use File::Path qw(make_path);
     use File::Basename qw(dirname);
     use Cwd qw(abs_path);
 
-    my $SCRIPT_DIR = dirname(abs_path($0));
-    my $SCRIPT_PARENT_DIR = dirname($SCRIPT_DIR);
-    unshift @INC, $SCRIPT_DIR;
+    my $SCRIPT_PARENT_DIR = dirname(dirname(abs_path($0)));
     $OCR_GT_BASEDIR = $ENV{OCR_GT_BASEDIR} // $SCRIPT_PARENT_DIR;
 
     #-----------------------------------------------
@@ -30,7 +27,6 @@ BEGIN {
     carpout(*$ERRORLOG);
 }
 
-our $lReload = 0;
 my $correction_file = 'correction.html';
 my $correction_file_withRemarks = 'correction_remarks.html';
 
@@ -72,7 +68,7 @@ sub loadConfig
         #'/var/www/html/fileadmin/'
         imageSourcePath             => $cfg->val('PATH', 'images-source'),
         #'/var/www/html/
-        fileSystemWebRootPath       => $cfg->val('PATH', 'filesystem-web-root'),
+        docRoot       => $cfg->val('PATH', 'filesystem-web-root'),
         hocrExtractImagesBinary     => $cfg->val('PATH', 'hocr-extract-imagesPath') . '/hocr-extract-images',
         ocropusGteditBinary         => $cfg->val('PATH', 'ocropus-gteditPath' ). '/ocropus-gtedit',
         #ocr-fehler
@@ -94,13 +90,13 @@ Send an HTTP error message
 
 =cut
 sub httpError {
-    my $cgi = shift;
-    my $status = shift;
+    my ($cgi, $status) = (shift(), shift());
     print $cgi->header(
         -type   => 'text/plain',
         -status => $status
     );
     printf @_;
+    close $ERRORLOG;
     exit 1;
 }
 
@@ -131,7 +127,9 @@ sub httpJSON
 
     print $cgi->header( -type => 'application/json', -charset => 'utf-8');
     print $json;
+    close $ERRORLOG;
 }
+
 =head2 ensureCorrectionWithComments
 
 Add HTML for commenting line input.
@@ -231,18 +229,12 @@ sub mapUrltoFile
 
     debug("Parsed URL as %s\n", Dumper(\%file));
 
-    # Path to source files
-    $file{basedir} = join '/'
-        , $config->{imageSourcePath}
-        , $file{cSection}
-        , $file{cID};
-
     #-------------------------------------------------------------------------------
     # path to created files and working directory base
     # should be readable for apache!
     #-------------------------------------------------------------------------------
     $file{pagedir} = join '/'
-        , $config->{fileSystemWebRootPath}
+        , $config->{docRoot}
         , $config->{gtToolsData}
         , $file{cSection}
         , $file{cID}
@@ -253,12 +245,11 @@ sub mapUrltoFile
         , $file{cSection}
         , $file{cID}
         , 'gt'
-        , $file{cPage}
-        . '/';
+        , $file{cPage} ;
     $file{hocr_file} = join '/'
-        , $file{basedir}
-        , 'max'
-        , $file{cFile}
+        , $config->{imageSourcePath}
+        , $file{cSection}
+        , $file{cID}
         , 'hocr'
         , $file{cFile} . '.hocr';
 
@@ -305,8 +296,7 @@ sub ensureCorrection
 
     # Wenn Datei schon existiert dann einfach anzeigen und nicht neu erzeugen
     if (-e $file->{pagedir} . '/' . $correction_file_withRemarks ) {
-        $lReload = 1;
-        return;
+        return 1;
     }
 
     # TODO get rid of the chdir
@@ -350,35 +340,52 @@ Start processing CGI request
 sub processRequest
 {
     my ($cgi, $config) = @_;
+    my $action = $cgi->url_param('action');
+    if ($action eq 'create') {
+        processCreateRequest($cgi, $config);
+    } elsif ($action eq 'save') {
+        # TODO
+        # processSaveRequest($cgi, $config);
+    } else {
+        http400($cgi, "URL parameter 'action' must be 'create' or 'save', not %s", $action);
+    }
+}
+
+=head2 processCreateRequest
+
+Create process to create the files necessary
+
+=cut
+sub processCreateRequest
+{
+    my ($cgi, $config) = @_;
     my $url = $cgi->param('data_url');
-    # my $hocr_file = $cgi->param('data_hocr');
     my @missing;
     push @missing, 'data_url' unless ($url);
-    # push @missing, 'data_hocr' unless ($hocr_file);
     if (scalar @missing) {
         http400($cgi, "Missing params: %s\n\n", join(', ', @missing));
     }
     # Create file object
-    return mapUrltoFile($cgi, $config, $url);
+    my $file = mapUrltoFile($cgi, $config, $url);
+    # Make sure the pagedir exists
+    ensurePageDir($cgi, $config, $file);
+    # Make sure the correction HTML exists
+    my $lReload = ensureCorrection($cgi, $config, $file);
+    # Make sure the correction HTML with comment fields
+    ensureCorrectionWithComments($cgi, $config, $file);
+    # Send JSON response
+    httpJSON($cgi, {
+        imageUrl => $file->{url},
+        correction => $file->{correctionPath} . '/' . $correction_file_withRemarks,
+        correctionPath => $file->{correctionPath},
+        pathSection => $file->{cSection},
+        pathId => $file->{cID},
+        pathPage => $file->{cPage},
+        reload => $lReload
+    });
+    # Nach der Übertragung noch aufräumen, d.h. überflüssige Dateien entfernen
 }
 
 my $cgi = CGI->new;
 my $config = loadConfig();
-my $file = processRequest($cgi, $config);
-# Make sure the pagedir exists
-ensurePageDir($cgi, $config, $file);
-# Make sure the correction HTML exists
-ensureCorrection($cgi, $config, $file);
-# Make sure the correction HTML with comment fields
-ensureCorrectionWithComments($cgi);
-httpJSON($cgi, {
-    correction => $file->{correctionPath} . '/' . $correction_file_withRemarks,
-    correctionPath => $file->{correctionPath},
-    imageUrl => $file->{url},
-    pathSection => $file->{cSection},
-    pathId => $file->{cID},
-    pathPage => $file->{cPage},
-    reload => $lReload
-});
-
-# Nach der Übertragung noch aufräumen, d.h. überflüssige Dateien entfernen
+processRequest($cgi, $config);
