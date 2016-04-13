@@ -25,7 +25,7 @@ my $iniFile = 'conf/ocr-gt-tools.ini';
 my $cfg = new Config::IniFiles( -file => $iniFile );
 
 #'/var/www/html/
-my $fileSystemWebRootPath   = $cfg->val( 'PATH', 'filesystem-web-root' );
+my $docRoot   = $cfg->val( 'PATH', 'filesystem-web-root' );
 #ocr-fehler
 my $gtToolsData   = $cfg->val( 'PATH', 'gtToolsData' );
 
@@ -36,16 +36,11 @@ print $cgi->header( -type => 'application/json', -charset => 'utf-8');
 
 my $cURL = $cgi->param('data_url');
 my $cChanges = $cgi->param('data_changes');
-
 my $cSection = $cgi->param('data_section');
 my $cID = $cgi->param('data_id');
 my $cPage = $cgi->param('data_page');
 
 my %hSections = ( "digi" => '1' );
-
-
-my $cBasePath = $fileSystemWebRootPath;
-my $cBaseUrl  = $gtToolsData . '/';
 
 # prüfen ob Beginn von $cURL mit $cBaseUrl übereinstimmt
 # prüfen ob $cPage zulässig ist
@@ -54,10 +49,15 @@ my $cBaseUrl  = $gtToolsData . '/';
 
 
 # Bilden der absoluten Dateinamen
-my $cAktPath = $cBasePath . $cBaseUrl . $cSection . '/' . $cID . '/gt/' . $cPage . '/';
-my $cCorrectionFile = $cAktPath . 'correction.html';
-my $cRemarkFile = $cAktPath . 'anmerkungen.txt';
-
+my $cAktPath = join '/'
+    , $docRoot 
+    , $gtToolsData
+    , $cSection
+    , $cID
+    , 'gt'
+    , $cPage;
+my $cCorrectionFile = join '/', $cAktPath, 'correction.html';
+my $cRemarkFile     = join '/', $cAktPath, 'anmerkungen.txt';
 
 if ($debug) {
     print ERRORLOG  $cSection  . "\n";
@@ -65,23 +65,20 @@ if ($debug) {
     print ERRORLOG  $cPage  . "\n";
 };
 
-
-
-
 #-------------------------------------------------------------------------------
 # Schreibe Datei-Version mit Anmerkungen
 #-------------------------------------------------------------------------------
 print ERRORLOG "="x60 . "\n";
-print ERRORLOG __LINE__ . " Schreibe jetzt in \$cBasePath . \$cURL" . $cBasePath . $cURL . "\n";
+print ERRORLOG __LINE__ . " Schreibe jetzt in \$docRoot . \$cURL" . $docRoot . $cURL . "\n";
 print ERRORLOG __LINE__ . "Schreibe Datei-Version mit Anmerkungen" . "\n";
 print ERRORLOG "="x60 . "\n";
 
 my @Zeilen = split( "\n", $cChanges );
 
-open( CORRREM, ">", $cBasePath . $cURL);
-print CORRREM '<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">' . "\n";
-print CORRREM '<html>' . "\n";
-print CORRREM '<head>' . "\n";
+open(my $CORRREM, ">", $docRoot . $cURL);
+print $CORRREM '<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">' . "\n";
+print $CORRREM '<html>' . "\n";
+print $CORRREM '<head>' . "\n";
 
 foreach (@Zeilen) {
     my $aktZeile = $_;
@@ -90,13 +87,13 @@ foreach (@Zeilen) {
     if ($aktZeile eq "") {
         next;
     }
-    print CORRREM $aktZeile . "\n";
+    print $CORRREM $aktZeile . "\n";
 }
 
-print CORRREM '</body>' . "\n";
-print CORRREM '</html>' . "\n";
+print $CORRREM '</body>' . "\n";
+print $CORRREM '</html>' . "\n";
 
-close CORRREM;
+close $CORRREM;
 #-------------------------------------------------------------------------------
 # Schreibe Datei-Version mit Anmerkungen ENDE
 #-------------------------------------------------------------------------------
@@ -227,3 +224,4 @@ my $json = $op->encode({
 
 print $json;
 # eof: save_changes.pl
+# vim: sw=4 ts=4 :
