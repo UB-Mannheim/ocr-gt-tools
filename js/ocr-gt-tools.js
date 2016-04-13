@@ -9,7 +9,7 @@ $(document).bind('drop', function(e) {
     e.preventDefault();
 
     if (lChanged) {
-        alert("Ungesicherte Inhalte vorhanden, bitte zuerst speichern!");
+        window.alert("Ungesicherte Inhalte vorhanden, bitte zuerst speichern!");
     } else {
 
         var url = $(e.originalEvent.dataTransfer.getData('text/html')).find('img').attr('src');
@@ -64,7 +64,7 @@ function ActionForURL(url) {
                     // dazu kann res.reload === 1 benutzt werden
                     if (res.reload === 1) {
                         //$("#delete_button").removeClass("hidden").removeClass("inaktiv");
-                    };
+                    }
                 });
 
                 // Firefox 1.0+
@@ -110,10 +110,10 @@ function ActionForURL(url) {
                                 document.getElementById("file_correction").addEventListener("input", IfChanged);
                             },
                             error: function(x, e) {
-                                alert(x.status + " FEHLER aufgetreten");
+                               window.alert(x.status + " FEHLER aufgetreten");
                             }
                         });
-                    };
+                    }
                 });
                 $("#zoom_button_plus").on("click", function() {
                     var nZoom = parseFloat($("#file_correction").css("zoom"));
@@ -134,14 +134,14 @@ function ActionForURL(url) {
 
             },
             error: function(x, e) {
-                alert(x.status + " FEHLER aufgetreten");
+               window.alert(x.status + " FEHLER aufgetreten");
             }
         });
-    };
-};
+    }
+}
 
 function IfChanged() {
-    //alert("input event fired");
+    //window.alert("input event fired");
     $("#save_button").removeClass("inaktiv").addClass("aktiv");
     document.getElementById("file_correction").removeEventListener("input", IfChanged);
     lChanged = true;
@@ -156,13 +156,13 @@ function showRemark(nID) {
         $("#" + nID).addClass("hidden");
         $("#tools-" + nID).find("span.span-map-o").addClass("hidden");
         $("#tools-" + nID).find("span.span-commenting-o").removeClass("hidden");
-    };
-};
+    }
+}
 
 function resetAllEntries() {
 
-    var r = confirm("Alle Eingaben zurücksetzen?");
-    if (r == true) {
+    var r = window.confirm("Alle Eingaben zurücksetzen?");
+    if (r) {
         $('tr:nth-child(3n)').find('td:nth-child(1)').each(function() {
             console.log($(this).html());
             $(this).html('');
@@ -171,17 +171,17 @@ function resetAllEntries() {
             console.log($(this).html());
             $(this).html('');
         });
-    };
-};
+    }
+}
 
 function hashChanged() {
     var cHash = window.location.hash;
 
     if (lChanged) {
-        alert("Ungesicherte Inhalte vorhanden, bitte zuerst speichern!");
+       window.alert("Ungesicherte Inhalte vorhanden, bitte zuerst speichern!");
     } else {
         if (cHash !== '') {
             ActionForURL(cHash.substring(1));
-        };
-    };
-};
+        }
+    }
+}
