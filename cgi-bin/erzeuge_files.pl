@@ -121,9 +121,9 @@ convert data to JSON and send it
 =cut
 sub httpJSON
 {
-    my ($cgi, $file) =  @_;
+    my ($cgi, $location) =  @_;
     my $op = JSON->new->utf8->pretty(1);
-    my $json = $op->encode($file);
+    my $json = $op->encode($location);
 
     print $cgi->header( -type => 'application/json', -charset => 'utf-8');
     print $json;
@@ -200,7 +200,7 @@ sub mapUrltoFile
     # http://digi.bib.uni-mannheim.de/fileadmin/digi/445442158/thumbs/445442158_0126.jpg
     #                    servername        bereich
     #                     $1                $2         $3                  $4
-    my %file = (
+    my %location = (
         url => $url
     );
     @file{'cServer', 'cSection', 'cID', 'cFile'} = $url =~ m,
@@ -218,12 +218,12 @@ sub mapUrltoFile
         ([^\.]*?)           # cFile (e.g. '445442158_0126') -> '0126'
         \.jpg
         ,mx;
-    unless ($file{cServer} && $file{cSection} && $file{cID} && $file{cFile}) {
+    unless ($location{cServer} && $location{cSection} && $location{cID} && $location{cFile}) {
         http400($cgi, "Cannot map URL to filesystem: $url");
     }
-    $file{cFile} =~ m/.*?\_([0-9]{4})/;
-    $file{cPage} = $1;
-    unless ($file{cPage}) {
+    $location{cFile} =~ m/.*?\_([0-9]{4})/;
+    $location{cPage} = $1;
+    unless ($location{cPage}) {
         http400($cgi, "Cannot map URL to filesystem: $url");
     }
 
@@ -233,25 +233,25 @@ sub mapUrltoFile
     # path to created files and working directory base
     # should be readable for apache!
     #-------------------------------------------------------------------------------
-    $file{pagedir} = join '/'
+    $location{pagedir} = join '/'
         , $config->{docRoot}
         , $config->{gtToolsData}
-        , $file{cSection}
-        , $file{cID}
+        , $location{cSection}
+        , $location{cID}
         , 'gt'
-        , $file{cPage};
-    $file{correctionPath} = join '/'
+        , $location{cPage};
+    $location{correctionPath} = join '/'
         , $config->{gtToolsData}
-        , $file{cSection}
-        , $file{cID}
+        , $location{cSection}
+        , $location{cID}
         , 'gt'
-        , $file{cPage} ;
-    $file{hocr_file} = join '/'
+        , $location{cPage} ;
+    $location{hocr_file} = join '/'
         , $config->{imageSourcePath}
-        , $file{cSection}
-        , $file{cID}
+        , $location{cSection}
+        , $location{cID}
         , 'hocr'
-        , $file{cFile} . '.hocr';
+        , $location{cFile} . '.hocr';
 
     debug( "%s: File object: %s\n", __LINE__, Dumper(\%file));
 
@@ -266,11 +266,11 @@ Create 'pagedir' unless it exists.
 
 sub ensurePageDir
 {
-    my ($cgi, $config, $file) = @_;
-    if (-e $file->{pagedir}) {
+    my ($cgi, $config, $location) = @_;
+    if (-e $location->{pagedir}) {
         return;
     }
-    debug('%s: about to create %s\n', __LINE__, $file->{pagedir});
+    debug('%s: about to create %s\n', __LINE__, $location->{pagedir});
     my $mkdirSpec =  {
         mode => oct(777),
         verbose => 0,
@@ -281,9 +281,9 @@ sub ensurePageDir
     if ($config->{pagedir_group}) {
         $mkdirSpec->{group} = $config->{pagedir_group};
     }
-    my @okFile = make_path($file->{pagedir}, $mkdirSpec);
-    if (-e $file->{pagedir}) {
-        debug("Created directory '$file->{pagedir}'\n");
+    my @okFile = make_path($location->{pagedir}, $mkdirSpec);
+    if (-e $location->{pagedir}) {
+        debug("Created directory '$location->{pagedir}'\n");
     }
 }
 
@@ -292,22 +292,22 @@ sub ensurePageDir
 =cut
 sub ensureCorrection
 {
-    my ($cgi, $config, $file) = @_;
+    my ($cgi, $config, $location) = @_;
 
     # Wenn Datei schon existiert dann einfach anzeigen und nicht neu erzeugen
-    if (-e $file->{pagedir} . '/' . $correction_file_withRemarks ) {
+    if (-e $location->{pagedir} . '/' . $correction_file_withRemarks ) {
         return 1;
     }
 
     # TODO get rid of the chdir
     # Seiten in Bildzeilen und Textzeilen aufteilen
-    chdir $file->{pagedir};
+    chdir $location->{pagedir};
     my $cmd_extract = join(' '
         , $config->{hocrExtractImagesBinary} 
         , ' -b'
-        , $file->{hocr_file}
+        , $location->{hocr_file}
     );
-    debug("About to execute '%s' in '%s'\n", $cmd_extract, $file->{pagedir});
+    debug("About to execute '%s' in '%s'\n", $cmd_extract, $location->{pagedir});
     open my $EXTRACT, "-|", $cmd_extract or do { http500($cgi, "Could not run hocr-extract-images: $!\n\n"); };
     while( <$EXTRACT>) {
         debug($_);
@@ -328,7 +328,7 @@ sub ensureCorrection
     }
     close $GTEDIT;
 
-    debug("%s: %s/%s\n", $file->{pagedir},  $correction_file_withRemarks);
+    debug("%s: %s/%s\n", $location->{pagedir},  $correction_file_withRemarks);
 }
 
 
@@ -366,21 +366,21 @@ sub processCreateRequest
         http400($cgi, "Missing params: %s\n\n", join(', ', @missing));
     }
     # Create file object
-    my $file = mapUrltoFile($cgi, $config, $url);
+    my $location = mapUrltoFile($cgi, $config, $url);
     # Make sure the pagedir exists
-    ensurePageDir($cgi, $config, $file);
+    ensurePageDir($cgi, $config, $location);
     # Make sure the correction HTML exists
-    my $lReload = ensureCorrection($cgi, $config, $file);
+    my $lReload = ensureCorrection($cgi, $config, $location);
     # Make sure the correction HTML with comment fields
-    ensureCorrectionWithComments($cgi, $config, $file);
+    ensureCorrectionWithComments($cgi, $config, $location);
     # Send JSON response
     httpJSON($cgi, {
-        imageUrl => $file->{url},
-        correction => $file->{correctionPath} . '/' . $correction_file_withRemarks,
-        correctionPath => $file->{correctionPath},
-        pathSection => $file->{cSection},
-        pathId => $file->{cID},
-        pathPage => $file->{cPage},
+        imageUrl => $location->{url},
+        correction => $location->{correctionPath} . '/' . $correction_file_withRemarks,
+        correctionPath => $location->{correctionPath},
+        pathSection => $location->{cSection},
+        pathId => $location->{cID},
+        pathPage => $location->{cPage},
         reload => $lReload
     });
     # Nach der Übertragung noch aufräumen, d.h. überflüssige Dateien entfernen
