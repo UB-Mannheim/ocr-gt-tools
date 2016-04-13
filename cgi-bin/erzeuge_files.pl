@@ -75,8 +75,7 @@ sub httpJSON
     my ($file) =  @_;
     my $op = JSON->new->utf8->pretty(1);
     my $json = $op->encode({
-        result => $file->{url},
-        correction => $file->{correction_file_withRemarks},
+        correction => $file->{correctionPath} . '/' . $correction_file_withRemarks,
         correctionPath => $file->{correctionPath},
         imageUrl => $file->{url},
         pathSection => $file->{cSection},
@@ -246,17 +245,10 @@ sub mapUrltoFile
       , $file{cID}
       , 'gt'
       , $file{cPage};
-    $file{www_basedir_tmp} = join '/'
+    $file{correctionPath} = join '/'
         , $config->{gtToolsData}
         , $file{cSection}
         , $file{cID};
-    $file{correction_file_withRemarks} = join('/'
-        , $file{www_basedir_tmp}
-        , 'gt'
-        , $file{cPage}
-        , $correction_file_withRemarks);
-    $file{correctionPath} = join '/'
-        , $file{www_basedir_tmp} 
         , 'gt'
         , $file{cPage}
         . '/';
