@@ -379,14 +379,56 @@ sub ensureCommentsTxt
     close $dh;
     debug("%s has %d lines\n", $location->{pathPage}, $location->{numberOfLines});
     if (! -e $location->{commentsTxt}) {
-        open my $COMMENTS, ">", $location->{commentsTxt} or
-            http500($cgi, sprintf( "Could not write to '%s': %s\n", $location->{commentsTxt}, $!));
-        print $COMMENTS "0:\n";
+        my @comments = [];
         for (0 .. $location->{numberOfLines}) {
-            printf $COMMENTS "%03d:\n", $_+1;
+            push @comments, ' ';
         }
-        close $COMMENTS;
+        saveComments($cgi, $config, $location, ' ', \@comments);
     }
+}
+
+=head2
+
+Save transliterations.
+
+=cut
+sub saveTransliteration
+{
+    my($cgi, $config, $correctionHtml, $transliterations) = @_;
+    my $temp = "$correctionHtml.new.html";
+    open my $CORR_IN, "<", $correctionHtml or http500($cgi,
+        sprintf( "Could not read from '%s': %s\n", $correctionHtml, $!));
+    open my $CORR_OUT, ">", $temp or http500($cgi,
+        sprintf( "Could not writeTo '%s': %s\n", $temp, $!));
+    my $i = 0;
+    while (<$CORR_IN>) {
+        if (m/(spellcheck='true'>).*?</) {
+            my $transliteration = $transliterations->[ $i++ ]; 
+            my $leftOfClosingTag = $1;
+            s/$&/$leftOfClosingTag$transliteration</;
+        }
+        print $CORR_OUT $_;
+    }
+    rename $temp, $correctionHtml;
+}
+
+
+=head2
+
+Save comments.
+
+=cut
+sub saveComments
+{
+    my($cgi, $config, $commentsTxt, $pageComment, $lineComments) = @_;
+    open my $COMMENTS, ">", $commentsTxt or http500($cgi,
+        sprintf( "Could not write to '%s': %s\n", $commentsTxt, $!));
+    printf $COMMENTS "000:%s\n", $pageComment;
+    my $i = 0;
+    for (@{$lineComments}) {
+        printf $COMMENTS "%03d:\n", ($i++ +1), $_;
+    }
+    close $COMMENTS;
 }
 
 
@@ -398,13 +440,13 @@ Start processing CGI request
 sub processRequest
 {
     my ($cgi, $config) = @_;
-    my $action = $cgi->url_param('action');
     debug("\n\n%s %s %s\n", '*' x 30, 'START REQUEST', '*' x 30);
+    my $action = $cgi->url_param('action');
     if ($action eq 'create') {
         processCreateRequest($cgi, $config);
     } elsif ($action eq 'save') {
         # TODO
-        # processSaveRequest($cgi, $config);
+        processSaveRequest($cgi, $config);
     } else {
         http400($cgi, "URL parameter 'action' must be 'create' or 'save', not %s", $action);
     }
@@ -437,6 +479,19 @@ sub processCreateRequest
     # Send JSON response
     httpJSON($cgi, $location);
     # TODO Nach der Übertragung noch aufräumen, d.h. überflüssige Dateien entfernen
+}
+
+sub processSaveRequest
+{
+    my ($cgi, $config) = @_;
+    my $imageUrl = $cgi->param('imageUrl');
+    my $pageComment = $cgi->param('pageComment');
+    my $lineComments = [$cgi->multi_param('lineComments[]')];
+    my $transliterations = [$cgi->multi_param('transliterations[]')];
+    my $location = mapUrltoFile($cgi, $config, $imageUrl);
+    saveTransliteration($cgi, $config, $location->{correctionHtml}, $transliterations);
+    saveComments($cgi, $config, $location->{commentsTxt}, $pageComment, $lineComments);
+    return httpJSON($cgi, { result => 1 });
 }
 
 my $cgi = CGI->new;
