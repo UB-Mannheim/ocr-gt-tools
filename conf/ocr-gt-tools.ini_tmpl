@@ -4,16 +4,25 @@
 #   * if OCR_GT_BASEDIR environment variable: prepend $OCR_GT_BASEDIR
 #   * else: prepend project directory
 
-# location of the scans
-images-source=htdocs/scans
-
 # absolute path (without trailing '/')
-filesystem-web-root=htdocs/hocr
+doc-root=htdocs
 
 # relative path (without leading and trailing '/')
-# Directory relative to 'filesystem-web-root' for correction data storage.
+# Directory relative to 'doc-root' containing the images
+# Structure:
+# ├── <scans-root>
+# │   └── <section>
+# │       └── <id>
+# │           ├── hocr
+# │           │   └── <id>_<page>.hocr
+# │           └── max
+# │               └── <id>_<page>.jpg
+scans-root=fileadmin
+
+# relative path (without leading and trailing '/')
+# Directory relative to 'doc-root' for correction data storage.
 # ocr-gt-tools will create subdirectories for page data here.
-gtToolsData=ocr-fehler
+corrections-root=ocr-corrections
 
 # absolute path (with leading and trailing '/')
 # path to directory containing 'hocr-extract-images' 
@@ -26,13 +35,13 @@ ocropus-gteditPath=vendor/ocropy
 
 [MISC]
 
-# If the 'pagedir' is newly created, use this owner, e.g. www-data
+# If the 'correctionDir' is newly created, use this owner, e.g. www-data
 # Set to false-ish value to use default owner
-pagedir-owner=0
+correctionDir-owner=0
 
-# If the 'pagedir' is newly created, use this group, e.g. www-data
+# If the 'correctionDir' is newly created, use this group, e.g. www-data
 # Set to false-ish value to use default group
-pagedir-group=0
+correctionDir-group=0
 
 [TEMPLATE]
 

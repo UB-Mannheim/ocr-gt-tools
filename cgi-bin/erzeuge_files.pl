@@ -27,9 +27,6 @@ BEGIN {
     carpout(*$ERRORLOG);
 }
 
-my $correction_file = 'correction.html';
-my $correction_file_withRemarks = 'correction_remarks.html';
-
 =head1 METHODS
 
 =head2 debug
@@ -56,32 +53,32 @@ sub loadConfig
     my $cfg = new Config::IniFiles( -file => $iniFile );
     #
     # All PATH properties can be either relative (to OCR_GT_BASEDIR, the base of this repository) or absolute.
-    # Except 'gtToolsData' which is just a path segment of a URL, not a file path
     #
-    for my $pathProperty ('images-source', 'filesystem-web-root', 'hocr-extract-imagesPath', 'ocropus-gteditPath') {
+    for my $pathProperty ('doc-root', 'hocr-extract-imagesPath', 'ocropus-gteditPath') {
         unless ($cfg->val('PATH', $pathProperty) =~ m,^/,mx) {
             $cfg->setval('PATH', $pathProperty, $OCR_GT_BASEDIR . '/' . $cfg->val('PATH', $pathProperty));
         }
     }
 
-    my $config = {
-        #'/var/www/html/fileadmin/'
-        imageSourcePath             => $cfg->val('PATH', 'images-source'),
+    my %config = (
         #'/var/www/html/
-        docRoot       => $cfg->val('PATH', 'filesystem-web-root'),
-        hocrExtractImagesBinary     => $cfg->val('PATH', 'hocr-extract-imagesPath') . '/hocr-extract-images',
-        ocropusGteditBinary         => $cfg->val('PATH', 'ocropus-gteditPath' ). '/ocropus-gtedit',
-        #ocr-fehler
-        gtToolsData                 => $cfg->val('PATH', 'gtToolsData'),
-        pagedir_owner               => $cfg->val('MISC', 'pagedir-owner'),
-        pagedir_group               => $cfg->val('MISC', 'pagedir-group'),
-        correction_file             => $cfg->val('TEMPLATE', 'correction-filename'),
-        correction_file_withRemarks => $cfg->val('TEMPLATE', 'correction-with-comments-filename'),
-    };
+        docRoot                 => $cfg->val('PATH', 'doc-root'),
+        #<docRoot>/fileadmin
+        scansRoot               => $cfg->val('PATH', 'scans-root'),
+        #<docRoot>/ocr-corrections
+        correctionsRoot         => $cfg->val('PATH', 'corrections-root'),
+        hocrExtractImagesBinary => $cfg->val('PATH', 'hocr-extract-imagesPath') . '/hocr-extract-images',
+        ocropusGteditBinary     => $cfg->val('PATH', 'ocropus-gteditPath' ). '/ocropus-gtedit',
+        correctionDir_owner     => $cfg->val('MISC', 'correctionDir-owner'),
+        correctionDir_group     => $cfg->val('MISC', 'correctionDir-group'),
+        correctionHtml_basename => $cfg->val('TEMPLATE', 'correction-filename'),
+        correctionHtml_withRemarks_basename => $cfg->val('TEMPLATE', 'correction-with-comments-filename'),
+    );
 
-    debug "Config loaded: %s", Dumper($config);
 
-    return $config;
+    debug "Config loaded: %s", Dumper(\%config);
+
+    return \%config;
 }
 
 =head2 httpError
@@ -96,7 +93,6 @@ sub httpError {
         -status => $status
     );
     printf @_;
-    close $ERRORLOG;
     exit 1;
 }
 
@@ -127,7 +123,6 @@ sub httpJSON
 
     print $cgi->header( -type => 'application/json', -charset => 'utf-8');
     print $json;
-    close $ERRORLOG;
 }
 
 =head2 ensureCorrectionWithComments
@@ -137,13 +132,15 @@ Add HTML for commenting line input.
 =cut
 sub ensureCorrectionWithComments
 {
-    my ($cgi) = @_;
+    my ($cgi, $config, $location) = @_;
 
-    open( my $CORR, "<", $correction_file)or do {
-        http500($cgi, "Could not read from '$correction_file' $!\n\n");
+    open( my $CORR, "<", $location->{correctionHtml}) or do {
+        http500( $cgi, sprintf( "Could not read from '%s': %s\n",
+                $location->{correctionHtml}, $!));
     };
-    open( my $CORRNEU, ">", $correction_file_withRemarks )or do {
-        http500($cgi, "Could not write to '$correction_file_withRemarks' $!\n\n");
+    open( my $CORRNEU, ">", $location->{correctionHtml_withRemarks} )or do {
+        http500( $cgi, sprintf( "Could not read from '%s': %s\n",
+                $location->{correctionHtml_withRemarks_basename}, $!));
     };
     my $nIndex = 0;
     my $nLineIndex = 0;
@@ -201,89 +198,108 @@ sub mapUrltoFile
     #                    servername        bereich
     #                     $1                $2         $3                  $4
     my %location = (
-        url => $url
+        imageUrl => $url
     );
-    @file{'cServer', 'cSection', 'cID', 'cFile'} = $url =~ m,
+    @location{'pathServer', 'pathSection', 'pathId', 'cFile'} = $url =~ m,
         https?://
-        (.*?)               # cServer
+        (.*?)               # pathServer
         /
         fileadmin           # '/fileadmin/'
         /
-        ([^/]*?)            # cSection (e.g. 'digi')
+        ([^/]*?)            # pathSection (e.g. 'digi')
         /
-        ([^/]*?)            # cID (e.g. '445442158')
+        ([^/]*?)            # pathId (e.g. '445442158')
         /
         thumbs              # 'thumbs'
         /
         ([^\.]*?)           # cFile (e.g. '445442158_0126') -> '0126'
         \.jpg
         ,mx;
-    unless ($location{cServer} && $location{cSection} && $location{cID} && $location{cFile}) {
+    unless ($location{pathServer} && $location{pathSection} && $location{pathId} && $location{cFile}) {
         http400($cgi, "Cannot map URL to filesystem: $url");
     }
     $location{cFile} =~ m/.*?\_([0-9]{4})/;
-    $location{cPage} = $1;
-    unless ($location{cPage}) {
+    $location{pathPage} = $1;
+    unless ($location{pathPage}) {
         http400($cgi, "Cannot map URL to filesystem: $url");
     }
-
-    debug("Parsed URL as %s\n", Dumper(\%file));
 
     #-------------------------------------------------------------------------------
     # path to created files and working directory base
     # should be readable for apache!
     #-------------------------------------------------------------------------------
-    $location{pagedir} = join '/'
+
+    # ex: '/home/user/ocr-gt-tools/htdocs/ocr-corrections/digi/445442158/gt/0126/correction.html
+    $location{correctionDir} = join '/'
         , $config->{docRoot}
-        , $config->{gtToolsData}
-        , $location{cSection}
-        , $location{cID}
+        , $config->{correctionsRoot}
+        , $location{pathSection}
+        , $location{pathId}
         , 'gt'
-        , $location{cPage};
-    $location{correctionPath} = join '/'
-        , $config->{gtToolsData}
-        , $location{cSection}
-        , $location{cID}
+        , $location{pathPage};
+
+    # ex: '/home/user/ocr-gt-tools/htdocs/ocr-corrections/digi/445442158/gt/0126/correction.html
+    $location{correctionHtml} = join '/'
+        , $location{correctionDir}
+        , $config->{correctionHtml_basename};
+
+    # ex: 'ocr-corrections/digi/445442158/gt/0126/correction.html
+    $location{correctionUrl} = join '/'
+        , $config->{correctionsRoot}
+        , $location{pathSection}
+        , $location{pathId}
         , 'gt'
-        , $location{cPage} ;
+        , $location{pathPage},
+        , $config->{correctionHtml_basename};
+
+    # ex: '/home/user/ocr-gt-tools/htdocs/ocr-corrections/digi/445442158/max
+    $location{imageDir} = join '/'
+        , $config->{docRoot}
+        , $config->{scansRoot}
+        , $location{pathSection}
+        , $location{pathId}
+        , 'max';
+
+    # ex: '/home/user/ocr-gt-tools/htdocs/ocr-corrections/digi/445442158/hocr/445442158_0126.jpg
     $location{hocr_file} = join '/'
-        , $config->{imageSourcePath}
-        , $location{cSection}
-        , $location{cID}
+        , $config->{docRoot}
+        , $config->{scansRoot}
+        , $location{pathSection}
+        , $location{pathId}
         , 'hocr'
         , $location{cFile} . '.hocr';
 
-    debug( "%s: File object: %s\n", __LINE__, Dumper(\%file));
+    debug( "%s: Location object: %s\n", __LINE__, Dumper(\%location));
 
-    return \%file;
+    return \%location;
 }
 
-=head2 ensurePageDir
+=head2 ensureCorrectionDir
 
-Create 'pagedir' unless it exists.
+Create 'correctionDir' unless it exists.
 
 =cut
 
-sub ensurePageDir
+sub ensureCorrectionDir
 {
     my ($cgi, $config, $location) = @_;
-    if (-e $location->{pagedir}) {
+    if (-e $location->{correctionDir}) {
         return;
     }
-    debug('%s: about to create %s\n', __LINE__, $location->{pagedir});
+    debug("%s: about to create %s\n", __LINE__, $location->{correctionDir});
     my $mkdirSpec =  {
         mode => oct(777),
         verbose => 0,
     };
-    if ($config->{pagedir_owner}) {
-        $mkdirSpec->{owner} = $config->{pagedir_owner};
+    if ($config->{correctionDir_owner}) {
+        $mkdirSpec->{owner} = $config->{correctionDir_owner};
     }
-    if ($config->{pagedir_group}) {
-        $mkdirSpec->{group} = $config->{pagedir_group};
+    if ($config->{correctionDir_group}) {
+        $mkdirSpec->{group} = $config->{correctionDir_group};
     }
-    my @okFile = make_path($location->{pagedir}, $mkdirSpec);
-    if (-e $location->{pagedir}) {
-        debug("Created directory '$location->{pagedir}'\n");
+    my @okFile = make_path($location->{correctionDir}, $mkdirSpec);
+    if (-e $location->{correctionDir}) {
+        debug("Created directory '$location->{correctionDir}'\n");
     }
 }
 
@@ -295,19 +311,21 @@ sub ensureCorrection
     my ($cgi, $config, $location) = @_;
 
     # Wenn Datei schon existiert dann einfach anzeigen und nicht neu erzeugen
-    if (-e $location->{pagedir} . '/' . $correction_file_withRemarks ) {
-        return 1;
-    }
+    # if (-e $location->{correctionHtml} ) {
+    #     $location->{reload} = 1;
+    #     return
+    # }
 
     # TODO get rid of the chdir
     # Seiten in Bildzeilen und Textzeilen aufteilen
-    chdir $location->{pagedir};
+    chdir $location->{correctionDir};
     my $cmd_extract = join(' '
         , $config->{hocrExtractImagesBinary} 
         , ' -b'
+        , $location->{imageDir}
         , $location->{hocr_file}
     );
-    debug("About to execute '%s' in '%s'\n", $cmd_extract, $location->{pagedir});
+    debug("About to execute '%s' in '%s'\n", $cmd_extract, $location->{correctionDir});
     open my $EXTRACT, "-|", $cmd_extract or do { http500($cgi, "Could not run hocr-extract-images: $!\n\n"); };
     while( <$EXTRACT>) {
         debug($_);
@@ -321,14 +339,14 @@ sub ensureCorrection
             , '-x xxx'
             , 'line*.png'
             , '-o'
-            , $config->{correction_file})
+            , $config->{correctionHtml_basename})
             or do { http500($cgi, "Could not run ocropus-gtedit: $!\n\n"); };
     while( <$GTEDIT>) {
         debug($_);
     }
     close $GTEDIT;
 
-    debug("%s: %s/%s\n", $location->{pagedir},  $correction_file_withRemarks);
+    # debug("%s: %s/%s\n", $location->{correctionDir},  $correctionHtml_withRemarks_basename);
 }
 
 
@@ -341,6 +359,7 @@ sub processRequest
 {
     my ($cgi, $config) = @_;
     my $action = $cgi->url_param('action');
+    debug("\n\n%s %s %s\n", '*' x 30, 'START REQUEST', '*' x 30);
     if ($action eq 'create') {
         processCreateRequest($cgi, $config);
     } elsif ($action eq 'save') {
@@ -349,6 +368,7 @@ sub processRequest
     } else {
         http400($cgi, "URL parameter 'action' must be 'create' or 'save', not %s", $action);
     }
+    debug("%s %s %s\n\n", '*' x 30, 'END REQUEST', '*' x 30);
 }
 
 =head2 processCreateRequest
@@ -367,23 +387,15 @@ sub processCreateRequest
     }
     # Create file object
     my $location = mapUrltoFile($cgi, $config, $url);
-    # Make sure the pagedir exists
-    ensurePageDir($cgi, $config, $location);
+    # Make sure the correctionDir exists
+    ensureCorrectionDir($cgi, $config, $location);
     # Make sure the correction HTML exists
-    my $lReload = ensureCorrection($cgi, $config, $location);
+    ensureCorrection($cgi, $config, $location);
     # Make sure the correction HTML with comment fields
     ensureCorrectionWithComments($cgi, $config, $location);
     # Send JSON response
-    httpJSON($cgi, {
-        imageUrl => $location->{url},
-        correction => $location->{correctionPath} . '/' . $correction_file_withRemarks,
-        correctionPath => $location->{correctionPath},
-        pathSection => $location->{cSection},
-        pathId => $location->{cID},
-        pathPage => $location->{cPage},
-        reload => $lReload
-    });
-    # Nach der Übertragung noch aufräumen, d.h. überflüssige Dateien entfernen
+    httpJSON($cgi, $location);
+    # TODO Nach der Übertragung noch aufräumen, d.h. überflüssige Dateien entfernen
 }
 
 my $cgi = CGI->new;
