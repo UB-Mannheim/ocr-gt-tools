@@ -51,4 +51,7 @@ correction-filename=correction.html
 # Filename of the enhanced correction_remarks.html
 correction-with-comments-filename=correction_remarks.html
 
+# Filename of the text file containing the line comments
+comments-filename=anmerkungen.txt
+
 # vim: ft=dosini :
