@@ -12,7 +12,7 @@ function handleCorrectionAjax(response, status, xhr) {
             window.alert(x.status + " FEHLER aufgetreten: \n" + e);
         },
         success: function(response, status, xhr) {
-            window.ocrGtLocation.comments = parseLineComments(response);
+            parseLineComments(response);
             addCommentFields(window.ocrGtLocation);
             // hide waiting spinner
             $("#wait_load").addClass("hidden");
@@ -22,6 +22,10 @@ function handleCorrectionAjax(response, status, xhr) {
     });
 }
 
+/**
+ * When the document should be saved back to the server.
+ *
+ */
 function onClickSave() {
 
     if (window.location.saved) {
@@ -31,6 +35,13 @@ function onClickSave() {
 
     $("#wait_save").addClass("wait").removeClass("hidden");
     $("#disk").addClass("hidden");
+    window.ocrGtLocation.transliterations = $('tr:nth-child(3n) td:nth-child(1)').map(function() {
+        return $(this).text();
+    }).get();
+    window.ocrGtLocation.lineComments = $(".lineComment").map(function() {
+        return $(this).text();
+    }).get();
+    window.ocrGtLocation.pageComment = $(".pageComment").text();
 
     $.ajax({
         type: 'post',
@@ -63,19 +74,21 @@ function onClickZoomOut() {
 }
 
 /**
- * Transform text file to array of line comments
+ * Transform text file to array of line lineComments
  *
  * @param {String} txt Contents of the text file
  *
- * @return {Array} List of line comments
+ * @return {Array} List of line lineComments
  */
 function parseLineComments(txt) {
     var lines = txt.split(/\n/);
-    var comments = [];
+    var lineComments = [];
     for (var i = 0; i < lines.length ; i++) {
-        comments.push(lines[i].replace(/^\d+:\s*/, ''));
+        lineComments.push(lines[i].replace(/^\d+:\s*/, ''));
     }
-    return comments;
+    window.ocrGtLocation.pageComment = lineComments[0];
+    window.ocrGtLocation.lineComments = lineComments.slice(1);
+    return lineComments;
 }
 
 /**
@@ -84,11 +97,16 @@ function parseLineComments(txt) {
 function addCommentFields() {
     $("*[contenteditable]").parent().each(function(idx) {
         $(this).append(
-            '<td id="line-comment-' + (idx + 1) + '" class="comment" contenteditable>' +
-                window.ocrGtLocation.comments[idx] +
+            '<td id="line-comment-' + (idx + 1) + '" class="lineComment" contenteditable>' +
+                window.ocrGtLocation.lineComments[idx] +
             'XXX</td>'
         );
     });
+    $("file_correction").append(
+        '<td id="page-comment' + '" class="pageComment" contenteditable>' +
+            window.ocrGtLocation.pageComment +
+        'XXX</td>'
+    );
 }
 
 /**
@@ -103,12 +121,6 @@ function reloadOcrGtLocation(url) {
     }
 
     $("#wait_load").removeClass("hidden");
-    //console.log(url);
-    // http://digi.bib.uni-mannheim.de/fileadmin/vl/ubmaosi/59087/thumbs/59087_0017.jpg
-    var neuurl = url.replace('/thumbs/', '/min/'); //'http://digi.bib.uni-mannheim.de/fileadmin/vl/ubmaosi/59087/min/59087_0017.jpg';
-    var hocrUrl = url.replace('/thumbs/', '/hocr/');
-    hocrUrl = hocrUrl.replace('.jpg', '.hocr');
-
     $('#file_name').html(url);
     $('#file_image').html('<img src=' + url + '>');
 
