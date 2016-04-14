@@ -1,5 +1,35 @@
 # Install.md
 
+## Repository-local server
+
+Install dependencies
+
+```
+make deps
+```
+
+Copy configuration template:
+
+```
+cp conf/ocr-gt-tools.ini_tmpl conf/ocr-gt-tools.ini
+```
+
+Start server
+
+```
+make dev-server
+```
+
+Navigate to [http://localhost:9090/index.html](http://localhost:9090/index.html).
+
+Drop a file, such as [this thumbnail](http://digi.bib.uni-mannheim.de/fileadmin/digi/445442158/thumbs/445442158_0126.jpg) onto the document.
+
+Do some transliterating and commenting.
+
+Click "Speichern".
+
+Checkout the contents of [./htdocs/ocr-corrections/](./htdocs/ocr-corrections/).
+
 ## After download:
 
 - Rename **conf/ocr-gt-tools.ini_tmpl** to **conf/ocr-gt-tools.ini**
