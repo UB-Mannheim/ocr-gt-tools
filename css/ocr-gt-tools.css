@@ -34,14 +34,18 @@
 }
 
 
-.editable {
+td[contenteditable],
+div[contenteditable]
+{
     border: solid 1px #808080;
     color: #000060;
     font-size:20px;
     min-height:20px;
 }
 
-.lineComment {
+.lineComment,
+.pageComment
+{
     background-color: lightyellow;
     height: 24px; /* FF sonst nur Fehler bei Zeilenhöhe */
 }
