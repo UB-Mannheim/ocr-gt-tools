@@ -9,6 +9,8 @@ use JSON;
 use CGI;
 use File::Path qw(make_path);
 use Config::IniFiles qw( :all);                 # wg. Ini-Files
+use Time::HiRes qw(time);
+use POSIX qw(strftime);
 
 BEGIN {
     use File::Path qw(make_path);
@@ -39,6 +41,22 @@ sub debug
 {
     my $msg = sprintf(shift(), @_);
     print $ERRORLOG $msg;
+}
+
+=head2 debugTimestamp
+
+Log a short message with a timestamp and lots of noise to make it stand out.
+
+=cut
+
+sub debugTimestamp
+{
+    my $msg = sprintf(shift(), @_);
+    my $t = time;
+    my $timestamp = strftime "%Y-%m-%d %H:%M:%S", localtime $t;
+    $timestamp .= sprintf ".%03d", ($t-int($t))*1000; # without rounding
+    my $asterisks = '*' x 20;
+    debug("\n\n%s %s @ %s %s\n\n", $asterisks, $msg, $timestamp, $asterisks);
 }
 
 =head2 loadConfig
@@ -94,6 +112,7 @@ sub httpError {
         -status => $status
     );
     printf @_;
+    debugTimestamp('REQUEST ERROR');
     exit 1;
 }
 
@@ -284,7 +303,7 @@ sub mapUrltoFile
         , 'hocr'
         , $location{cFile} . '.hocr';
 
-    debug( "%s: File object: %s\n", __LINE__, Dumper(\%location));
+    debug( "Location object: %s\n", Dumper(\%location));
 
     return \%location;
 }
@@ -440,7 +459,6 @@ Start processing CGI request
 sub processRequest
 {
     my ($cgi, $config) = @_;
-    debug("\n\n%s %s %s\n", '*' x 30, 'START REQUEST', '*' x 30);
     my $action = $cgi->url_param('action');
     if ($action eq 'create') {
         processCreateRequest($cgi, $config);
@@ -450,7 +468,6 @@ sub processRequest
     } else {
         http400($cgi, "URL parameter 'action' must be 'create' or 'save', not %s", $action);
     }
-    debug("%s %s %s\n\n", '*' x 30, 'END REQUEST', '*' x 30);
 }
 
 =head2 processCreateRequest
@@ -494,8 +511,10 @@ sub processSaveRequest
     return httpJSON($cgi, { result => 1 });
 }
 
+debugTimestamp('START REQUEST');
 my $cgi = CGI->new;
 my $config = loadConfig();
 processRequest($cgi, $config);
+debugTimestamp('END REQUEST');
 
 # vim: sw=4 ts=4 :
