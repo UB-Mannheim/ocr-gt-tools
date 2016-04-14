@@ -25,8 +25,8 @@
     right: 0;
     top: 0;
     cursor: pointer;
-    margin-top: 0px;
-    margin-bottom: 0px;
+    margin-top: 0;
+    margin-bottom: 0;
 }
 
 .inaktiv {
@@ -41,7 +41,7 @@
     min-height:20px;
 }
 
-.remarks {
+.lineComment {
     background-color: lightyellow;
     height: 24px; /* FF sonst nur Fehler bei Zeilenhöhe */
 }
@@ -62,7 +62,7 @@
     border-radius: 0;
     border: 0;
     position: fixed;
-    top: 0px;
+    top: 0;
     width: 100%;
     left: 0;
 }
