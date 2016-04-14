@@ -95,12 +95,24 @@ function parseLineComments(txt) {
  * Adds comment fields
  */
 function addCommentFields() {
-    $("*[contenteditable]").parent().each(function(idx) {
-        $(this).append(
-            '<td id="line-comment-' + (idx + 1) + '" class="lineComment" contenteditable>' +
-                window.ocrGtLocation.lineComments[idx] +
-            'XXX</td>'
-        );
+    $("*[contenteditable][spellcheck]").each(function() {
+        $(this)
+        .parent('tr').append(
+            '<td>' +
+            '<span class="span-commenting-o"><i class="fa fa-commenting-o"></i></span>' +
+            '<span class="span-commenting hidden"><i class="fa fa-commenting hidden"></i></span>' +
+            '<span class="span-map-o hidden"><i class="fa fa-map-o hidden"></i></span>' +
+            '</td>'
+        )
+        .parent('table').each(function(idx) {
+            $(this).append(
+                '<tr>' +
+                '<td id="line-comment-' + (idx + 1) + '" class="lineComment" contenteditable>' +
+                    window.ocrGtLocation.lineComments[idx] +
+                '</td>' +
+                '</tr>'
+            );
+        });
     });
     $("file_correction").append(
         '<td id="page-comment' + '" class="pageComment" contenteditable>' +
