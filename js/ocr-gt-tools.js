@@ -1,24 +1,66 @@
 // Name: ocr-gt-tools.js
 
-var lChanged = false;
-$(document).bind('drop dragover', function(e) {
-    // Prevent the default browser drop action:
-    e.preventDefault();
-});
-$(document).bind('drop', function(e) {
-    e.preventDefault();
-
-    if (lChanged) {
-        window.alert("Ungesicherte Inhalte vorhanden, bitte zuerst speichern!");
-    } else {
-
-        var url = $(e.originalEvent.dataTransfer.getData('text/html')).find('img').attr('src');
-
-        if (url) {
-            ActionForURL(url);
+/**
+ * Handle a $load completion event.
+ *
+ */
+function handleCorrectionAjax(response, status, xhr) {
+    $.ajax({
+        type: 'GET',
+        url: window.ocrGtLocation.commentsUrl,
+        error: function(x, e) {
+            window.alert(x.status + " FEHLER aufgetreten: \n" + e);
+        },
+        success: function(response, status, xhr) {
+            window.ocrGtLocation.comments = parseLineComments(response);
+            addCommentFields(window.ocrGtLocation);
+            // hide waiting spinner
+            $("#wait_load").addClass("hidden");
+            // show new document
+            $("#file_correction").removeClass("hidden");
         }
+    });
+}
+
+function onClickSave() {
+
+    if (window.location.saved) {
+        console.log("Nothing changed.");
+        return;
     }
-});
+
+    $("#wait_save").addClass("wait").removeClass("hidden");
+    $("#disk").addClass("hidden");
+
+    $.ajax({
+        type: 'post',
+        url: '/cgi-bin/erzeuge_files.pl?action=save',
+        data: window.ocrGtLocation,
+        success: function() {
+            // after #file_correction is saved
+            window.ocrGtLocation.saved = false;
+            $("#wait_save").removeClass("wait").addClass("hidden");
+            $("#disk").removeClass("hidden");
+            $("#save_button").addClass("inaktiv").removeClass("aktiv");
+            document.getElementById("file_correction").addEventListener("input", onInput);
+        },
+        error: function(x, e) {
+            window.alert(x.status + " FEHLER aufgetreten");
+        }
+    });
+}
+
+function onClickZoomIn() {
+    var nZoom = parseFloat($("#file_correction").css("zoom"));
+    nZoom = nZoom + 0.4;
+    $("#file_correction").css("zoom", nZoom);
+}
+
+function onClickZoomOut() {
+    var nZoom = parseFloat($("#file_correction").css("zoom"));
+    nZoom = nZoom - 0.4;
+    $("#file_correction").css("zoom", nZoom);
+}
 
 /**
  * Transform text file to array of line comments
@@ -36,18 +78,25 @@ function parseLineComments(txt) {
     return comments;
 }
 
-function addCommentFields(comments) {
+/**
+ * Adds comment fields
+ */
+function addCommentFields() {
     $("*[contenteditable]").parent().each(function(idx) {
         $(this).append(
             '<td id="line-comment-' + (idx + 1) + '" class="comment" contenteditable>' +
-                comments[idx] +
+                window.ocrGtLocation.comments[idx] +
             'XXX</td>'
         );
     });
 }
 
-
-function ActionForURL(url) {
+/**
+ * Loads a URL for editing.
+ *
+ * @param {string} url The image URL to load
+ */
+function reloadOcrGtLocation(url) {
 
     if (!url) {
         return;
@@ -74,27 +123,12 @@ function ActionForURL(url) {
         success: function(res) {
             // file correction will be loaded
             var now = new Date();
+            window.ocrGtLocation = res;
             var nowString = now.getFullYear() + now.getMonth() + now.getDay() +  now.getTime();
             //console.log(nowString);
-            window.location.hash = res.imageUrl;
+            window.location.hash = window.ocrGtLocation.imageUrl;
             //$("#file_correction").load( res.correctionUrl + "?time=" + now, function(response, status, xhr) {
-            $("#file_correction").load(res.correctionUrl + '?akt=' + nowString, function(response, status, xhr) {
-                $.ajax({
-                    type: 'GET',
-                    url: res.commentsUrl,
-                    error: function(x, e) {
-                        window.alert(x.status + " FEHLER aufgetreten: \n" + e);
-                    },
-                    success: function(response, status, xhr) {
-                        var comments = parseLineComments(response);
-                        addCommentFields(comments);
-                        // hide waiting spinner
-                        $("#wait_load").addClass("hidden");
-                        // show new document
-                        $("#file_correction").removeClass("hidden");
-                    }
-                });
-            });
+            $("#file_correction").load(window.ocrGtLocation.correctionUrl, handleCorrectionAjax);
 
             // Firefox 1.0+
             // http://stackoverflow.com/questions/9847580/how-to-detect-safari-chrome-ie-firefox-and-opera-browser
@@ -107,53 +141,11 @@ function ActionForURL(url) {
             }
             $("#save_button").removeClass("hidden");
             // activate button if #file_correction is changed
-            document.getElementById("file_correction").addEventListener("input", IfChanged);
+            document.getElementById("file_correction").addEventListener("input", onInput);
 
-            $("#save_button").off("click").on("click", function() {
-                //
-                if (lChanged) {
-                    $("#wait_save").addClass("wait").removeClass("hidden");
-                    $("#disk").addClass("hidden");
-
-                    var myCorrection = $("#file_correction").html();
-                    var myURL   = res.correctionUrl;
-                    var mySection = res.pathSection;
-                    var myID = res.pathId;
-                    var myPage = res.pathPage;
-
-                    $.ajax({
-                        type: 'post',
-                        url: 'save_changes.pl',
-                        data: {'data_changes': myCorrection,
-                               'data_url': myURL,
-                               'data_section': mySection,
-                               'data_id': myID,
-                               'data_page': myPage
-                        },
-                        success: function() {
-                            // after #file_correction is saved
-                            lChanged = false;
-                            $("#wait_save").removeClass("wait").addClass("hidden");
-                            $("#disk").removeClass("hidden");
-                            $("#save_button").addClass("inaktiv").removeClass("aktiv");
-                            document.getElementById("file_correction").addEventListener("input", IfChanged);
-                        },
-                        error: function(x, e) {
-                            window.alert(x.status + " FEHLER aufgetreten");
-                        }
-                    });
-                }
-            });
-            $("#zoom_button_plus").on("click", function() {
-                var nZoom = parseFloat($("#file_correction").css("zoom"));
-                nZoom = nZoom + 0.4;
-                $("#file_correction").css("zoom", nZoom);
-            });
-            $("#zoom_button_minus").on("click", function() {
-                var nZoom = parseFloat($("#file_correction").css("zoom"));
-                nZoom = nZoom - 0.4;
-                $("#file_correction").css("zoom", nZoom);
-            });
+            $("#save_button").off("click").on("click", onClickSave);
+            $("#zoom_button_plus").on("click", onClickZoomIn);
+            $("#zoom_button_minus").on("click", onClickZoomOut);
 
             // Add links to downloads to the DOM
             $("#file_links").html(
@@ -168,11 +160,11 @@ function ActionForURL(url) {
     });
 }
 
-function IfChanged() {
+function onInput() {
     //window.alert("input event fired");
     $("#save_button").removeClass("inaktiv").addClass("aktiv");
-    document.getElementById("file_correction").removeEventListener("input", IfChanged);
-    lChanged = true;
+    document.getElementById("file_correction").removeEventListener("input", onInput);
+    window.ocrGtLocation.saved = false;
 }
 
 function showRemark(nID) {
@@ -202,16 +194,40 @@ function resetAllEntries() {
     }
 }
 
-function hashChanged() {
+function onHashChange() {
     var cHash = window.location.hash;
 
-    if (lChanged) {
+    if (window.ocrGtLocation && !window.ocrGtLocation.saved) {
         window.alert("Ungesicherte Inhalte vorhanden, bitte zuerst speichern!");
     } else {
         if (cHash !== '') {
-            ActionForURL(cHash.substring(1));
+            reloadOcrGtLocation(cHash.substring(1));
         }
     }
 }
+
+$(function() {
+    onHashChange();
+    window.onhashchange = onHashChange;
+    $(document).bind('drop dragover', function(e) {
+        // Prevent the default browser drop action:
+        e.preventDefault();
+    });
+    $(document).bind('drop', function(e) {
+        e.preventDefault();
+
+        if (!window.ocrGtLocation.saved) {
+            window.alert("Ungesicherte Inhalte vorhanden, bitte zuerst speichern!");
+        } else {
+            var url = $(e.originalEvent.dataTransfer.getData('text/html')).find('img').attr('src');
+            if (url) {
+                reloadOcrGtLocation(url);
+            } else {
+                window.alert("Konnte keine URL erkennen.");
+            }
+        }
+    });
+
+});
 
 // vim: sw=4 ts=4 :
