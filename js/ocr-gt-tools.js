@@ -62,15 +62,23 @@ function onClickSave() {
 }
 
 function onClickZoomIn() {
-    var nZoom = parseFloat($("#file_correction").css("zoom"));
-    nZoom = nZoom + 0.4;
-    $("#file_correction").css("zoom", nZoom);
+    var el = document.getElementById('file_correction');
+    var curScale = el.getBoundingClientRect().width / el.offsetWidth;
+    var newScale = curScale + 0.4;
+    $(el).css('-moz-transform', 'scale(' + newScale + ')')
+         .css('-moz-transform-origin', '0 0')
+         .css('-webkit-transform', 'scale(' + newScale + ')')
+         .css('-webkit-transform-origin', '0 0');
 }
 
 function onClickZoomOut() {
-    var nZoom = parseFloat($("#file_correction").css("zoom"));
-    nZoom = nZoom - 0.4;
-    $("#file_correction").css("zoom", nZoom);
+    var el = document.getElementById('file_correction');
+    var curScale = el.getBoundingClientRect().width / el.offsetWidth;
+    var newScale = Math.max(0.1, curScale - 0.4);
+    $(el).css('-moz-transform', 'scale(' + newScale + ')')
+         .css('-moz-transform-origin', '0 0')
+         .css('-webkit-transform', 'scale(' + newScale + ')')
+         .css('-webkit-transform-origin', '0 0');
 }
 
 /**
@@ -155,15 +163,9 @@ function reloadOcrGtLocation(url) {
             //$("#file_correction").load( res.correctionUrl + "?time=" + now, function(response, status, xhr) {
             $("#file_correction").load(window.ocrGtLocation.correctionUrl, handleCorrectionAjax);
 
-            // Firefox 1.0+
-            // http://stackoverflow.com/questions/9847580/how-to-detect-safari-chrome-ie-firefox-and-opera-browser
-            var isFirefox = typeof InstallTrigger !== 'undefined';
-            if (isFirefox) {
-            } else {
-                // Zoom buttons only for non-IE
-                $("#zoom_button_plus").removeClass("hidden");
-                $("#zoom_button_minus").removeClass("hidden");
-            }
+            // Zoom buttons only for non-IE
+            $("#zoom_button_plus").removeClass("hidden");
+            $("#zoom_button_minus").removeClass("hidden");
             $("#save_button").removeClass("hidden");
             // activate button if #file_correction is changed
             document.getElementById("file_correction").addEventListener("input", onInput);
