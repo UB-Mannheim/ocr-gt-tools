@@ -3,6 +3,8 @@ use strict;
 use warnings;
 my $OCR_GT_BASEDIR;
 my $ERRORLOG;
+# my $DATE_FORMAT = "%Y-%m-%d %H:%M:%S";
+my $DATE_FORMAT = "%H:%M:%S";
 
 use Data::Dumper;
 use JSON;
@@ -40,23 +42,25 @@ Log a message to the log file.
 sub debug
 {
     my $msg = sprintf(shift(), @_);
-    print $ERRORLOG $msg;
+    my $t = time;
+    my $timestamp = strftime $DATE_FORMAT, localtime $t;
+    $timestamp .= sprintf ".%03d", ($t-int($t))*1000; # without rounding
+    printf $ERRORLOG "%s: %s\n", $timestamp, $msg;
 }
 
-=head2 debugTimestamp
+=head2 debugStandout
 
 Log a short message with a timestamp and lots of noise to make it stand out.
 
 =cut
 
-sub debugTimestamp
+sub debugStandout
 {
     my $msg = sprintf(shift(), @_);
-    my $t = time;
-    my $timestamp = strftime "%Y-%m-%d %H:%M:%S", localtime $t;
-    $timestamp .= sprintf ".%03d", ($t-int($t))*1000; # without rounding
     my $asterisks = '*' x 20;
-    debug("\n\n%s %s @ %s %s\n\n", $asterisks, $msg, $timestamp, $asterisks);
+    debug("");
+    debug("%s %s %s", $asterisks, $msg, $asterisks);
+    debug("");
 }
 
 =head2 loadConfig
@@ -112,7 +116,7 @@ sub httpError {
         -status => $status
     );
     printf @_;
-    debugTimestamp('REQUEST ERROR');
+    debugStandout('REQUEST ERROR');
     exit 1;
 }
 
@@ -303,7 +307,7 @@ sub mapUrltoFile
         , 'hocr'
         , $location{cFile} . '.hocr';
 
-    debug( "Location object: %s\n", Dumper(\%location));
+    debug( "Location object: %s", Dumper(\%location));
 
     return \%location;
 }
@@ -320,7 +324,7 @@ sub ensureCorrectionDir
     if (-e $location->{correctionDir}) {
         return;
     }
-    debug("%s: about to create %s\n", __LINE__, $location->{correctionDir});
+    debug("%s: about to create %s", __LINE__, $location->{correctionDir});
     my $mkdirSpec =  {
         mode => oct(777),
         verbose => 0,
@@ -333,7 +337,7 @@ sub ensureCorrectionDir
     }
     my @okFile = make_path($location->{correctionDir}, $mkdirSpec);
     if (-e $location->{correctionDir}) {
-        debug("Created directory '$location->{correctionDir}'\n");
+        debug("Created directory '$location->{correctionDir}'");
     }
 }
 
@@ -357,7 +361,7 @@ sub ensureCorrection
         , $location->{imageDir}
         , $location->{hocr_file}
     );
-    debug("About to execute '%s' in '%s'\n", $cmd_extract, $location->{correctionDir});
+    debug("About to execute '%s' in '%s'", $cmd_extract, $location->{correctionDir});
     open my $EXTRACT, "-|", $cmd_extract or do { http500($cgi, "Could not run hocr-extract-images: $!\n\n"); };
     while( <$EXTRACT>) {
         debug($_);
@@ -378,7 +382,7 @@ sub ensureCorrection
     }
     close $GTEDIT;
 
-    # debug("%s: %s/%s\n", $location->{correctionDir},  $correctionHtml_withRemarks_basename);
+    # debug("%s: %s/%s", $location->{correctionDir},  $correctionHtml_withRemarks_basename);
 }
 
 =head2
@@ -393,16 +397,17 @@ sub ensureCommentsTxt
     opendir my $dh, $location->{correctionDir} or http500($cgi, "opendir '%s': %s", $location->{correctionDir}, $!);
     $location->{numberOfLines} = 0;
     while (readdir $dh) {
+        next unless m/line-\d{3}\.txt/;
         $location->{numberOfLines} += 1;
     }
     close $dh;
-    debug("%s has %d lines\n", $location->{pathPage}, $location->{numberOfLines});
+    debug("%s has %d lines", $location->{pathPage}, $location->{numberOfLines});
     if (! -e $location->{commentsTxt}) {
-        my @comments = [];
+        my @comments;
         for (0 .. $location->{numberOfLines}) {
             push @comments, ' ';
         }
-        saveComments($cgi, $config, $location, ' ', \@comments);
+        saveComments($cgi, $config, $location->{commentsTxt}, ' ', \@comments);
     }
 }
 
@@ -463,7 +468,6 @@ sub processRequest
     if ($action eq 'create') {
         processCreateRequest($cgi, $config);
     } elsif ($action eq 'save') {
-        # TODO
         processSaveRequest($cgi, $config);
     } else {
         http400($cgi, "URL parameter 'action' must be 'create' or 'save', not %s", $action);
@@ -495,7 +499,8 @@ sub processCreateRequest
     # ensureCorrectionWithComments($cgi, $config, $location);
     # Send JSON response
     httpJSON($cgi, $location);
-    # TODO Nach der Übertragung noch aufräumen, d.h. überflüssige Dateien entfernen
+    # clean up
+    unlink glob sprintf("%s/line-*", $location->{correctionDir});
 }
 
 sub processSaveRequest
@@ -511,10 +516,10 @@ sub processSaveRequest
     return httpJSON($cgi, { result => 1 });
 }
 
-debugTimestamp('START REQUEST');
+debugStandout('START REQUEST');
 my $cgi = CGI->new;
 my $config = loadConfig();
 processRequest($cgi, $config);
-debugTimestamp('END REQUEST');
+debugStandout('END REQUEST');
 
 # vim: sw=4 ts=4 :
