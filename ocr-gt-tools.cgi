@@ -445,7 +445,7 @@ sub saveComments
     printf $COMMENTS "000:%s\n", $pageComment;
     my $i = 0;
     for (@{$lineComments}) {
-        printf $COMMENTS "%03d:\n", ($i++ +1), $_;
+        printf $COMMENTS "%03d:%s\n", ($i++ +1), $_;
     }
     close $COMMENTS;
 }
