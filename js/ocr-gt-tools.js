@@ -36,12 +36,12 @@ function onClickSave() {
     $("#wait_save").addClass("wait").removeClass("hidden");
     $("#disk").addClass("hidden");
     window.ocrGtLocation.transliterations = $('tr:nth-child(3n) td:nth-child(1)').map(function() {
-        return $(this).text() || '';
+        return $(this).html();
     }).get();
     window.ocrGtLocation.lineComments = $(".lineComment > td").map(function() {
-        return $(this).text();
+        return $(this).html();
     }).get();
-    window.ocrGtLocation.pageComment = $(".pageComment").text();
+    window.ocrGtLocation.pageComment = $(".pageComment").html();
 
     $.ajax({
         type: 'post',
@@ -95,8 +95,7 @@ function parseLineComments(txt) {
  * Adds comment fields
  */
 function addCommentFields() {
-    $("td[contenteditable][spellcheck]").each(function(idx) {
-        var curLine = idx + 1;
+    $("td[contenteditable][spellcheck]").each(function(curLine) {
         var curComment = window.ocrGtLocation.lineComments[curLine];
         $(this)
         .parent('tr').append(
@@ -116,10 +115,10 @@ function addCommentFields() {
                 '</tr>')
             );
     });
-    $("file_correction").append(
-        '<td id="page-comment' + '" class="pageComment" contenteditable>' +
+    $("#file_correction").prepend(
+        '<div class="pageComment" contenteditable>' +
             window.ocrGtLocation.pageComment +
-        'XXX</td>'
+        '</div>'
     );
 }
 
