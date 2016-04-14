@@ -71,6 +71,7 @@ sub loadConfig
         ocropusGteditBinary     => $cfg->val('PATH', 'ocropus-gteditPath' ). '/ocropus-gtedit',
         correctionDir_owner     => $cfg->val('MISC', 'correctionDir-owner'),
         correctionDir_group     => $cfg->val('MISC', 'correctionDir-group'),
+        commentsFilename        => $cfg->val('TEMPLATE', 'comments-filename'),
         correctionHtml_basename => $cfg->val('TEMPLATE', 'correction-filename'),
         correctionHtml_withRemarks_basename => $cfg->val('TEMPLATE', 'correction-with-comments-filename'),
     );
@@ -252,6 +253,20 @@ sub mapUrltoFile
         , $location{pathPage},
         , $config->{correctionHtml_basename};
 
+    # ex: '/home/user/ocr-gt-tools/htdocs/ocr-corrections/digi/445442158/gt/0126/anmerkungen.txt
+    $location{commentsTxt} = join '/'
+        , $location{correctionDir}
+        , $config->{commentsFilename};
+
+    # ex: 'ocr-corrections/digi/445442158/gt/0126/anmerkungen.txt
+    $location{commentsUrl} = join '/'
+        , $config->{correctionsRoot}
+        , $location{pathSection}
+        , $location{pathId}
+        , 'gt'
+        , $location{pathPage},
+        , $config->{commentsFilename};
+
     # ex: '/home/user/ocr-gt-tools/htdocs/ocr-corrections/digi/445442158/max
     $location{imageDir} = join '/'
         , $config->{docRoot}
@@ -269,7 +284,7 @@ sub mapUrltoFile
         , 'hocr'
         , $location{cFile} . '.hocr';
 
-    debug( "%s: Location object: %s\n", __LINE__, Dumper(\%location));
+    debug( "%s: File object: %s\n", __LINE__, Dumper(\%location));
 
     return \%location;
 }
@@ -310,13 +325,11 @@ sub ensureCorrection
 {
     my ($cgi, $config, $location) = @_;
 
-    # Wenn Datei schon existiert dann einfach anzeigen und nicht neu erzeugen
-    # if (-e $location->{correctionHtml} ) {
-    #     $location->{reload} = 1;
-    #     return
-    # }
+    if (-e $location->{correctionHtml} ) {
+        $location->{reload} = 1;
+        return;
+    }
 
-    # TODO get rid of the chdir
     # Seiten in Bildzeilen und Textzeilen aufteilen
     chdir $location->{correctionDir};
     my $cmd_extract = join(' '
@@ -347,6 +360,33 @@ sub ensureCorrection
     close $GTEDIT;
 
     # debug("%s: %s/%s\n", $location->{correctionDir},  $correctionHtml_withRemarks_basename);
+}
+
+=head2
+
+Create a file that contains all the line comments for a page unless that file exists
+
+=cut
+
+sub ensureCommentsTxt
+{
+    my ($cgi, $config, $location) = @_;
+    opendir my $dh, $location->{correctionDir} or http500($cgi, "opendir '%s': %s", $location->{correctionDir}, $!);
+    $location->{numberOfLines} = 0;
+    while (readdir $dh) {
+        $location->{numberOfLines} += 1;
+    }
+    close $dh;
+    debug("%s has %d lines\n", $location->{pathPage}, $location->{numberOfLines});
+    if (! -e $location->{commentsTxt}) {
+        open my $COMMENTS, ">", $location->{commentsTxt} or
+            http500($cgi, sprintf( "Could not write to '%s': %s\n", $location->{commentsTxt}, $!));
+        print $COMMENTS "0:\n";
+        for (0 .. $location->{numberOfLines}) {
+            printf $COMMENTS "%03d:\n", $_+1;
+        }
+        close $COMMENTS;
+    }
 }
 
 
@@ -391,8 +431,9 @@ sub processCreateRequest
     ensureCorrectionDir($cgi, $config, $location);
     # Make sure the correction HTML exists
     ensureCorrection($cgi, $config, $location);
+    ensureCommentsTxt($cgi, $config, $location);
     # Make sure the correction HTML with comment fields
-    ensureCorrectionWithComments($cgi, $config, $location);
+    # ensureCorrectionWithComments($cgi, $config, $location);
     # Send JSON response
     httpJSON($cgi, $location);
     # TODO Nach der Übertragung noch aufräumen, d.h. überflüssige Dateien entfernen
@@ -401,3 +442,5 @@ sub processCreateRequest
 my $cgi = CGI->new;
 my $config = loadConfig();
 processRequest($cgi, $config);
+
+# vim: sw=4 ts=4 :
