@@ -26,4 +26,4 @@ conf/ocr-gt-tools.ini:
 	exit 1
 
 dev-server: conf/ocr-gt-tools.ini vendor
-	$(PLACKUP) -R cgi-bin dev-server.pl
+	$(PLACKUP) -R cgi-bin app.psgi

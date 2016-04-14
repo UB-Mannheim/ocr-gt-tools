@@ -34,7 +34,7 @@ function onClickSave() {
 
     $.ajax({
         type: 'post',
-        url: '/cgi-bin/erzeuge_files.pl?action=save',
+        url: 'ocr-gt-tools.cgi?action=save',
         data: window.ocrGtLocation,
         success: function() {
             // after #file_correction is saved
@@ -114,7 +114,7 @@ function reloadOcrGtLocation(url) {
 
     $.ajax({
         type: 'POST',
-        url: '/cgi-bin/erzeuge_files.pl?action=create',
+        url: 'ocr-gt-tools.cgi?action=create',
         data: {'data_url': url},
         beforeSend: function(xhr) {
             // to instantly see when a new document has been retrieved

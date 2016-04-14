@@ -15,7 +15,7 @@ BEGIN {
     use File::Basename qw(dirname);
     use Cwd qw(abs_path);
 
-    my $SCRIPT_PARENT_DIR = dirname(dirname(abs_path($0)));
+    my $SCRIPT_PARENT_DIR = dirname(abs_path($0));
     $OCR_GT_BASEDIR = $ENV{OCR_GT_BASEDIR} // $SCRIPT_PARENT_DIR;
 
     #-----------------------------------------------
