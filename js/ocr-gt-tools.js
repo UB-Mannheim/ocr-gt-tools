@@ -36,9 +36,9 @@ function onClickSave() {
     $("#wait_save").addClass("wait").removeClass("hidden");
     $("#disk").addClass("hidden");
     window.ocrGtLocation.transliterations = $('tr:nth-child(3n) td:nth-child(1)').map(function() {
-        return $(this).text();
+        return $(this).text() || '';
     }).get();
-    window.ocrGtLocation.lineComments = $(".lineComment").map(function() {
+    window.ocrGtLocation.lineComments = $(".lineComment > td").map(function() {
         return $(this).text();
     }).get();
     window.ocrGtLocation.pageComment = $(".pageComment").text();
@@ -95,24 +95,26 @@ function parseLineComments(txt) {
  * Adds comment fields
  */
 function addCommentFields() {
-    $("*[contenteditable][spellcheck]").each(function() {
+    $("td[contenteditable][spellcheck]").each(function(idx) {
+        var curLine = idx + 1;
+        var curComment = window.ocrGtLocation.lineComments[curLine];
         $(this)
         .parent('tr').append(
-            '<td>' +
-            '<span class="span-commenting-o"><i class="fa fa-commenting-o"></i></span>' +
-            '<span class="span-commenting hidden"><i class="fa fa-commenting hidden"></i></span>' +
-            '<span class="span-map-o hidden"><i class="fa fa-map-o hidden"></i></span>' +
-            '</td>'
-        )
-        .parent('table').each(function(idx) {
-            $(this).append(
-                '<tr>' +
-                '<td id="line-comment-' + (idx + 1) + '" class="lineComment" contenteditable>' +
-                    window.ocrGtLocation.lineComments[idx] +
-                '</td>' +
-                '</tr>'
+            $('<td id="tools-' + (curLine) + '" >')
+            .append($('<span class="span-commenting-o "><i class="fa fa-commenting-o"></i></span>')
+                    .toggleClass('hidden', curComment === ''))
+            .append($('<span class="span-map-o "><i class="fa fa-map-o"></i></span>')
+                    .toggleClass('hidden', curComment !== ''))
+            .on('click tap', function() { toggleLineComment(curLine); })
+        ).closest('table')
+            .attr('data-line-number', curLine)
+            .append(
+                $('<tr class="lineComment">' +
+                    '<td contenteditable>' +
+                        curComment         +
+                    '</td>'                +
+                '</tr>')
             );
-        });
     });
     $("file_correction").append(
         '<td id="page-comment' + '" class="pageComment" contenteditable>' +
@@ -191,13 +193,14 @@ function onInput() {
     window.ocrGtLocation.saved = false;
 }
 
-function showRemark(nID) {
-    if ($("#" + nID).hasClass("hidden")) {
-        $("#" + nID).removeClass("hidden");
+function toggleLineComment(nID) {
+    var $trLineComment = $("table[data-line-number='" + nID + "'] tr.lineComment");
+    if ($trLineComment.hasClass("hidden")) {
+        $trLineComment.removeClass("hidden");
         $("#tools-" + nID).find("span.span-commenting-o").addClass("hidden");
         $("#tools-" + nID).find("span.span-map-o").removeClass("hidden");
     } else {
-        $("#" + nID).addClass("hidden");
+        $trLineComment.addClass("hidden");
         $("#tools-" + nID).find("span.span-map-o").addClass("hidden");
         $("#tools-" + nID).find("span.span-commenting-o").removeClass("hidden");
     }
