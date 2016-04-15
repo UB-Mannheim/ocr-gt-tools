@@ -43,6 +43,11 @@ div[contenteditable]
     min-height:20px;
 }
 
+tbody tr:nth-child(2) 
+{
+  background:#B9AF96;
+}
+
 .lineComment,
 .pageComment
 {
