@@ -41,6 +41,7 @@ function onClickSave() {
     window.ocrGtLocation.lineComments = $(".lineComment > td").map(function() {
         return $(this).html();
     }).get();
+    console.log(window.ocrGtLocation.lineComments);
     window.ocrGtLocation.pageComment = $(".pageComment").html();
 
     $.ajax({
@@ -53,7 +54,6 @@ function onClickSave() {
             $("#wait_save").removeClass("wait").addClass("hidden");
             $("#disk").removeClass("hidden");
             $("#save_button").addClass("inaktiv").removeClass("aktiv");
-            document.getElementById("file_correction").addEventListener("input", onInput);
         },
         error: function(x, e) {
             window.alert(x.status + " FEHLER aufgetreten");
@@ -82,19 +82,32 @@ function scaleElement(el, delta) {
          .css('transform-origin', '0 0');
 }
 
+function scaleHeight(el, factor) {
+    var curHeight = el.getAttribute('height') || el.offsetHeight;
+    if (!el.hasAttribute('data-original-height')) {
+        el.setAttribute('data-original-height', curHeight);
+    }
+    var originalHeight = el.getAttribute('data-original-height');
+    var newHeight = factor == 1 ? originalHeight : curHeight * factor;
+    el.setAttribute('height',  newHeight);
+}
+
 function onClickZoomIn() {
-    var el = document.getElementById('file_correction');
-    scaleElement(el, 0.4);
+    $('#file_correction img').each(function() {
+        scaleHeight(this, 1.4);
+    });
 }
 
 function onClickZoomOut() {
-    var el = document.getElementById('file_correction');
-    scaleElement(el, -0.4);
+    $('#file_correction img').each(function() {
+        scaleHeight(this, 0.8);
+    });
 }
 
 function onClickZoomReset() {
-    var el = document.getElementById('file_correction');
-    scaleElement(el, false);
+    $('#file_correction img').each(function() {
+        scaleHeight(this, 1);
+    });
 }
 
 /**
@@ -173,10 +186,7 @@ function reloadOcrGtLocation(url) {
             // file correction will be loaded
             var now = new Date();
             window.ocrGtLocation = res;
-            var nowString = now.getFullYear() + now.getMonth() + now.getDay() +  now.getTime();
-            //console.log(nowString);
             window.location.hash = window.ocrGtLocation.imageUrl;
-            //$("#file_correction").load( res.correctionUrl + "?time=" + now, function(response, status, xhr) {
             $("#file_correction").load(window.ocrGtLocation.correctionUrl, handleCorrectionAjax);
 
             // Zoom buttons only for non-IE
@@ -184,12 +194,6 @@ function reloadOcrGtLocation(url) {
             $("#zoom_button_minus").removeClass("hidden");
             $("#save_button").removeClass("hidden");
             // activate button if #file_correction is changed
-            document.getElementById("file_correction").addEventListener("input", onInput);
-
-            $("#save_button").off("click").on("click", onClickSave);
-            $("#zoom_button_plus").on("click", onClickZoomIn);
-            $("#zoom_button_minus").on("click", onClickZoomOut);
-            $("#zoom_button_reset").on("click", onClickZoomReset);
 
             // Add links to downloads to the DOM
             $("#file_links").html(
@@ -272,6 +276,12 @@ $(function() {
             }
         }
     });
+    // event listeners
+    $("#file_correction").on('input', onInput);
+    $("#save_button").on("click", onClickSave);
+    $("#zoom_button_plus").on("click", onClickZoomIn);
+    $("#zoom_button_minus").on("click", onClickZoomOut);
+    $("#zoom_button_reset").on("click", onClickZoomReset);
 
 });
 
