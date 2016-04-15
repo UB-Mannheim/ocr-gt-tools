@@ -4,23 +4,32 @@
 #   * if OCR_GT_BASEDIR environment variable: prepend $OCR_GT_BASEDIR
 #   * else: prepend project directory
 
-# absolute path (without trailing '/')
+# Structure:
+# ├── <doc-root>
+# │   └── <corrections-root>
+# │       └── <section>
+# │           └── <id>
+# │               └── <gt>
+# │                   └── <page>
+# │                       ├── anmerkungen.txt
+# │                       └── correction.html
+# │   └── <scans-root>
+# │       └── <section>
+# │           └── <id>
+# │               ├── hocr
+# │               │   └── <id>_<page>.hocr
+# │               └── max
+# │                   └── <id>_<page>.jpg
+
+# absolute path to root of documents (without trailing '/')
 doc-root=htdocs
 
-# relative path (without leading and trailing '/')
 # Directory relative to 'doc-root' containing the images
-# Structure:
-# ├── <scans-root>
-# │   └── <section>
-# │       └── <id>
-# │           ├── hocr
-# │           │   └── <id>_<page>.hocr
-# │           └── max
-# │               └── <id>_<page>.jpg
+# relative path (without leading and trailing '/')
 scans-root=fileadmin
 
-# relative path (without leading and trailing '/')
 # Directory relative to 'doc-root' for correction data storage.
+# relative path (without leading and trailing '/')
 # ocr-gt-tools will create subdirectories for page data here.
 corrections-root=ocr-corrections
 
