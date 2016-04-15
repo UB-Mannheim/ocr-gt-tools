@@ -28,7 +28,7 @@ function handleCorrectionAjax(response, status, xhr) {
  */
 function onClickSave() {
 
-    if (window.location.saved) {
+    if (!window.ocrGtLocation.changed) {
         console.log("Nothing changed.");
         return;
     }
@@ -50,7 +50,7 @@ function onClickSave() {
         data: window.ocrGtLocation,
         success: function() {
             // after #file_correction is saved
-            window.ocrGtLocation.saved = false;
+            window.ocrGtLocation.changed = false;
             $("#wait_save").removeClass("wait").addClass("hidden");
             $("#disk").removeClass("hidden");
             $("#save_button").addClass("inaktiv").removeClass("aktiv");
@@ -121,7 +121,8 @@ function parseLineComments(txt) {
     var lines = txt.split(/\n/);
     var lineComments = [];
     for (var i = 0; i < lines.length ; i++) {
-        lineComments.push(lines[i].replace(/^\d+:\s*/, ''));
+        var lineComment = lines[i].replace(/^\d+:\s*/, '');
+        lineComments.push(lineComment);
     }
     window.ocrGtLocation.pageComment = lineComments[0];
     window.ocrGtLocation.lineComments = lineComments.slice(1);
@@ -211,8 +212,7 @@ function reloadOcrGtLocation(url) {
 function onInput() {
     //window.alert("input event fired");
     $("#save_button").removeClass("inaktiv").addClass("aktiv");
-    document.getElementById("file_correction").removeEventListener("input", onInput);
-    window.ocrGtLocation.saved = false;
+    window.ocrGtLocation.changed = true;
 }
 
 function toggleLineComment(nID) {
@@ -246,7 +246,7 @@ function resetAllEntries() {
 function onHashChange() {
     var cHash = window.location.hash;
 
-    if (window.ocrGtLocation && !window.ocrGtLocation.saved) {
+    if (window.ocrGtLocation && window.ocrGtLocation.changed) {
         window.alert("Ungesicherte Inhalte vorhanden, bitte zuerst speichern!");
     } else {
         if (cHash !== '') {
@@ -265,7 +265,7 @@ $(function() {
     $(document).bind('drop', function(e) {
         e.preventDefault();
 
-        if (!window.ocrGtLocation.saved) {
+        if (window.ocrGtLocation.changed) {
             window.alert("Ungesicherte Inhalte vorhanden, bitte zuerst speichern!");
         } else {
             var url = $(e.originalEvent.dataTransfer.getData('text/html')).find('img').attr('src');
