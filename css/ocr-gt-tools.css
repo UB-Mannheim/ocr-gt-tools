@@ -78,6 +78,7 @@ div[contenteditable]
 
 #zoom_button_plus,
 #zoom_button_minus,
+#zoom_button_reset,
 #save_button {
     width: auto;
     float: right;

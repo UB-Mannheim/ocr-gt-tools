@@ -61,24 +61,40 @@ function onClickSave() {
     });
 }
 
+function scaleElement(el, delta) {
+    var curScale = el.getBoundingClientRect().width / el.offsetWidth;
+    var newScale = curScale;
+    if (!delta && typeof delta === 'boolean') {
+        newScale = 1;
+    } else {
+        newScale = Math.max(0.3, curScale + delta);
+    }
+    $(el)
+         .css('-moz-transform', 'scale(' + newScale + ')')
+         .css('-moz-transform-origin', '0 0')
+         .css('-o-transform', 'scale(' + newScale + ')')
+         .css('-o-transform-origin', '0 0')
+         .css('-ms-transform', 'scale(' + newScale + ')')
+         .css('-ms-transform-origin', '0 0')
+         .css('-webkit-transform', 'scale(' + newScale + ')')
+         .css('-webkit-transform-origin', '0 0')
+         .css('transform', 'scale(' + newScale + ')')
+         .css('transform-origin', '0 0');
+}
+
 function onClickZoomIn() {
     var el = document.getElementById('file_correction');
-    var curScale = el.getBoundingClientRect().width / el.offsetWidth;
-    var newScale = curScale + 0.4;
-    $(el).css('-moz-transform', 'scale(' + newScale + ')')
-         .css('-moz-transform-origin', '0 0')
-         .css('-webkit-transform', 'scale(' + newScale + ')')
-         .css('-webkit-transform-origin', '0 0');
+    scaleElement(el, 0.4);
 }
 
 function onClickZoomOut() {
     var el = document.getElementById('file_correction');
-    var curScale = el.getBoundingClientRect().width / el.offsetWidth;
-    var newScale = Math.max(0.1, curScale - 0.4);
-    $(el).css('-moz-transform', 'scale(' + newScale + ')')
-         .css('-moz-transform-origin', '0 0')
-         .css('-webkit-transform', 'scale(' + newScale + ')')
-         .css('-webkit-transform-origin', '0 0');
+    scaleElement(el, -0.4);
+}
+
+function onClickZoomReset() {
+    var el = document.getElementById('file_correction');
+    scaleElement(el, false);
 }
 
 /**
@@ -173,6 +189,7 @@ function reloadOcrGtLocation(url) {
             $("#save_button").off("click").on("click", onClickSave);
             $("#zoom_button_plus").on("click", onClickZoomIn);
             $("#zoom_button_minus").on("click", onClickZoomOut);
+            $("#zoom_button_reset").on("click", onClickZoomReset);
 
             // Add links to downloads to the DOM
             $("#file_links").html(
