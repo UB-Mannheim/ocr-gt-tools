@@ -258,11 +258,19 @@ function resetAllEntries() {
     }
 }
 
+function confirmExit(e) {
+    if (window.ocrGtLocation && window.ocrGtLocation.changed) {
+        // if (e) e.preventDefault();
+        window.alert("Ungesicherte Inhalte vorhanden, bitte zuerst speichern!");
+        return "Ungesicherte Inhalte vorhanden, bitte zuerst speichern!";
+    }
+}
+
 function onHashChange() {
     var cHash = window.location.hash;
 
     if (window.ocrGtLocation && window.ocrGtLocation.changed) {
-        window.alert("Ungesicherte Inhalte vorhanden, bitte zuerst speichern!");
+        confirmExit();
     } else {
         if (cHash !== '') {
             reloadOcrGtLocation(cHash.substring(1));
@@ -273,6 +281,7 @@ function onHashChange() {
 $(function() {
     onHashChange();
     window.onhashchange = onHashChange;
+    window.onbeforeunload = confirmExit;
     $(document).bind('drop dragover', function(e) {
         // Prevent the default browser drop action:
         e.preventDefault();
