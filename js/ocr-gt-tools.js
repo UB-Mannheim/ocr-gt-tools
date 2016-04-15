@@ -265,10 +265,14 @@ $(function() {
     $(document).bind('drop', function(e) {
         e.preventDefault();
 
-        if (window.ocrGtLocation.changed) {
+        if (window.ocrGtLocation && window.ocrGtLocation.changed) {
             window.alert("Ungesicherte Inhalte vorhanden, bitte zuerst speichern!");
         } else {
-            var url = $(e.originalEvent.dataTransfer.getData('text/html')).find('img').attr('src');
+            var dropped = e.originalEvent.dataTransfer.getData('text/html');
+            var url = $(dropped).find('img').addBack('img').attr('src');
+            if (!url) {
+                url = $(dropped).find('a').addBack('a').attr('href');
+            }
             if (url) {
                 reloadOcrGtLocation(url);
             } else {
