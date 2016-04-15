@@ -80,13 +80,13 @@ tbody tr:nth-child(2)
 
 #toolbar .button {
     position: relative;
+    float:left;
 }
 
-#zoom_button_plus,
-#zoom_button_minus,
-#zoom_button_reset,
-#save_button {
-    width: auto;
+#toolbar #zoom_button_plus,
+#toolbar #zoom_button_minus,
+#toolbar #zoom_button_reset,
+#toolbar #save_button {
     float: right;
 }
 

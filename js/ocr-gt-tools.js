@@ -16,10 +16,9 @@ function handleCorrectionAjax(response, status, xhr) {
             addCommentFields(window.ocrGtLocation);
             // hide waiting spinner
             $("#wait_load").addClass("hidden");
-            // hide line comments
-            $("tr.lineComment").addClass("hidden");
             // show new document
             $("#file_correction").removeClass("hidden");
+            // make lines as wide as the widest line
             normalizeInputLengths();
         }
     });
@@ -153,12 +152,12 @@ function addCommentFields() {
         var curComment = window.ocrGtLocation.lineComments[curLine];
         $(this)
         .parent('tr').append(
-            $('<td id="tools-' + (curLine) + '" >')
-            .append($('<span class="span-commenting-o "><i class="fa fa-commenting-o"></i></span>')
-                    .toggleClass('hidden', curComment === ''))
-            .append($('<span class="span-map-o "><i class="fa fa-map-o"></i></span>')
+            $('<td>')
+            .append($('<span class="lineCommentOpen "><i class="fa fa-commenting-o"></i></span>')
                     .toggleClass('hidden', curComment !== ''))
-            .on('click tap', function() { toggleLineComment(curLine); })
+            .append($('<span class="lineCommentClosed "><i class="fa fa-map-o"></i></span>')
+                    .toggleClass('hidden', curComment === ''))
+            .on('click tap', function() { toggleLineComment($(this).parent('tr').next()); })
         ).closest('table')
             .attr('data-line-number', curLine)
             .append(
@@ -166,7 +165,7 @@ function addCommentFields() {
                     '<td contenteditable>' +
                         curComment         +
                     '</td>'                +
-                '</tr>')
+                '</tr>').toggleClass('hidden', curComment === '')
             );
     });
     $("#file_correction").prepend(
@@ -230,17 +229,11 @@ function onInput() {
     window.ocrGtLocation.changed = true;
 }
 
-function toggleLineComment(nID) {
-    var $trLineComment = $("table[data-line-number='" + nID + "'] tr.lineComment");
-    if ($trLineComment.hasClass("hidden")) {
-        $trLineComment.removeClass("hidden");
-        $("#tools-" + nID).find("span.span-commenting-o").addClass("hidden");
-        $("#tools-" + nID).find("span.span-map-o").removeClass("hidden");
-    } else {
-        $trLineComment.addClass("hidden");
-        $("#tools-" + nID).find("span.span-map-o").addClass("hidden");
-        $("#tools-" + nID).find("span.span-commenting-o").removeClass("hidden");
-    }
+function toggleLineComment($tr) {
+    $tr.toggleClass("hidden");
+    var $prevTr = $tr.prev();
+    $("span.lineCommentOpen", $prevTr).toggleClass("hidden");
+    $("span.lineCommentClosed", $prevTr).toggleClass("hidden");
 }
 
 function resetAllEntries() {
@@ -310,6 +303,12 @@ $(function() {
     $("#zoom_button_plus").on("click", onClickZoomIn);
     $("#zoom_button_minus").on("click", onClickZoomOut);
     $("#zoom_button_reset").on("click", onClickZoomReset);
+    $("#expand_all_comments").on("click", function() {
+        $("tr.lineComment").removeClass('hidden');
+    });
+    $("#collapse_all_comments").on("click", function() {
+        $("tr.lineComment").addClass('hidden');
+    });
 
 });
 
