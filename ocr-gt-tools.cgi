@@ -149,70 +149,11 @@ sub httpJSON
     print $json;
 }
 
-=head2 ensureCorrectionWithComments
+=head2
 
-Add HTML for commenting line input.
+Map a URL to local file paths
 
 =cut
-sub ensureCorrectionWithComments
-{
-    my ($cgi, $config, $location) = @_;
-
-    open( my $CORR, "<", $location->{correctionHtml}) or do {
-        http500( $cgi, sprintf( "Could not read from '%s': %s\n",
-                $location->{correctionHtml}, $!));
-    };
-    open( my $CORRNEU, ">", $location->{correctionHtml_withRemarks} )or do {
-        http500( $cgi, sprintf( "Could not read from '%s': %s\n",
-                $location->{correctionHtml_withRemarks_basename}, $!));
-    };
-    my $nIndex = 0;
-    my $nLineIndex = 0;
-
-    while( <$CORR> ) {
-        #-------------------------------------------
-        # Anpassungen an der Datei vornehmen
-        #-------------------------------------------
-        my $aktZeile = $_;
-
-        if ($aktZeile =~ /\<table\>/) {
-            $nIndex = 0;
-            #-------------------------------------------------------------------
-            # Seitenkommentar einfügen => Index 0
-            #-------------------------------------------------------------------
-            if ($nLineIndex == 0) {
-                print $CORRNEU '<div id=' . "'seitenkommentar'" . '>' . "\n";
-                print $CORRNEU '<span class="label">Seitenkommentar:</span>' . "\n";
-                print $CORRNEU '<div id=' . "'0' class='remarks editable'" .
-                              ' contenteditable="true"' . '></div>' . "\n";
-                #===============================================================
-                # wichtig letztes schliessende div muss in eigener Zeile
-                # ausgegeben werden
-                #===============================================================
-                print $CORRNEU '</div>' . "\n";
-            }
-        } elsif (($aktZeile =~ /\<tr\>/) and ($nIndex < 2)) {
-            $nIndex++;
-        } elsif (($aktZeile =~ /\<tr\>/) and ($nIndex == 2)) {
-            $nLineIndex++;
-
-            $aktZeile =~ /^(.*?)\<\/td\>\<\/tr\>/;
-            $aktZeile = $1 . '</td>' . "\n";
-            $aktZeile .= '<td  id="tools-' . $nLineIndex . '" class"td_remarks_icon" onclick="showRemark(' . $nLineIndex . ')">';
-            $aktZeile .= '<span class="span-commenting-o"><i class="fa fa-commenting-o"></i></span>';
-            $aktZeile .= '<span class="span-commenting hidden"><i class="fa fa-commenting hidden"></i></span>';
-            $aktZeile .= '<span class="span-map-o hidden"><i class="fa fa-map-o hidden"></i></span>';
-            $aktZeile .= '</td></tr>' . "\n";
-            $aktZeile .= '<tr id="' . $nLineIndex . '" class="hidden tr_remarks"><td id="LineIndex_' . $nLineIndex . '" class="remarks editable" contenteditable="true" spellcheck="true"></td></tr>' . "\n";
-        }
-
-        print $CORRNEU $aktZeile;
-    }
-
-    close $CORR;
-    close $CORRNEU;
-}
-
 
 sub mapUrltoFile
 {
@@ -465,7 +406,9 @@ sub processRequest
 {
     my ($cgi, $config) = @_;
     my $action = $cgi->url_param('action');
-    if ($action eq 'create') {
+    if (! $action) {
+        http400($cgi, "URL parameter 'action' missing.");
+    } elsif ($action eq 'create') {
         processCreateRequest($cgi, $config);
     } elsif ($action eq 'save') {
         processSaveRequest($cgi, $config);
@@ -495,8 +438,6 @@ sub processCreateRequest
     # Make sure the correction HTML exists
     ensureCorrection($cgi, $config, $location);
     ensureCommentsTxt($cgi, $config, $location);
-    # Make sure the correction HTML with comment fields
-    # ensureCorrectionWithComments($cgi, $config, $location);
     # Send JSON response
     httpJSON($cgi, $location);
     # clean up
