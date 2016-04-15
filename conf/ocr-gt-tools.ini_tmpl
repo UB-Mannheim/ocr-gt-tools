@@ -6,13 +6,13 @@
 
 # Structure:
 # ├── <doc-root>
-# │   └── <corrections-root>
-# │       └── <section>
-# │           └── <id>
-# │               └── <gt>
-# │                   └── <page>
-# │                       ├── anmerkungen.txt
-# │                       └── correction.html
+# │   ├── <corrections-root>
+# │   │   └── <section>
+# │   │        └── <id>
+# │   │            └── <gt>
+# │   │                └── <page>
+# │   │                    ├── anmerkungen.txt
+# │   │                    └── correction.html
 # │   └── <scans-root>
 # │       └── <section>
 # │           └── <id>
@@ -33,8 +33,8 @@ scans-root=fileadmin
 # ocr-gt-tools will create subdirectories for page data here.
 corrections-root=ocr-corrections
 
-# absolute path (with leading and trailing '/')
 # path to directory containing 'hocr-extract-images' 
+# absolute path (with leading and trailing '/')
 # (see https://github.com/tmbdev/hocr-tools)
 hocr-extract-imagesPath=vendor/hocr-tools
 
@@ -56,9 +56,6 @@ correctionDir-group=0
 
 # Filename of the correction.html file created by ocropus
 correction-filename=correction.html
-
-# Filename of the enhanced correction_remarks.html
-correction-with-comments-filename=correction_remarks.html
 
 # Filename of the text file containing the line comments
 comments-filename=anmerkungen.txt
