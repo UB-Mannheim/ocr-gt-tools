@@ -76,27 +76,13 @@ function onClickSave() {
     });
 }
 
-function scaleElement(el, delta) {
-    var curScale = el.getBoundingClientRect().width / el.offsetWidth;
-    var newScale = curScale;
-    if (!delta && typeof delta === 'boolean') {
-        newScale = 1;
-    } else {
-        newScale = Math.max(0.3, curScale + delta);
-    }
-    $(el)
-         .css('-moz-transform', 'scale(' + newScale + ')')
-         .css('-moz-transform-origin', '0 0')
-         .css('-o-transform', 'scale(' + newScale + ')')
-         .css('-o-transform-origin', '0 0')
-         .css('-ms-transform', 'scale(' + newScale + ')')
-         .css('-ms-transform-origin', '0 0')
-         .css('-webkit-transform', 'scale(' + newScale + ')')
-         .css('-webkit-transform-origin', '0 0')
-         .css('transform', 'scale(' + newScale + ')')
-         .css('transform-origin', '0 0');
-}
-
+/**
+ * Scale the 'height' attribute of an element by a factor,
+ * effectively zooming images.
+ *
+ * @param {DOMElement} el the element to scale
+ * @param {float} factor the scale factor
+ */
 function scaleHeight(el, factor) {
     var curHeight = el.getAttribute('height') || el.offsetHeight;
     if (!el.hasAttribute('data-original-height')) {
