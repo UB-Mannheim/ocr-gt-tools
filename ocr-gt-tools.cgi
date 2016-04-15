@@ -77,8 +77,9 @@ sub loadConfig
     # All PATH properties can be either relative (to OCR_GT_BASEDIR, the base of this repository) or absolute.
     #
     for my $pathProperty ('doc-root', 'hocr-extract-imagesPath', 'ocropus-gteditPath') {
-        unless ($cfg->val('PATH', $pathProperty) =~ m,^/,mx) {
-            $cfg->setval('PATH', $pathProperty, $OCR_GT_BASEDIR . '/' . $cfg->val('PATH', $pathProperty));
+        my $val = $cfg->val('PATH', $pathProperty);
+        unless ($val && $val =~ m,^/,mx) {
+            $cfg->setval('PATH', $pathProperty, "$OCR_GT_BASEDIR/$val");
         }
     }
 
