@@ -7,7 +7,7 @@
 function handleCorrectionAjax(response, status, xhr) {
     $.ajax({
         type: 'GET',
-        url: window.ocrGtLocation.commentsUrl,
+        url: uncachedURL(window.ocrGtLocation.commentsUrl),
         error: function(x, e) {
             window.alert(x.status + " FEHLER aufgetreten: \n" + e);
         },
@@ -16,10 +16,26 @@ function handleCorrectionAjax(response, status, xhr) {
             addCommentFields(window.ocrGtLocation);
             // hide waiting spinner
             $("#wait_load").addClass("hidden");
+            // hide line comments
+            $("tr.lineComment").addClass("hidden");
             // show new document
             $("#file_correction").removeClass("hidden");
+            normalizeInputLengths();
         }
     });
+}
+
+function normalizeInputLengths() {
+    var maxWidth = 0;
+    $("img").each(function() {
+        maxWidth = Math.max(maxWidth, this.offsetWidth);
+    });
+    console.log(maxWidth);
+    $("*[contenteditable]").css('width', maxWidth);
+}
+
+function uncachedURL(url) {
+    return url + "?nocache=" + Date.now();
 }
 
 /**
@@ -185,10 +201,9 @@ function reloadOcrGtLocation(url) {
         },
         success: function(res) {
             // file correction will be loaded
-            var now = new Date();
             window.ocrGtLocation = res;
             window.location.hash = window.ocrGtLocation.imageUrl;
-            $("#file_correction").load(window.ocrGtLocation.correctionUrl, handleCorrectionAjax);
+            $("#file_correction").load(uncachedURL(window.ocrGtLocation.correctionUrl), handleCorrectionAjax);
 
             // Zoom buttons only for non-IE
             $("#zoom_button_plus").removeClass("hidden");
