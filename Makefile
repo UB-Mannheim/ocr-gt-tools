@@ -1,5 +1,7 @@
-DEBIAN_PACKAGES = git libplack-perl libconfig-inifiles-perl
-APT_GET = sudo apt-get -y
+DEBIAN_PACKAGES = git libplack-perl libconfig-inifiles-perl python-numpy python-scipy python-matplotlib
+
+APT_GET_OPTS = -y
+APT_GET = sudo apt-get $(APT_GET_OPTS)
 PLACKUP = plackup --port 9090
 MKDIR = mkdir -p
 GIT_CLONE = git clone --depth 1
