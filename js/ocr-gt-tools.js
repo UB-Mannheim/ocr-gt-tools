@@ -357,9 +357,11 @@ $(function onPageLoaded() {
     });
     $("#expand_all_comments").on("click", function onClickExpand() {
         $("tr.lineComment").removeClass('hidden');
+        onScroll();
     });
     $("#collapse_all_comments").on("click", function onClickCollapse() {
         $("tr.lineComment").addClass('hidden');
+        onScroll();
     });
     onHashChange();
 });
