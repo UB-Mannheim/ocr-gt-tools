@@ -344,6 +344,7 @@ $(function onPageLoaded() {
         e.preventDefault();
     });
     $(document).bind('drop', function(e) {
+        onDrop(e);
     });
     // event listeners
     $("#save_button").on("click", saveGtEditLocation);
@@ -365,5 +366,7 @@ $(function onPageLoaded() {
     });
     onHashChange();
 });
+
+
 
 // vim: sw=4 ts=4 fdm=syntax:
