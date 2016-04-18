@@ -30,16 +30,19 @@ See [INSTALL.md](INSTALL.md) for details.
 
 ## Usage
 
-- you must previously have created the hOCR file, for example with [Tesseract](https://github.com/tesseract-ocr/tesseract).
-- Open 'ocr-gt-tools/index.html' with Google Chrome. The 2 Buttons (Zoom + and Zoom -) will not work in Firefox, so at the moment they are not shown in Firefox
+- you must previously have created the hOCR file, for example with [Tesseract](https://github.com/tesseract-ocr/tesseract)
+- Open 'ocr-gt-tools/index.html' with Browser
 - open in a second Window 'Page Previews' from Goobi
 - Search the book from which you created the hOCR file
 - Drag and drop a image from the Goobi 'Page Preview' Window to the Window with 'ocr-gt-tools/index.html'
-- The perl script erzeuge_files.pl will create in the background all files, which takes a few seconds
+- The perl script ocr-gt-tools.cgi will create in the background all files, which takes a few seconds
 - with ajax a json objects will be returned to index.html
-- index.html will load with ajax the created 'correction.html' inline
-- in Google Chrome you get three buttons
+- index.html will load with ajax the created 'correction.html' and 'anmerkungen.txt' inline
+- in a tool-bar on top you get some buttons
+  - Alle einklappen
+  - Alle ausklappen
   - Zoom -
+  - Zoom =
   - Zoom +
   - Speichern
 - 'Speichern' will get active if you have written a comment or a text line
