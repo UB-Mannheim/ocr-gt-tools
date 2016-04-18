@@ -43,7 +43,7 @@ div[contenteditable]
     min-height:20px;
 }
 
-tbody tr:nth-child(2) 
+tbody tr:nth-child(2)
 {
   background:#B9AF96;
 }
@@ -119,4 +119,8 @@ tbody tr:nth-child(2)
 #file_links {
     float: right;
     text-align: right;
+}
+
+#currentLine {
+    float: left;
 }
