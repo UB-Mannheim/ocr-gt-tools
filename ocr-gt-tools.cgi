@@ -95,8 +95,8 @@ sub loadConfig
         correctionDir_owner     => $cfg->val('MISC', 'correctionDir-owner'),
         correctionDir_group     => $cfg->val('MISC', 'correctionDir-group'),
         commentsFilename        => $cfg->val('TEMPLATE', 'comments-filename'),
-        correctionHtml_basename => $cfg->val('TEMPLATE', 'correction-filename'),
-        correctionHtml_withRemarks_basename => $cfg->val('TEMPLATE', 'correction-with-comments-filename'),
+        correctionHtml_basename => $cfg->val('TEMPLATE', 'correction-filename') #,
+        #correctionHtml_withRemarks_basename => $cfg->val('TEMPLATE', 'correction-with-comments-filename'),
     );
 
 
@@ -145,6 +145,7 @@ sub httpJSON
     my ($cgi, $location) =  @_;
     my $op = JSON->new->utf8->pretty(1);
     my $json = $op->encode($location);
+    debug( __LINE__ . " " . "\$json", \$json );
 
     print $cgi->header( -type => 'application/json', -charset => 'utf-8');
     print $json;
@@ -298,7 +299,7 @@ sub ensureCorrection
     # Seiten in Bildzeilen und Textzeilen aufteilen
     chdir $location->{correctionDir};
     my $cmd_extract = join(' '
-        , $config->{hocrExtractImagesBinary} 
+        , $config->{hocrExtractImagesBinary}
         , ' -b'
         , $location->{imageDir}
         , $location->{hocr_file}
@@ -369,7 +370,7 @@ sub saveTransliteration
     my $i = 0;
     while (<$CORR_IN>) {
         if (m/(spellcheck='true'>).*?</) {
-            my $transliteration = $transliterations->[ $i++ ]; 
+            my $transliteration = $transliterations->[ $i++ ];
             my $leftOfClosingTag = $1;
             s/$&/$leftOfClosingTag$transliteration</;
         }
@@ -407,6 +408,7 @@ sub processRequest
 {
     my ($cgi, $config) = @_;
     my $action = $cgi->url_param('action');
+    debug $action . " will run", Dumper(\$cgi);
     if (! $action) {
         http400($cgi, "URL parameter 'action' missing.");
     } elsif ($action eq 'create') {
