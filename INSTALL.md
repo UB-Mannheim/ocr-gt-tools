@@ -47,21 +47,20 @@ The scripts used the following perl modules. You can download them from cpan.
 - JSON
 - File::Path
 - Config::IniFiles
+- Data::Dumper;
+- File::Path
+- Time::HiRes
+- POSIX
 
 #### Log-Files / Error-Log-Files
-Infos from the perlscripts are stored in log/*
-
-- xxx.pl stored in
-  - xxx.log (Normal Infos and Errors)
-- xxx.pl stored in
-  - xxx.log (Normal Infos and Errors)
+Infos from perlscript ocr-gt-tools.cgi are stored in log/ocr-gt-tools.log
 
 ### Apache
 - Add directory in your configuration
 ```
     <Directory "/path-to-htdocs/ocr-gt-tools">                        
         Options +ExecCGI
-        AddHandler cgi-script .pl
+        AddHandler cgi-script .cgi
     </Directory>
 ```
 
