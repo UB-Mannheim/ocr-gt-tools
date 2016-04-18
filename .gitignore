@@ -3,3 +3,5 @@
 /conf/ocr-gt-tools.ini
 /vendor
 /www-*
+/bower_components
+/node_modules
