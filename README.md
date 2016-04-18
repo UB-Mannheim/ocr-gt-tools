@@ -31,7 +31,7 @@ See [INSTALL.md](INSTALL.md) for details.
 ## Usage
 
 - you must previously have created the hOCR file, for example with [Tesseract](https://github.com/tesseract-ocr/tesseract)
-- Open 'ocr-gt-tools/index.html' with Browser
+- Open 'ocr-gt-tools/index.html' with a browser
 - open in a second Window 'Page Previews' from Goobi
 - Search the book from which you created the hOCR file
 - Drag and drop a image from the Goobi 'Page Preview' Window to the Window with 'ocr-gt-tools/index.html'
