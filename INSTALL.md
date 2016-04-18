@@ -48,7 +48,6 @@ The scripts used the following perl modules. You can download them from cpan.
 - File::Path
 - Config::IniFiles
 
-
 #### Log-Files / Error-Log-Files
 Infos from the perlscripts are stored in log/*
 
@@ -56,3 +55,14 @@ Infos from the perlscripts are stored in log/*
   - xxx.log (Normal Infos and Errors)
 - xxx.pl stored in
   - xxx.log (Normal Infos and Errors)
+
+### Apache
+- Add directory in your configuration
+```
+    <Directory "/path-to-htdocs/ocr-gt-tools">                        
+        Options +ExecCGI
+        AddHandler cgi-script .pl
+    </Directory>
+```
+
+
