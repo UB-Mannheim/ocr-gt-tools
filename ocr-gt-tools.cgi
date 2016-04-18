@@ -26,7 +26,7 @@ BEGIN {
     # die Datei muss fuer OTHER schreibbar sein!
     #-----------------------------------------------
     use CGI::Carp qw(carpout);
-    my $log = "$OCR_GT_BASEDIR/log/erzeuge_files.log";
+    my $log = "$OCR_GT_BASEDIR/log/ocr-gt-tools.log";
     open( $ERRORLOG, ">>", $log ) or die "Cannot write to log file '$log': $!\n";
     carpout(*$ERRORLOG);
 }
