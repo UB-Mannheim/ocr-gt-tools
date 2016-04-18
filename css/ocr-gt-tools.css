@@ -39,6 +39,7 @@ div[contenteditable]
 {
     border: solid 1px #808080;
     color: #000060;
+    font-family: 'EB Garamond', serif;
     font-size:20px;
     min-height:20px;
 }
