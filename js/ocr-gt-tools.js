@@ -307,6 +307,9 @@ function onDrop(e) {
         if (!url) {
             url = $(dropped).find('a').addBack('a').attr('href');
         }
+        if (!url) {
+            url = e.originalEvent.dataTransfer.getData('text/plain');
+        }
         if (url) {
             loadGtEditLocation(url);
         } else {
@@ -343,9 +346,7 @@ $(function onPageLoaded() {
         // Prevent the default browser drop action:
         e.preventDefault();
     });
-    $(document).bind('drop', function(e) {
-        onDrop(e);
-    });
+    $(document).bind('drop', onDrop);
     // event listeners
     $("#save_button").on("click", saveGtEditLocation);
     $("#zoom_button_plus").on("click", zoomIn);
