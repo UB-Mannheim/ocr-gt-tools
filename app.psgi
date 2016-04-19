@@ -18,7 +18,7 @@ my $app = Plack::App::WrapCGI->new(
 builder {
     enable(
         "Plack::Middleware::Static",
-        path => qr{^/(js|css|favicon.ico|index.html)},
+        path => qr{^/(dist|favicon.ico|index.html)},
         root => './'
     );
     enable(
@@ -28,3 +28,5 @@ builder {
     );
     mount "/" => $app;
 };
+
+# vim: ft=perl :
