@@ -1,0 +1,28 @@
+{
+  "name": "ocr-gt-tools",
+  "version": "1.0.0",
+  "description": "A web interface for creating ground truth for improving OCR",
+  "main": "Gruntfile.js",
+  "directories": {
+    "example": "example"
+  },
+  "dependencies": {},
+  "devDependencies": {
+    "clean-css": "^3.4.12",
+    "jscs": "^3.0.3",
+    "uglify-js": "^2.6.2"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/UB-Mannheim/ocr-gt-tools.git"
+  },
+  "author": "bfallert, kba",
+  "license": "GPL-2.0",
+  "bugs": {
+    "url": "https://github.com/UB-Mannheim/ocr-gt-tools/issues"
+  },
+  "homepage": "https://github.com/UB-Mannheim/ocr-gt-tools#readme"
+}
