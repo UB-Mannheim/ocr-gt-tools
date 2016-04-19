@@ -14,16 +14,19 @@ PLACKUP = plackup --port 9090
 BOWER = bower
 CLEANCSS = cleancss
 UGLIFYJS = uglifyjs
+WEBFONTDL = webfont-dl
 
+FONTS = https://fonts.googleapis.com/css?family=EB+Garamond&subset=latin,latin-ext
 CSS_FILES = bower_components/bootstrap/dist/css/bootstrap.css \
 			css/ocr-gt-tools.css
 JS_FILES =  bower_components/jquery/dist/jquery.js \
 			bower_components/bootstrap/dist/js/bootstrap.js \
 			js/ocr-gt-tools.js
 
-export PATH := ./node_modules/.bin:$(PATH)
+export PATH := $(PWD)/node_modules/.bin:$(PATH)
 
-.PHONY: deps apt-get \
+.PHONY: clean clean-js clean-css \
+  deps apt-get \
   dev-deps dev-apt-get \
   node_modules bower_components \
   dev-server
@@ -65,21 +68,49 @@ node_modules:
 bower_components: node_modules
 	$(BOWER) install
 
-dist: dist/ocr-gt-tools.css dist/ocr-gt-tools.js
-
-dist/ocr-gt-tools.css: ${CSS_FILES}
-	$(MKDIR) dist
-	$(CLEANCSS) --output $@ --source-map $^
-
-dist/ocr-gt-tools.js: ${JS_FILES}
-	$(MKDIR) dist
-	$(UGLIFYJS) --output $@ --source-map dist/ocr-gt-tools.js.map $^
-
 dev-apt-get:
 	$(APT_GET) install $(DEV_DEBIAN_PACKAGES)
 
 dev-deps: dev-apt-get bower_components
 	$(NPM) $(NPM_OPTS) install
 
-clean:
-	$(RM) dist
+#
+# Set up dist folder
+#
+
+dist: dist/style.css dist/script.js dist/fonts
+
+${CSS_FILES}: bower_components
+
+dist/style.css: dist/fonts ${CSS_FILES}
+	$(MKDIR) dist/css
+	cp ${CSS_FILES} dist/css
+	$(CLEANCSS) --output $@ ${CSS_FILES}
+
+dist/script.js: ${JS_FILES}
+	$(MKDIR) dist/js
+	cp ${JS_FILES} dist/js
+	cd dist && $(UGLIFYJS) --output script.js \
+		--source-map script.js.map \
+		js/jquery.js \
+		js/bootstrap.js \
+		js/ocr-gt-tools.js
+
+dist/fonts:
+	$(MKDIR) dist/css
+	$(WEBFONTDL) -o dist/css/font.css --font-out=$@ ${FONTS}
+
+clean-fonts:
+	$(RM) dist/fonts
+	$(RM) css/font.css
+
+clean-css:
+	$(RM) dist/*.css*
+
+clean-js:
+	$(RM) dist/js dist/*.js*
+
+clean: clean-js clean-css clean-fonts
+
+realclean:
+	$(RM) bower_components node_modules
