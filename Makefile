@@ -16,19 +16,19 @@ CLEANCSS = cleancss
 UGLIFYJS = uglifyjs
 WEBFONTDL = webfont-dl
 
-FONTS = https://fonts.googleapis.com/css?family=EB+Garamond&subset=latin,latin-ext
+WEBFONTS  = https://fonts.googleapis.com/css?family=EB+Garamond&subset=latin,latin-ext
+FONTS     = bower_components/font-awesome/fonts/fontawesome-webfont.*
 CSS_FILES = bower_components/bootstrap/dist/css/bootstrap.css \
-			css/ocr-gt-tools.css
-JS_FILES =  bower_components/jquery/dist/jquery.js \
-			bower_components/bootstrap/dist/js/bootstrap.js \
-			js/ocr-gt-tools.js
+            bower_components/font-awesome/css/font-awesome.css \
+            dist/fonts.css
+JS_FILES  = bower_components/jquery/dist/jquery.js \
+            bower_components/bootstrap/dist/js/bootstrap.js
 
 export PATH := $(PWD)/node_modules/.bin:$(PATH)
 
 .PHONY: clean clean-js clean-css \
   deps apt-get \
   dev-deps dev-apt-get \
-  node_modules bower_components \
   dev-server
 
 #
@@ -63,7 +63,7 @@ dev-server: conf/ocr-gt-tools.ini vendor
 	$(PLACKUP) -R cgi-bin app.psgi
 
 node_modules:
-	$(NPM) install
+	$(NPM) $(NPM_OPTS) install
 
 bower_components: node_modules
 	$(BOWER) install
@@ -72,40 +72,41 @@ dev-apt-get:
 	$(APT_GET) install $(DEV_DEBIAN_PACKAGES)
 
 dev-deps: dev-apt-get bower_components
-	$(NPM) $(NPM_OPTS) install
 
 #
 # Set up dist folder
 #
 
-dist: dist/style.css dist/script.js dist/fonts
+dist: dist/vendor.css dist/vendor.js dist/fonts
 
-${CSS_FILES}: bower_components
+dist/vendor.css: ${CSS_FILES} dist/fonts.css
+	cat ${CSS_FILES} | sed 's,\.\.,\.,g' | $(CLEANCSS) --skip-rebase --output $@
 
-dist/style.css: dist/fonts ${CSS_FILES}
-	$(MKDIR) dist/css
-	cp ${CSS_FILES} dist/css
-	$(CLEANCSS) --output $@ ${CSS_FILES}
+dist/vendor.js: ${JS_FILES}
+	$(UGLIFYJS) --output $@ \
+		--prefix 1 \
+		--source-map $@.map \
+		--source-map-url vendor.js.map \
+		$^
 
-dist/script.js: ${JS_FILES}
-	$(MKDIR) dist/js
-	cp ${JS_FILES} dist/js
-	cd dist && $(UGLIFYJS) --output script.js \
-		--source-map script.js.map \
-		js/jquery.js \
-		js/bootstrap.js \
-		js/ocr-gt-tools.js
+dist/fonts: bower_components
+	$(MKDIR) $@
+	@cp ${FONTS} $@
 
-dist/fonts:
-	$(MKDIR) dist/css
-	$(WEBFONTDL) -o dist/css/font.css --font-out=$@ ${FONTS}
+dist/fonts.css: dist/fonts
+	@$(WEBFONTDL) -o $@ --font-out=dist/fonts ${WEBFONTS}
+
+
+#
+# Clean up, delete files
+#
 
 clean-fonts:
 	$(RM) dist/fonts
-	$(RM) css/font.css
+	$(RM) dist/fonts.css
 
 clean-css:
-	$(RM) dist/*.css*
+	$(RM) dist/css dist/*.css*
 
 clean-js:
 	$(RM) dist/js dist/*.js*
@@ -114,3 +115,4 @@ clean: clean-js clean-css clean-fonts
 
 realclean:
 	$(RM) bower_components node_modules
+	$(RM) dist

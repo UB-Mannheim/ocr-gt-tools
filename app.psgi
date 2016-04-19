@@ -18,7 +18,7 @@ my $app = Plack::App::WrapCGI->new(
 builder {
     enable(
         "Plack::Middleware::Static",
-        path => qr{^/(dist|favicon.ico|index.html)},
+        path => qr{^/(dist|ocr-gt-tools.(css|js)|favicon.ico|index.html)},
         root => './'
     );
     enable(
