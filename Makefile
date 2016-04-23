@@ -29,3 +29,6 @@ conf/ocr-gt-tools.ini:
 
 dev-server: conf/ocr-gt-tools.ini vendor
 	$(PLACKUP) -R cgi-bin app.psgi
+
+docker:
+	docker build -t 'ocr-gt-tools' .
