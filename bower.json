@@ -20,6 +20,7 @@
   "dependencies": {
     "bootstrap": "^3.3.6",
     "font-awesome": "Font-Awesome#^4.6.1",
-    "jquery": "^2.2.3"
+    "jquery": "^2.2.3",
+    "reset-css": "^2.0.2011012603"
   }
 }
