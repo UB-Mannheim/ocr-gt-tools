@@ -3,7 +3,10 @@
 var UISettings = {
     zoomInFactor: 1.4,
     zoomOutFactor: 0.8,
+    cgiUrl: '/ocr-gt-tools.cgi'
 };
+console.log(UISettings.cgiUrl);
+console.log(UISettings.cgiUrl + '?action=save');
 
 var Utils = {};
 
@@ -87,7 +90,7 @@ function loadGtEditLocation(url) {
 
     $.ajax({
         type: 'POST',
-        url: 'ocr-gt-tools.cgi?action=create',
+        url: UISettings.cgiUrl + '?action=create',
         data: {'data_url': url},
         beforeSend: function(xhr) {
             // to instantly see when a new document has been retrieved
@@ -171,7 +174,7 @@ function saveGtEditLocation() {
 
     $.ajax({
         type: 'post',
-        url: 'ocr-gt-tools.cgi?action=save',
+        url: UISettings.cgiUrl + '?action=save',
         data: window.ocrGtLocation,
         success: function() {
             // after #file_correction is saved
