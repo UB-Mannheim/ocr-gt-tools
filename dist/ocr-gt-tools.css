@@ -1,0 +1,204 @@
+/*
+    Name: git-gt-tools.css
+*/
+
+/**
+ * Bootstrap stuff
+ */
+
+/* .glyphicon { margin-right:10px; } */
+/* .panel-body { padding:0px; } */
+/* .panel-body table tr td { padding-left: 15px } */
+/* .panel-body .table {margin-bottom: 0px; } */
+@media (min-width: 768px) {
+  body {
+    padding-top: 0;
+  }
+  .navbar-collapse {
+    height: auto;
+    border-top: 0;
+    box-shadow: none;
+    max-height: none;
+    padding-left:0;
+    padding-right:0;
+  }
+  .navbar-collapse.collapse {
+    display: block !important;
+    width: auto !important;
+    padding-bottom: 0;
+    overflow: visible !important;
+  }
+  .navbar-collapse.in {
+    overflow-x: visible;
+  }
+
+  .navbar
+  {
+    max-width:96px;
+    height: 100vh;
+    margin-right: 0;
+    margin-left: 0;
+    float: left;
+    position: fixed;
+    z-index:10001;
+  }	
+  .navbar:after {
+    clear: both;
+  }
+  .container, .container-fluid {
+    margin-left:100px
+  }
+
+  .navbar-nav,
+  .navbar-nav > li,
+  .navbar-left,
+  .navbar-right,
+  .navbar-header
+  {float:none !important;}
+
+  .navbar-right .dropdown-menu {left:0;right:auto;}
+  .navbar-collapse .navbar-nav.navbar-right:last-child {
+    margin-right: 0;
+  }
+
+  .navbar .dropdown-menu {
+    top: 0;
+    left: 100%;
+    padding: 0;
+  }
+  .navbar .btn-group {
+    display: block
+  }
+
+}
+
+
+/**
+ * ocr-gt-tools stuff
+ */
+
+#dropzone {
+  height: 90vh;
+  margin: 5vh;
+  padding-top: 40vh;
+  font-size: 300%;
+  text-align: center;
+}
+
+.hidden {
+    display: none;
+}
+
+/* .button { */
+/*     background-color: #993333; */
+/*     color: #ffffff; */
+/*     width: auto; */
+/*     margin: 12px; */
+/*     padding: 12px; */
+/*     font-weight: bold; */
+/*     font-family: sans-serif; */
+/*     font-size: 1.2rem; */
+/*     position: fixed; */
+/*     right: 0; */
+/*     top: 0; */
+/*     cursor: pointer; */
+/*     margin-top: 0; */
+/*     margin-bottom: 0; */
+/* } */
+
+.inaktiv {
+    background-color: gray;
+}
+
+
+td[contenteditable],
+div[contenteditable]
+{
+    border: solid 1px #808080;
+    color: #000060;
+    font-family: 'EB Garamond', serif;
+    font-size:20px;
+    min-height:20px;
+}
+
+tbody tr:nth-child(2)
+{
+  background:#B9AF96;
+}
+
+.lineComment,
+.pageComment
+{
+    background-color: lightyellow;
+    height: 24px; /* FF sonst nur Fehler bei Zeilenhöhe */
+}
+
+/* Einstellungen für Toolbar */
+#toolbar {
+    padding: 4px;
+    display: inline-block;
+}
+/* support: IE7 */
+*+html #toolbar {
+    display: inline;
+}
+
+#toolbar {
+    display: inline-block;
+    background-color: lightgray;
+    border-radius: 0;
+    border: 0;
+    position: fixed;
+    top: 0;
+    width: 100%;
+    left: 0;
+    z-index: 1001;
+}
+
+
+#toolbar .button {
+    position: relative;
+    float:left;
+}
+
+#toolbar #zoom_button_plus,
+#toolbar #zoom_button_minus,
+#toolbar #zoom_button_reset,
+#toolbar #save_button {
+    float: right;
+}
+
+#delete_button {
+    top: 0;
+    width: auto;
+    float: left;
+}
+
+#file_correction {
+    zoom: 1.4;
+    -o-transform: scale(1.4);
+    -ms-transform: scale(1.4);
+    -moz-transform: scale(1.4);
+    -webkit-transform: scale(1.4);
+    transform: scale(1.4);
+    -o-transform-origin: 0 0;
+    -ms-transform-origin: 0 0;
+    -moz-transform-origin: 0 0;
+    -webkit-transform-origin: 0 0;
+    transform-origin: scale(1.4);
+}
+
+#seitenkommentar {
+    height: auto;
+    margin-bottom: 34px;
+    min-height: 20px;
+}
+
+#file_links {
+    float: right;
+    text-align: right;
+}
+
+#currentLine {
+    float: left;
+}

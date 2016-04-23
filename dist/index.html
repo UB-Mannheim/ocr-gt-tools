@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="de">
+  <head>
+    <script src="vendor.js"></script>
+    <link href="vendor.css" rel="stylesheet">
+    <script src="ocr-gt-tools.js"></script>
+    <link href="ocr-gt-tools.css" rel="stylesheet">
+  </head>
+  <body>
+    <script id="tpl-line" type="text/x-handlebars-template">
+      <div class="panel"></div>
+    </script>
+    <div id="raw-html" class="hidden"></div>
+    <nav role="navigation" class="navbar navbar-default">
+      <!-- Brand and toggle get grouped for better mobile display-->
+      <div class="navbar-header">
+        <button type="button" data-toggle="collapse" data-target=".navbar-ex1-collapse" class="navbar-toggle"><span class="sr-only">Toggle navigation</span></button>
+      </div>
+      <!-- Collect the nav links, forms, and other content for toggling-->
+      <div class="collapse navbar-collapse navbar-ex1-collapse">
+        <ul class="nav navbar-nav">
+          <li>
+            <button id="save_button" class="btn btn-success disabled"><span id="wait_save" class="hidden"><i class="fa fa-4x fa-spinner fa-pulse fa-fw"></i></span><span id="disk"><i class="fa fa-4x fa-save fa-fw"></i></span></button>
+          </li>
+          <li class="dropdown"><a data-toggle="dropdown" class="btn dropdown-toggle"><i class="fa fa-search-plus fa-4x"></i></a>
+            <ul class="dropdown-menu navbar-default">
+              <li>
+                <div class="btn-group btn-group-vertical">
+                  <button id="zoom-in" type="button" class="btn btn-default"><i class="fa fa-search-plus"></i>Größer</button>
+                  <button id="zoom-reset" type="button" class="btn btn-default"><i class="fa fa-search"></i>Zurücksetzen</button>
+                  <button id="zoom-out" type="button" class="btn btn-default"><i class="fa fa-search-minus"></i>Kleiner</button>
+                </div>
+              </li>
+            </ul>
+          </li>
+          <li class="dropdown"><a data-toggle="dropdown" class="btn dropdown-toggle"><i class="fa fa-4x fa-caret-square-o-down"></i></a>
+            <ul class="dropdown-menu navbar-default">
+              <li>
+                <div class="btn-group btn-group-vertical">
+                  <button id="collapse_all_comments" type="button" class="btn btn-default"><i class="fa fa-plus-square-o"></i>Alle einklappen</button>
+                  <button id="expand_all_comments" type="button" class="btn btn-default"><i class="fa fa-minus-square-o"></i>Alle ausklappen</button>
+                </div>
+              </li>
+            </ul>
+          </li>
+          <li class="dropdown"><a data-toggle="dropdown" class="btn dropdown-toggle"><i class="fa fa-4x fa-filter"></i></a>
+            <ul class="dropdown-menu navbar-default">
+              <li>
+                <div class="btn-group"><i class="fa fa-plus-square-o"></i>TODO</div>
+              </li>
+            </ul>
+          </li>
+        </ul>
+      </div>
+    </nav>
+    <div class="container-fluid">
+      <div class="row">
+        <div id="root" class="col-sm-12 col-md-12">
+          <div id="dropzone" class="jumbotron"><span id="wait_load" class="hidden"><i class="fa fa-spinner fa-pulse fa-fw"></i></span>Grafik auf dem Dokument ablegen<br>oder<br>URL angeben:<br>
+            <div class="input-group">
+              <input type="text" class="input-lg form-control"><span class="input-group-btn">
+                <button type="button" class="btn btn-default btn-lg">Los!</button></span>
+            </div>
+          </div>
+          <div id="file_links"></div>
+          <div id="file_name"></div>
+          <div id="file_image"></div>
+          <div id="file_correction"></div>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>
+<!--vim: sw=2 ts=2 noet :
+-->
