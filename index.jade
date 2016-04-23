@@ -1,0 +1,92 @@
+doctype html
+html(lang='de')
+	head
+		script(src='vendor.js')
+		link(href='vendor.css', rel='stylesheet')
+		script(src='ocr-gt-tools.js')
+		link(href='ocr-gt-tools.css', rel='stylesheet')
+	body
+		script#tpl-line(type='text/x-handlebars-template')
+			.panel
+		#raw-html.hidden
+		nav.navbar.navbar-default(role='navigation')
+			// Brand and toggle get grouped for better mobile display
+			.navbar-header
+				button.navbar-toggle(type='button', data-toggle='collapse', data-target='.navbar-ex1-collapse')
+					span.sr-only Toggle navigation
+			// Collect the nav links, forms, and other content for toggling
+			.collapse.navbar-collapse.navbar-ex1-collapse
+
+				ul.nav.navbar-nav
+					li
+						button#save_button.btn.btn-success.disabled
+							span#wait_save.hidden
+								i.fa.fa-4x.fa-spinner.fa-pulse.fa-fw
+							span#disk
+								i.fa.fa-4x.fa-save.fa-fw
+
+					//- Zoom
+					li.dropdown
+						a.btn.dropdown-toggle(data-toggle='dropdown')
+							i.fa.fa-search-plus.fa-4x
+						ul.dropdown-menu.navbar-default
+							li
+								.btn-group.btn-group-vertical
+									button#zoom-in.btn.btn-default(type='button')
+										i.fa.fa-search-plus
+										| Größer
+									button#zoom-reset.btn.btn-default(type='button')
+										i.fa.fa-search
+										| Zurücksetzen
+									button#zoom-out.btn.btn-default(type='button')
+										i.fa.fa-search-minus
+										| Kleiner
+
+					//- Show/hide comments
+					li.dropdown
+						a.btn.dropdown-toggle(data-toggle='dropdown')
+							i.fa.fa-4x.fa-caret-square-o-down
+						ul.dropdown-menu.navbar-default
+							li
+								.btn-group.btn-group-vertical
+									button#collapse_all_comments.btn.btn-default(type='button')
+										i.fa.fa-plus-square-o
+										| Alle einklappen
+									button#expand_all_comments.btn.btn-default(type='button')
+										i.fa.fa-minus-square-o
+										| Alle ausklappen
+
+					//- Filter
+					li.dropdown
+						a.btn.dropdown-toggle(data-toggle='dropdown')
+							i.fa.fa-4x.fa-filter
+						ul.dropdown-menu.navbar-default
+							li
+								.btn-group
+									i.fa.fa-plus-square-o
+									| TODO
+
+		//- Here be dragons
+		.container-fluid
+			.row
+				.col-sm-12.col-md-12#root
+					#dropzone.jumbotron
+						span#wait_load.hidden
+							i.fa.fa-spinner.fa-pulse.fa-fw
+						| Grafik auf dem Dokument ablegen
+						br
+						| oder
+						br
+						| URL angeben:
+						br
+						div.input-group
+							input.input-lg.form-control(type='text')
+							span.input-group-btn
+								button.btn.btn-default.btn-lg(type="button") Los!
+
+					#file_links
+					#file_name
+					#file_image
+					#file_correction
+//
+	vim: sw=2 ts=2 noet :
