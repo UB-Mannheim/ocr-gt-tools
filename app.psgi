@@ -18,12 +18,12 @@ my $app = Plack::App::WrapCGI->new(
 builder {
     enable(
         "Plack::Middleware::Static",
-        path => qr{^/(dist|ocr-gt-tools.(css|js)|favicon.ico|index.html)},
+        path => qr{^/(dist|ocr-gt-tools.(css|js)|index.html)},
         root => './'
     );
     enable(
         "Plack::Middleware::Static",
-        path => qr{^/(fileadmin|ocr-corrections)},
+        path => qr{^/(fileadmin|ocr-corrections|favicon.ico)},
         root => './htdocs/'
     );
     mount "/" => $app;
