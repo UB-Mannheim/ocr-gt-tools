@@ -5,8 +5,6 @@ var UISettings = {
     zoomOutFactor: 0.8,
     cgiUrl: 'ocr-gt-tools.cgi'
 };
-console.log(UISettings.cgiUrl);
-console.log(UISettings.cgiUrl + '?action=save');
 
 var Utils = {};
 
@@ -98,14 +96,15 @@ function loadGtEditLocation(url) {
         },
         success: function(res) {
             // file correction will be loaded
+            $("#dropzone").addClass('hidden');
             window.ocrGtLocation = res;
             window.location.hash = window.ocrGtLocation.imageUrl;
             $("#file_correction").load(
                 Utils.uncachedURL(window.ocrGtLocation.correctionUrl),
                 handleCorrectionAjax);
             // Zoom buttons only for non-IE
-            $("#zoom_button_plus").removeClass("hidden");
-            $("#zoom_button_minus").removeClass("hidden");
+            $("#zoom-in").removeClass("hidden");
+            $("#zoom-out").removeClass("hidden");
             $("#save_button").removeClass("hidden");
             // activate button if #file_correction is changed
 
@@ -240,7 +239,8 @@ function addCommentFields() {
 /**
  * Increase zoom by UISettings.zoomInFactor
  */
-function zoomIn() {
+function zoomIn(e) {
+    e.stopPropagation();
     $('#file_correction img').each(function() {
         Utils.scaleHeight(this, UISettings.zoomInFactor);
     });
@@ -249,7 +249,8 @@ function zoomIn() {
 /**
  * Decrease zoom by UISettings.zoomOutFactor
  */
-function zoomOut() {
+function zoomOut(e) {
+    e.stopPropagation();
     $('#file_correction img').each(function() {
         Utils.scaleHeight(this, UISettings.zoomOutFactor);
     });
@@ -258,7 +259,8 @@ function zoomOut() {
 /**
  * Reset all images to their original size
  */
-function zoomReset() {
+function zoomReset(e) {
+    e.stopPropagation();
     $('#file_correction img').each(function() {
         Utils.scaleHeight(this, 1);
     });
@@ -298,20 +300,49 @@ function onHashChange() {
     }
 }
 
+function getUrlFromDragEvent(e) {
+    var elem = e.originalEvent.dataTransfer.getData('text/html');
+    var url = $(elem).find('img').addBack('img').attr('src');
+    if (!url) {
+        url = $(elem).find('a').addBack('a').attr('href');
+    }
+    if (!url) {
+        url = e.originalEvent.dataTransfer.getData('text/plain');
+    }
+    console.log(elem);
+    return url;
+}
+
+function onDragOver(e) {
+    e.preventDefault();
+    $("#dropzone").addClass('droppable').removeClass('hidden');
+}
+
+function onDragLeaveDropZone(e) {
+    e.preventDefault();
+    $("#dropzone").removeClass('droppable').addClass('hidden');
+}
+function onDragEnterDropZone(e) {
+    e.preventDefault();
+    e.stopPropagation();
+    $("#dropzone").addClass('droppable').removeClass('hidden');
+}
+function onDragEnter(e) {
+    e.preventDefault();
+    $("#dropzone").removeClass('hidden');
+}
+function onDragEnd(e) {
+    e.preventDefault();
+    $("#dropzone").addClass('hidden');
+}
+
 function onDrop(e) {
     e.preventDefault();
 
     if (window.ocrGtLocation && window.ocrGtLocation.changed) {
         window.alert("Ungesicherte Inhalte vorhanden, bitte zuerst speichern!");
     } else {
-        var dropped = e.originalEvent.dataTransfer.getData('text/html');
-        var url = $(dropped).find('img').addBack('img').attr('src');
-        if (!url) {
-            url = $(dropped).find('a').addBack('a').attr('href');
-        }
-        if (!url) {
-            url = e.originalEvent.dataTransfer.getData('text/plain');
-        }
+        var url = getUrlFromDragEvent(e);
         if (url) {
             loadGtEditLocation(url);
         } else {
@@ -348,12 +379,17 @@ $(function onPageLoaded() {
         // Prevent the default browser drop action:
         e.preventDefault();
     });
-    $(document).bind('drop', onDrop);
+    $(document).bind('dragenter', onDragEnter);
+    $(document).bind('dragend', onDragEnd);
+    $("#dropzone").bind('dragover', onDragOver);
+    $("#dropzone").bind('dragenter', onDragEnterDropZone);
+    $("#dropzone").bind('dragleave', onDragLeaveDropZone);
+    $("#dropzone").bind('drop', onDrop);
     // event listeners
     $("#save_button").on("click", saveGtEditLocation);
-    $("#zoom_button_plus").on("click", zoomIn);
-    $("#zoom_button_minus").on("click", zoomOut);
-    $("#zoom_button_reset").on("click", zoomReset);
+    $("#zoom-in").on("click", zoomIn);
+    $("#zoom-out").on("click", zoomOut);
+    $("#zoom-reset").on("click", zoomReset);
     $("#file_correction").on('input', function onInput() {
         //window.alert("input event fired");
         $("#save_button").removeClass("inaktiv").addClass("aktiv");

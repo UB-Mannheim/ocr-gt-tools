@@ -78,11 +78,19 @@
  */
 
 #dropzone {
+  position: fixed;
   height: 90vh;
   margin: 5vh;
   padding-top: 40vh;
   font-size: 300%;
   text-align: center;
+  z-index:100022;
+}
+
+#dropzone.droppable {
+    border-style: dashed;
+    border-width: 10px;
+    border-color: blue;
 }
 
 .hidden {
@@ -118,7 +126,7 @@ div[contenteditable]
     color: #000060;
     font-family: 'EB Garamond', serif;
     font-size:20px;
-    min-height:20px;
+    min-height:24px;
 }
 
 tbody tr:nth-child(2)
@@ -153,19 +161,6 @@ tbody tr:nth-child(2)
     width: 100%;
     left: 0;
     z-index: 1001;
-}
-
-
-#toolbar .button {
-    position: relative;
-    float:left;
-}
-
-#toolbar #zoom_button_plus,
-#toolbar #zoom_button_minus,
-#toolbar #zoom_button_reset,
-#toolbar #save_button {
-    float: right;
 }
 
 #delete_button {

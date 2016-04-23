@@ -33,13 +33,13 @@ html(lang='de')
 							li
 								.btn-group.btn-group-vertical
 									button#zoom-in.btn.btn-default(type='button')
-										i.fa.fa-search-plus
+										i.fa.fa-search-plus.fa-2x
 										| Größer
 									button#zoom-reset.btn.btn-default(type='button')
-										i.fa.fa-search
+										i.fa.fa-search.fa-2x
 										| Zurücksetzen
 									button#zoom-out.btn.btn-default(type='button')
-										i.fa.fa-search-minus
+										i.fa.fa-search-minus.fa-2x
 										| Kleiner
 
 					//- Show/hide comments
@@ -65,6 +65,11 @@ html(lang='de')
 								.btn-group
 									i.fa.fa-plus-square-o
 									| TODO
+
+					//- History
+					li.dropdown
+						a.btn
+							i.fa.fa-4x.fa-history
 
 		//- Here be dragons
 		.container-fluid
