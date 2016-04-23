@@ -3,8 +3,9 @@ use strict;
 use warnings;
 my $OCR_GT_BASEDIR;
 my $ERRORLOG;
-# my $DATE_FORMAT = "%Y-%m-%d %H:%M:%S";
-my $DATE_FORMAT = "%H:%M:%S";
+my $REQUESTLOG;
+my $DATE_FORMAT = "%Y-%m-%d";
+my $TIME_FORMAT = "%H:%M:%S";
 
 use Data::Dumper;
 use JSON;
@@ -26,9 +27,11 @@ BEGIN {
     # die Datei muss fuer OTHER schreibbar sein!
     #-----------------------------------------------
     use CGI::Carp qw(carpout);
-    my $log = "$OCR_GT_BASEDIR/log/ocr-gt-tools.log";
-    open( $ERRORLOG, ">>", $log ) or die "Cannot write to log file '$log': $!\n";
+    open( $ERRORLOG, ">>", "$OCR_GT_BASEDIR/log/ocr-gt-tools.log" )
+      or die "Cannot write to log file '$OCR_GT_BASEDIR/log/ocr-gt-tools.log': $!\n";
     carpout(*$ERRORLOG);
+    open( $REQUESTLOG, ">>", "$OCR_GT_BASEDIR/log/request.log" )
+      or die "Cannot write to log file '$OCR_GT_BASEDIR/log/request.log': $!\n";
 }
 
 =head1 METHODS
@@ -43,9 +46,31 @@ sub debug
 {
     my $msg = sprintf(shift(), @_);
     my $t = time;
-    my $timestamp = strftime $DATE_FORMAT, localtime $t;
+    my $timestamp = strftime $TIME_FORMAT, localtime $t;
     $timestamp .= sprintf ".%03d", ($t-int($t))*1000; # without rounding
     printf $ERRORLOG "%s: %s\n", $timestamp, $msg;
+}
+
+=head2 logRequest
+
+Log the IP and scan URL to request.log
+
+=cut
+
+sub logRequest
+{
+    my $cgi = shift;
+    my $url = $cgi->param('data_url');
+    if (!$url) {
+        $url = $cgi->param('imageUrl');
+    }
+    if (!$url) {
+        debug("No URL to log for this request");
+        return;
+    }
+    my $t = time;
+    my $timestamp = strftime "$DATE_FORMAT $TIME_FORMAT", localtime $t;
+    printf $REQUESTLOG "%s;%s;%s\n", $timestamp, $ENV{REMOTE_ADDR}, $url;
 }
 
 =head2 debugStandout
@@ -145,7 +170,7 @@ sub httpJSON
     my ($cgi, $location) =  @_;
     my $op = JSON->new->utf8->pretty(1);
     my $json = $op->encode($location);
-    debug( __LINE__ . " " . "\$json", \$json );
+    # debug( __LINE__ . " " . "\$json", \$json );
 
     print $cgi->header( -type => 'application/json', -charset => 'utf-8');
     print $json;
@@ -344,7 +369,7 @@ sub ensureCommentsTxt
         $location->{numberOfLines} += 1;
     }
     close $dh;
-    debug("%s has %d lines", $location->{pathPage}, $location->{numberOfLines});
+    # debug("%s has %d lines", $location->{pathPage}, $location->{numberOfLines});
     if (! -e $location->{commentsTxt}) {
         my @comments;
         for (0 .. $location->{numberOfLines}) {
@@ -415,6 +440,8 @@ sub processRequest
         processCreateRequest($cgi, $config);
     } elsif ($action eq 'save') {
         processSaveRequest($cgi, $config);
+    } elsif ($action eq 'history') {
+        processHistoryRequest($cgi, $config);
     } else {
         http400($cgi, "URL parameter 'action' must be 'create' or 'save', not %s", $action);
     }
@@ -459,11 +486,22 @@ sub processSaveRequest
     saveComments($cgi, $config, $location->{commentsTxt}, $pageComment, $lineComments);
     return httpJSON($cgi, { result => 1 });
 }
+sub processHistoryRequest
+{
+    my ($cgi, $config) = @_;
+    open my $RL, "<", "$OCR_GT_BASEDIR/log/request.log";
+    my @lines;
+    while (<$RL>) {
+        push @lines, [split(/;/, $_)];
+    }
+    return httpJSON($cgi, \@lines);
+}
 
 debugStandout('START REQUEST');
 my $cgi = CGI->new;
 my $config = loadConfig();
 processRequest($cgi, $config);
+logRequest($cgi);
 debugStandout('END REQUEST');
 
 # vim: sw=4 ts=4 :
