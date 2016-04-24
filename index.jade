@@ -6,17 +6,75 @@ html(lang='de')
 		script(src='ocr-gt-tools.js')
 		link(href='ocr-gt-tools.css', rel='stylesheet')
 	body
+
+		// Page info on the right
+		script#tpl-page(type='text/x-handlebars-template')
+			a(href="{{ imageUrl }}")
+				img(src="{{ imageUrl }}")
+
+		// A line of page
 		script#tpl-line(type='text/x-handlebars-template')
-			.panel
+			.row
+				.col-sm-1.hidden
+					input(type="checkbox")
+				.col-sm-11
+					.panel.panel-default.line-entry
+						.panel-heading.clearfix
+							h4.panel-title.pull-left {{ title }}
+							.btn-group.pull-right
+								a.btn.btn-danger.btn-sm Falsch erkannt
+								a.btn.btn-default.btn-sm(data-toggle="collapse", data-target="#lineComment-{{ id }}")
+									| Kommentar
+						ul.list-group
+							li.list-group-item
+								img(src="{{ imgSrc }}", height="30")
+							li.list-group-item.transcription
+								div(contenteditable, type="text")
+									| {{ transcription }}
+							li.list-group-item.lineComment(id="lineComment-{{ id }}", style="height: 1px")
+								div(contenteditable, type="text")
+									| {{ comment }}
+
+		// A row of history
+		script#tpl-historyItem(type='text/x-handlebars-template')
+			tr
+				td {{ date }}
+				td
+					a(href="\#{{ url }}") {{ url }}
+				td {{ action }}
+				td {{ ip }}
+
+		// Modal popup containing the history
+		#history-modal.modal.fade(tabindex="-1")
+			.modal-admin
+				.modal-content
+					.modal-header
+						h4.modal-title Verlauf
+							button.close(type='button', data-dismiss='modal')
+								span &times;
+					.modal-body
+						table.table
+							thead
+								tr
+									th Date
+									th URL
+									th Action
+									th IP
+							tbody
+
+		// Will contain the raw HTML
 		#raw-html.hidden
+
+		// The navbar on the left side
 		nav.navbar.navbar-default(role='navigation')
+
 			// Brand and toggle get grouped for better mobile display
 			.navbar-header
 				button.navbar-toggle(type='button', data-toggle='collapse', data-target='.navbar-ex1-collapse')
 					span.sr-only Toggle navigation
+
 			// Collect the nav links, forms, and other content for toggling
 			.collapse.navbar-collapse.navbar-ex1-collapse
-
 				ul.nav.navbar-nav
 					li
 						button#save_button.btn.btn-success.disabled
@@ -33,10 +91,16 @@ html(lang='de')
 							li
 								.btn-group.btn-group-vertical
 									button.btn.btn-default
-										i.fa.fa-info
+										i.fa.fa-info.pull-left
 										| Seiten-Info
-									button.btn.btn-default(data-toggle="modal", data-target="#history-modal")
-										i.fa.fa-history
+									a#download-comments.btn.btn-default(target="_blank")
+										i.fa.fa-download.pull-left
+										| Anmerkungen
+									a#download-correction.btn.btn-default(target="_blank")
+										i.fa.fa-download.pull-left
+										| Korrektur
+									button.btn.btn-default(data-toggle="modal",data-target="#history-modal",data-keyboard="true")
+										i.fa.fa-history.pull-left
 										| Verlauf
 
 					//- Zoom
@@ -84,7 +148,7 @@ html(lang='de')
 		//- Here be dragons
 		.container-fluid
 			.row
-				.col-sm-12.col-md-12#root
+				.col-sm-9#root
 					#dropzone.jumbotron
 						span#wait_load.hidden
 							i.fa.fa-spinner.fa-pulse.fa-fw
@@ -98,16 +162,11 @@ html(lang='de')
 							input.input-lg.form-control(type='text')
 							span.input-group-btn
 								button.btn.btn-default.btn-lg(type="button") Los!
-
-					#history-modal.modal.fade
-						.modal-dialog
-							.modal-content
-								.modal-header
-									| Verlauf
-								.modal-body
-					#file_links
-					#file_name
-					#file_image
 					#file_correction
+				.col-sm-3(style="position: fixed; right: 0")
+					#page-info
+					//- #file_links
+					//- #file_name
+					//- #file_image
 //
 	vim: sw=2 ts=2 noet :

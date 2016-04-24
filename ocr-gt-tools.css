@@ -61,13 +61,13 @@
     margin-right: 0;
   }
 
+  .navbar .btn-group {
+    display: block
+  }
   .navbar .dropdown-menu {
     top: 0;
     left: 100%;
     padding: 0;
-  }
-  .navbar .btn-group {
-    display: block
   }
   .navbar-default .dropdown-menu i {
     display: inline-block;
@@ -76,6 +76,18 @@
     top: 2px;
     font-size: 2em;
   }
+
+  .modal-admin {
+    width: 80%;
+    left: 100px;
+    position: fixed;
+    max-height: 100vh;
+    overflow: scroll;
+  }
+
+  .line-entry .list-group-item {
+      padding: 0 0 0 0;
+    }
 
 }
 
@@ -104,32 +116,10 @@
     display: none;
 }
 
-/* .button { */
-/*     background-color: #993333; */
-/*     color: #ffffff; */
-/*     width: auto; */
-/*     margin: 12px; */
-/*     padding: 12px; */
-/*     font-weight: bold; */
-/*     font-family: sans-serif; */
-/*     font-size: 1.2rem; */
-/*     position: fixed; */
-/*     right: 0; */
-/*     top: 0; */
-/*     cursor: pointer; */
-/*     margin-top: 0; */
-/*     margin-bottom: 0; */
-/* } */
-
-.inaktiv {
-    background-color: gray;
-}
-
-
 td[contenteditable],
-div[contenteditable]
+div[contenteditable],
+.line-entry input
 {
-    border: solid 1px #808080;
     color: #000060;
     font-family: 'EB Garamond', serif;
     font-size:20px;
@@ -145,29 +135,9 @@ tbody tr:nth-child(2)
 .pageComment
 {
     background-color: lightyellow;
+    font-family: 'EB Garamond', serif;
+    font-size:20px;
     height: 24px; /* FF sonst nur Fehler bei Zeilenhöhe */
-}
-
-/* Einstellungen für Toolbar */
-#toolbar {
-    padding: 4px;
-    display: inline-block;
-}
-/* support: IE7 */
-*+html #toolbar {
-    display: inline;
-}
-
-#toolbar {
-    display: inline-block;
-    background-color: lightgray;
-    border-radius: 0;
-    border: 0;
-    position: fixed;
-    top: 0;
-    width: 100%;
-    left: 0;
-    z-index: 1001;
 }
 
 #delete_button {
@@ -176,31 +146,13 @@ tbody tr:nth-child(2)
     float: left;
 }
 
-#file_correction {
-    zoom: 1.4;
-    -o-transform: scale(1.4);
-    -ms-transform: scale(1.4);
-    -moz-transform: scale(1.4);
-    -webkit-transform: scale(1.4);
-    transform: scale(1.4);
-    -o-transform-origin: 0 0;
-    -ms-transform-origin: 0 0;
-    -moz-transform-origin: 0 0;
-    -webkit-transform-origin: 0 0;
-    transform-origin: scale(1.4);
+#file_correction .panel {
+  margin: 0;
+}
+#file_correction .panel-heading {
+  padding: 0;
+}
+#file_correction .panel-heading h4 {
+  padding-top: 7.5px;
 }
 
-#seitenkommentar {
-    height: auto;
-    margin-bottom: 34px;
-    min-height: 20px;
-}
-
-#file_links {
-    float: right;
-    text-align: right;
-}
-
-#currentLine {
-    float: left;
-}

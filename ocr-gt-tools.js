@@ -5,11 +5,6 @@ var UISettings = {
     zoomOutFactor: 0.8,
     cgiUrl: 'ocr-gt-tools.cgi'
 };
-<<<<<<< HEAD
-=======
-console.log(UISettings.cgiUrl);
-console.log(UISettings.cgiUrl + '?action=save');
->>>>>>> request-logging
 
 var Utils = {};
 
@@ -72,6 +67,20 @@ function isElementInViewport(el) {
     return (rect.top >= 0 && rect.left >= 0);
 }
 
+/**
+ * Compile the Handlebars templates
+ */
+
+function compileTemplates() {
+    window.templates = {};
+    $("*[id^='tpl-']").each(function() {
+        var $this = $(this);
+        var tplId = $this.attr('id').replace(/^tpl-/, '');
+        window.templates[tplId] = Handlebars.compile($this.html());
+    });
+}
+
+
 /*******************************/
 /* Client-Server communication */
 /*******************************/
@@ -87,9 +96,10 @@ function loadGtEditLocation(url) {
         return;
     }
 
+    $("#page-info").html(window.templates.page({
+        "imageUrl": url
+    }));
     $("#wait_load").removeClass("hidden");
-    $('#file_name').html(url);
-    $('#file_image').html('<img src=' + url + '>');
 
     $.ajax({
         type: 'POST',
@@ -101,63 +111,44 @@ function loadGtEditLocation(url) {
         },
         success: function(res) {
             // file correction will be loaded
-<<<<<<< HEAD
             $("#dropzone").addClass('hidden');
-=======
->>>>>>> request-logging
             window.ocrGtLocation = res;
             window.location.hash = window.ocrGtLocation.imageUrl;
-            $("#file_correction").load(
+            $("#raw-html").load(
                 Utils.uncachedURL(window.ocrGtLocation.correctionUrl),
-                handleCorrectionAjax);
+                function handleCorrectionAjax(response, status, xhr) {
+                    $.ajax({
+                        type: 'GET',
+                        url: Utils.uncachedURL(window.ocrGtLocation.commentsUrl),
+                        error: function(x, e) {
+                            window.alert(x.status + " FEHLER aufgetreten: \n" + e);
+                        },
+                        success: function(response, status, xhr) {
+                            Utils.parseLineComments(response, window.ocrGtLocation);
+                            addCommentFields();
+                            // hide waiting spinner
+                            // $("#wait_load").addClass("hidden");
+                            // show new document
+                            $("#file_correction").removeClass("hidden");
+                            // make lines as wide as the widest line
+                            // normalizeInputLengths();
+                            onScroll();
+                        }
+                    });
+                }
+            );
             // Zoom buttons only for non-IE
-<<<<<<< HEAD
             $("#zoom-in").removeClass("hidden");
             $("#zoom-out").removeClass("hidden");
-=======
-            $("#zoom_button_plus").removeClass("hidden");
-            $("#zoom_button_minus").removeClass("hidden");
->>>>>>> request-logging
             $("#save_button").removeClass("hidden");
             // activate button if #file_correction is changed
 
             // Add links to downloads to the DOM
-            $("#file_links").html(
-                "<div id='file_rem'><a download href='" + res.commentsUrl + "' target='_blank'>anmerkungen.txt</a></div>" +
-                "<div id='file_o_rem'><a download href='" + res.correctionUrl + "' target='_blank'>correction.html</a></div>");
-
+            $("#download-comments").attr('href', res.commentsUrl);
+            $("#download-correction").attr('href', res.correctionUrl);
         },
         error: function(x, e) {
             window.alert(x.status + " FEHLER aufgetreten: \n" + e);
-        }
-    });
-}
-
-/**
- * Handle a $load completion event.
- *
- * @param {object} response
- * @param {string} status
- * @param {object} xhr
- *
- */
-function handleCorrectionAjax(response, status, xhr) {
-    $.ajax({
-        type: 'GET',
-        url: Utils.uncachedURL(window.ocrGtLocation.commentsUrl),
-        error: function(x, e) {
-            window.alert(x.status + " FEHLER aufgetreten: \n" + e);
-        },
-        success: function(response, status, xhr) {
-            Utils.parseLineComments(response, window.ocrGtLocation);
-            addCommentFields();
-            // hide waiting spinner
-            $("#wait_load").addClass("hidden");
-            // show new document
-            $("#file_correction").removeClass("hidden");
-            // make lines as wide as the widest line
-            normalizeInputLengths();
-            onScroll();
         }
     });
 }
@@ -175,12 +166,13 @@ function saveGtEditLocation() {
 
     $("#wait_save").addClass("wait").removeClass("hidden");
     $("#disk").addClass("hidden");
-    window.ocrGtLocation.transliterations = $('tr:nth-child(3n) td:nth-child(1)').map(function() {
+    window.ocrGtLocation.transliterations = $('li.transcription div').map(function() {
         return $(this).html();
     }).get();
-    window.ocrGtLocation.lineComments = $(".lineComment > td").map(function() {
+    window.ocrGtLocation.lineComments = $("li.lineComment div").map(function() {
         return $(this).html();
     }).get();
+    console.log(window.ocrGtLocation.transliterations);
     console.log(window.ocrGtLocation.lineComments);
     window.ocrGtLocation.pageComment = $(".pageComment").html();
 
@@ -193,11 +185,7 @@ function saveGtEditLocation() {
             window.ocrGtLocation.changed = false;
             $("#wait_save").removeClass("wait").addClass("hidden");
             $("#disk").removeClass("hidden");
-<<<<<<< HEAD
             $("#save_button").addClass("disabled");
-=======
-            $("#save_button").addClass("inaktiv").removeClass("aktiv");
->>>>>>> request-logging
         },
         error: function(x, e) {
             window.alert(x.status + " FEHLER aufgetreten");
@@ -210,47 +198,25 @@ function saveGtEditLocation() {
 /********************/
 
 /**
- * Set the width of every 'contenteditable' element to the
- * width of the widest 'contenteditable' element.
- */
-function normalizeInputLengths() {
-    var maxWidth = 0;
-    $("img").each(function() {
-        maxWidth = Math.max(maxWidth, this.offsetWidth);
-    });
-    console.log(maxWidth);
-    $("*[contenteditable]").css('width', maxWidth);
-}
-
-/**
  * Adds comment fields
  */
 function addCommentFields() {
-    $("td[contenteditable][spellcheck]").each(function(curLine) {
-        var curComment = window.ocrGtLocation.lineComments[curLine];
-        $(this)
-        .parent('tr').append(
-            $('<td>')
-            .append($('<span class="lineCommentOpen "><i class="fa fa-commenting-o"></i></span>')
-                    .toggleClass('hidden', curComment !== ''))
-            .append($('<span class="lineCommentClosed "><i class="fa fa-map-o"></i></span>')
-                    .toggleClass('hidden', curComment === ''))
-            .on('click tap', function() { toggleLineComment($(this).parent('tr').next()); })
-        ).closest('table')
-            .attr('data-line-number', curLine)
-            .append(
-                $('<tr class="lineComment">' +
-                    '<td contenteditable>' +
-                        curComment         +
-                    '</td>'                +
-                '</tr>').toggleClass('hidden', curComment === '')
-            );
+    $("#raw-html table").each(function(curLine) {
+        var $this = $(this);
+        $("#file_correction").append(
+            window.templates.line({
+                "id": curLine,
+                "title": $this.find("td")[0].innerHTML,
+                "transcription": $this.find("td")[2].innerHTML,
+                "imgSrc": $this.find("img")[0].getAttribute('src'),
+                "comment": window.ocrGtLocation.lineComments[curLine],
+            }));
     });
-    $("#file_correction").prepend(
-        '<div class="pageComment" contenteditable>' +
-            window.ocrGtLocation.pageComment +
-        '</div>'
-    );
+    // $("#file_correction").prepend(
+    //     '<div class="pageComment" contenteditable>' +
+    //         window.ocrGtLocation.pageComment +
+    //     '</div>'
+    // );
 }
 
 /**
@@ -330,20 +296,6 @@ function getUrlFromDragEvent(e) {
     return url;
 }
 
-
-
-
-
-function onDragEnter(e) {
-}
-function onDragEnd(e) {
-}
-
-
-
-/**
- *
- */
 function onScroll() {
     var done = false;
     var cur = 0;
@@ -405,6 +357,7 @@ function setupDragAndDrop() {
 }
 
 $(function onPageLoaded() {
+    compileTemplates();
     window.onhashchange = onHashChange;
     window.onbeforeunload = confirmExit;
     window.onscroll = onScroll;
@@ -412,36 +365,46 @@ $(function onPageLoaded() {
     setupDragAndDrop();
     // event listeners
     $("#save_button").on("click", saveGtEditLocation);
+
+    // Handle zooming
     $("#zoom-in").on("click", zoomIn);
     $("#zoom-out").on("click", zoomOut);
     $("#zoom-reset").on("click", zoomReset);
+
+    // Notice changed input and make save button available
     $("#file_correction").on('input', function onInput() {
         $("#save_button").removeClass("disabled");
         window.ocrGtLocation.changed = true;
     });
-    $("#expand_all_comments").on("click", function onClickExpand() {
-        $("tr.lineComment").removeClass('hidden');
-        onScroll();
-    });
+
+    // Open history modal
     $('button[data-target="#history-modal"]').on('click', function() {
         $.ajax({
-            url: UISettings.cgiUrl + '?action=history',
+            url: UISettings.cgiUrl + '?action=history&mine=true',
             type: "json",
             success: function(data) {
-                $("#history-modal").html(data);
+                for (var i = 0; i < data.length ; i++) {
+                    $("#history-modal tbody").append(window.templates.historyItem(data[i]));
+                }
             },
             error: function(x, e) {
                 window.alert(x.status + " FEHLER aufgetreten");
             }
         });
     });
+
+    // Expand all comments
+    $("#expand_all_comments").on("click", function onClickExpand() {
+        $(".lineComment").collapse('toggle');
+        onScroll();
+    });
+
+    // Collapse all comments
     $("#collapse_all_comments").on("click", function onClickCollapse() {
-        $("tr.lineComment").addClass('hidden');
+        $(".lineComment").collapse('hide');
         onScroll();
     });
     onHashChange();
 });
 
-
-
-// vim: sw=4 ts=4 fdm=syntax:
+// vim: sw=4 ts=4 :
