@@ -180,7 +180,7 @@ function saveGtEditLocation() {
             window.ocrGtLocation.changed = false;
             $("#wait_save").removeClass("wait").addClass("hidden");
             $("#disk").removeClass("hidden");
-            $("#save_button").addClass("inaktiv").removeClass("aktiv");
+            $("#save_button").addClass("disabled");
         },
         error: function(x, e) {
             window.alert(x.status + " FEHLER aufgetreten");
@@ -313,43 +313,16 @@ function getUrlFromDragEvent(e) {
     return url;
 }
 
-function onDragOver(e) {
-    e.preventDefault();
-    $("#dropzone").addClass('droppable').removeClass('hidden');
-}
 
-function onDragLeaveDropZone(e) {
-    e.preventDefault();
-    $("#dropzone").removeClass('droppable').addClass('hidden');
-}
-function onDragEnterDropZone(e) {
-    e.preventDefault();
-    e.stopPropagation();
-    $("#dropzone").addClass('droppable').removeClass('hidden');
-}
+
+
+
 function onDragEnter(e) {
-    e.preventDefault();
-    $("#dropzone").removeClass('hidden');
 }
 function onDragEnd(e) {
-    e.preventDefault();
-    $("#dropzone").addClass('hidden');
 }
 
-function onDrop(e) {
-    e.preventDefault();
 
-    if (window.ocrGtLocation && window.ocrGtLocation.changed) {
-        window.alert("Ungesicherte Inhalte vorhanden, bitte zuerst speichern!");
-    } else {
-        var url = getUrlFromDragEvent(e);
-        if (url) {
-            loadGtEditLocation(url);
-        } else {
-            window.alert("Konnte keine URL erkennen.");
-        }
-    }
-}
 
 /**
  *
@@ -371,33 +344,79 @@ function onScroll() {
     $("#currentLine").html(cur + ' / ' + total);
 }
 
+function setupDragAndDrop() {
+    // Prevent the default browser drop action
+    $(document).bind('drop dragover', function(e) {
+        e.preventDefault();
+    });
+    // Show the drop zone on as soon as something is dragged
+    $(document).bind('dragenter', function onDragEnter(e) {
+        e.preventDefault();
+        $("#dropzone").removeClass('hidden');
+    });
+    $(document).bind('dragend', function onDragEnd(e) {
+        e.preventDefault();
+        $("#dropzone").addClass('hidden');
+    });
+    $("#dropzone").bind('dragover', function onDragOver(e) {
+        e.preventDefault();
+        $("#dropzone").addClass('droppable').removeClass('hidden');
+    });
+    $("#dropzone").bind('dragenter', function onDragEnterDropZone(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        $("#dropzone").addClass('droppable').removeClass('hidden');
+    });
+    $("#dropzone").bind('dragleave', function onDragLeaveDropZone(e) {
+        e.preventDefault();
+        $("#dropzone").removeClass('droppable').addClass('hidden');
+    });
+    $("#dropzone").bind('drop', function onDrop(e) {
+        e.preventDefault();
+
+        if (window.ocrGtLocation && window.ocrGtLocation.changed) {
+            window.alert("Ungesicherte Inhalte vorhanden, bitte zuerst speichern!");
+        } else {
+            var url = getUrlFromDragEvent(e);
+            if (url) {
+                loadGtEditLocation(url);
+            } else {
+                window.alert("Konnte keine URL erkennen.");
+            }
+        }
+    });
+}
+
 $(function onPageLoaded() {
     window.onhashchange = onHashChange;
     window.onbeforeunload = confirmExit;
     window.onscroll = onScroll;
-    $(document).bind('drop dragover', function(e) {
-        // Prevent the default browser drop action:
-        e.preventDefault();
-    });
-    $(document).bind('dragenter', onDragEnter);
-    $(document).bind('dragend', onDragEnd);
-    $("#dropzone").bind('dragover', onDragOver);
-    $("#dropzone").bind('dragenter', onDragEnterDropZone);
-    $("#dropzone").bind('dragleave', onDragLeaveDropZone);
-    $("#dropzone").bind('drop', onDrop);
+    // Setup event handlers for drag and drop
+    setupDragAndDrop();
     // event listeners
     $("#save_button").on("click", saveGtEditLocation);
     $("#zoom-in").on("click", zoomIn);
     $("#zoom-out").on("click", zoomOut);
     $("#zoom-reset").on("click", zoomReset);
     $("#file_correction").on('input', function onInput() {
-        //window.alert("input event fired");
-        $("#save_button").removeClass("inaktiv").addClass("aktiv");
+        $("#save_button").removeClass("disabled");
         window.ocrGtLocation.changed = true;
     });
     $("#expand_all_comments").on("click", function onClickExpand() {
         $("tr.lineComment").removeClass('hidden');
         onScroll();
+    });
+    $('button[data-target="#history-modal"]').on('click', function() {
+        $.ajax({
+            url: UISettings.cgiUrl + '?action=history',
+            type: "json",
+            success: function(data) {
+                $("#history-modal").html(data);
+            },
+            error: function(x, e) {
+                window.alert(x.status + " FEHLER aufgetreten");
+            }
+        });
     });
     $("#collapse_all_comments").on("click", function onClickCollapse() {
         $("tr.lineComment").addClass('hidden');

@@ -25,6 +25,20 @@ html(lang='de')
 							span#disk
 								i.fa.fa-4x.fa-save.fa-fw
 
+					//- Info
+					li.dropdown
+						a.btn.dropdown-toggle(data-toggle='dropdown')
+							i.fa.fa-4x.fa-info
+						ul.dropdown-menu.navbar-default
+							li
+								.btn-group.btn-group-vertical
+									button.btn.btn-default
+										i.fa.fa-info
+										| Seiten-Info
+									button.btn.btn-default(data-toggle="modal", data-target="#history-modal")
+										i.fa.fa-history
+										| Verlauf
+
 					//- Zoom
 					li.dropdown
 						a.btn.dropdown-toggle(data-toggle='dropdown')
@@ -33,13 +47,13 @@ html(lang='de')
 							li
 								.btn-group.btn-group-vertical
 									button#zoom-in.btn.btn-default(type='button')
-										i.fa.fa-search-plus.fa-2x
+										i.fa.fa-search-plus
 										| Größer
 									button#zoom-reset.btn.btn-default(type='button')
-										i.fa.fa-search.fa-2x
+										i.fa.fa-search
 										| Zurücksetzen
 									button#zoom-out.btn.btn-default(type='button')
-										i.fa.fa-search-minus.fa-2x
+										i.fa.fa-search-minus
 										| Kleiner
 
 					//- Show/hide comments
@@ -63,13 +77,9 @@ html(lang='de')
 						ul.dropdown-menu.navbar-default
 							li
 								.btn-group
-									i.fa.fa-plus-square-o
-									| TODO
-
-					//- History
-					li.dropdown
-						a.btn
-							i.fa.fa-4x.fa-history
+									button.btn.btn-default
+										i.fa.fa-plus-square-o
+										| TODO
 
 		//- Here be dragons
 		.container-fluid
@@ -89,6 +99,12 @@ html(lang='de')
 							span.input-group-btn
 								button.btn.btn-default.btn-lg(type="button") Los!
 
+					#history-modal.modal.fade
+						.modal-dialog
+							.modal-content
+								.modal-header
+									| Verlauf
+								.modal-body
 					#file_links
 					#file_name
 					#file_image

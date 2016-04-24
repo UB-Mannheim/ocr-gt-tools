@@ -22,13 +22,23 @@
           <li>
             <button id="save_button" class="btn btn-success disabled"><span id="wait_save" class="hidden"><i class="fa fa-4x fa-spinner fa-pulse fa-fw"></i></span><span id="disk"><i class="fa fa-4x fa-save fa-fw"></i></span></button>
           </li>
+          <li class="dropdown"><a data-toggle="dropdown" class="btn dropdown-toggle"><i class="fa fa-4x fa-info"></i></a>
+            <ul class="dropdown-menu navbar-default">
+              <li>
+                <div class="btn-group btn-group-vertical">
+                  <button class="btn btn-default"><i class="fa fa-info"></i>Seiten-Info</button>
+                  <button data-toggle="modal" data-target="#history-modal" class="btn btn-default"><i class="fa fa-history"></i>Verlauf</button>
+                </div>
+              </li>
+            </ul>
+          </li>
           <li class="dropdown"><a data-toggle="dropdown" class="btn dropdown-toggle"><i class="fa fa-search-plus fa-4x"></i></a>
             <ul class="dropdown-menu navbar-default">
               <li>
                 <div class="btn-group btn-group-vertical">
-                  <button id="zoom-in" type="button" class="btn btn-default"><i class="fa fa-search-plus fa-2x"></i>Größer</button>
-                  <button id="zoom-reset" type="button" class="btn btn-default"><i class="fa fa-search fa-2x"></i>Zurücksetzen</button>
-                  <button id="zoom-out" type="button" class="btn btn-default"><i class="fa fa-search-minus fa-2x"></i>Kleiner</button>
+                  <button id="zoom-in" type="button" class="btn btn-default"><i class="fa fa-search-plus"></i>Größer</button>
+                  <button id="zoom-reset" type="button" class="btn btn-default"><i class="fa fa-search"></i>Zurücksetzen</button>
+                  <button id="zoom-out" type="button" class="btn btn-default"><i class="fa fa-search-minus"></i>Kleiner</button>
                 </div>
               </li>
             </ul>
@@ -46,11 +56,12 @@
           <li class="dropdown"><a data-toggle="dropdown" class="btn dropdown-toggle"><i class="fa fa-4x fa-filter"></i></a>
             <ul class="dropdown-menu navbar-default">
               <li>
-                <div class="btn-group"><i class="fa fa-plus-square-o"></i>TODO</div>
+                <div class="btn-group">
+                  <button class="btn btn-default"><i class="fa fa-plus-square-o"></i>TODO</button>
+                </div>
               </li>
             </ul>
           </li>
-          <li class="dropdown"><a class="btn"><i class="fa fa-4x fa-history"></i></a></li>
         </ul>
       </div>
     </nav>
@@ -61,6 +72,14 @@
             <div class="input-group">
               <input type="text" class="input-lg form-control"><span class="input-group-btn">
                 <button type="button" class="btn btn-default btn-lg">Los!</button></span>
+            </div>
+          </div>
+          <div id="history-modal" class="modal fade">
+            <div class="modal-dialog">
+              <div class="modal-content">
+                <div class="modal-header">Verlauf</div>
+                <div class="modal-body"></div>
+              </div>
             </div>
           </div>
           <div id="file_links"></div>

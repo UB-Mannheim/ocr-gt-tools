@@ -69,6 +69,13 @@
   .navbar .btn-group {
     display: block
   }
+  .navbar-default .dropdown-menu i {
+    display: inline-block;
+    /* background: green; */
+    float: left;
+    top: 2px;
+    font-size: 2em;
+  }
 
 }
 
