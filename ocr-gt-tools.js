@@ -5,6 +5,11 @@ var UISettings = {
     zoomOutFactor: 0.8,
     cgiUrl: 'ocr-gt-tools.cgi'
 };
+<<<<<<< HEAD
+=======
+console.log(UISettings.cgiUrl);
+console.log(UISettings.cgiUrl + '?action=save');
+>>>>>>> request-logging
 
 var Utils = {};
 
@@ -96,15 +101,23 @@ function loadGtEditLocation(url) {
         },
         success: function(res) {
             // file correction will be loaded
+<<<<<<< HEAD
             $("#dropzone").addClass('hidden');
+=======
+>>>>>>> request-logging
             window.ocrGtLocation = res;
             window.location.hash = window.ocrGtLocation.imageUrl;
             $("#file_correction").load(
                 Utils.uncachedURL(window.ocrGtLocation.correctionUrl),
                 handleCorrectionAjax);
             // Zoom buttons only for non-IE
+<<<<<<< HEAD
             $("#zoom-in").removeClass("hidden");
             $("#zoom-out").removeClass("hidden");
+=======
+            $("#zoom_button_plus").removeClass("hidden");
+            $("#zoom_button_minus").removeClass("hidden");
+>>>>>>> request-logging
             $("#save_button").removeClass("hidden");
             // activate button if #file_correction is changed
 
@@ -180,7 +193,11 @@ function saveGtEditLocation() {
             window.ocrGtLocation.changed = false;
             $("#wait_save").removeClass("wait").addClass("hidden");
             $("#disk").removeClass("hidden");
+<<<<<<< HEAD
             $("#save_button").addClass("disabled");
+=======
+            $("#save_button").addClass("inaktiv").removeClass("aktiv");
+>>>>>>> request-logging
         },
         error: function(x, e) {
             window.alert(x.status + " FEHLER aufgetreten");

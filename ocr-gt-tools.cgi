@@ -3,9 +3,10 @@ use strict;
 use warnings;
 my $OCR_GT_BASEDIR;
 my $ERRORLOG;
+my $REQUESTLOG_FILENAME;
 my $REQUESTLOG;
-# my $DATE_FORMAT = "%Y-%m-%d %H:%M:%S";
-my $DATE_FORMAT = "%H:%M:%S";
+my $DATE_FORMAT = "%Y-%m-%d";
+my $TIME_FORMAT = "%H:%M:%S";
 
 use Data::Dumper;
 use JSON;
@@ -15,6 +16,9 @@ use Config::IniFiles qw( :all);                 # wg. Ini-Files
 use Time::HiRes qw(time);
 use POSIX qw(strftime);
 
+my $jsonEncoderPretty = JSON->new->utf8->pretty(1);
+my $jsonEncoder = JSON->new->utf8->pretty(0);
+
 BEGIN {
     use File::Path qw(make_path);
     use File::Basename qw(dirname);
@@ -22,6 +26,7 @@ BEGIN {
 
     my $SCRIPT_PARENT_DIR = dirname(abs_path($0));
     $OCR_GT_BASEDIR = $ENV{OCR_GT_BASEDIR} // $SCRIPT_PARENT_DIR;
+    $REQUESTLOG_FILENAME = "$OCR_GT_BASEDIR/log/request.log";
 
     #-----------------------------------------------
     # die Datei muss fuer OTHER schreibbar sein!
@@ -30,7 +35,7 @@ BEGIN {
     open( $ERRORLOG, ">>", "$OCR_GT_BASEDIR/log/ocr-gt-tools.log" )
       or die "Cannot write to log file '$OCR_GT_BASEDIR/log/ocr-gt-tools.log': $!\n";
     carpout(*$ERRORLOG);
-    open( $REQUESTLOG, ">>", "$OCR_GT_BASEDIR/log/request.log" )
+    open( $REQUESTLOG, ">>", $REQUESTLOG_FILENAME )
       or die "Cannot write to log file '$OCR_GT_BASEDIR/log/request.log': $!\n";
 }
 
@@ -46,7 +51,7 @@ sub debug
 {
     my $msg = sprintf(shift(), @_);
     my $t = time;
-    my $timestamp = strftime $DATE_FORMAT, localtime $t;
+    my $timestamp = strftime $TIME_FORMAT, localtime $t;
     $timestamp .= sprintf ".%03d", ($t-int($t))*1000; # without rounding
     printf $ERRORLOG "%s: %s\n", $timestamp, $msg;
 }
@@ -64,9 +69,20 @@ sub logRequest
     if (!$url) {
         $url = $cgi->param('imageUrl');
     }
+    if (!$url) {
+        debug("No URL to log for this request");
+        return;
+    }
+    my $action = $cgi->url_param('action');
     my $t = time;
-    my $timestamp = strftime $DATE_FORMAT, localtime $t;
-    printf $REQUESTLOG "%s;%s;%s\n", $timestamp, $ENV{REMOTE_ADDR}, $url;
+    my $timestamp = strftime sprintf("%sT%sZ", $DATE_FORMAT, $TIME_FORMAT), localtime $t;
+    my $json = $jsonEncoder->pretty(0)->encode({
+        date => $timestamp,
+        action => $action,
+        url => $url,
+        ip => $ENV{REMOTE_ADDR}
+    });
+    print $REQUESTLOG $json . "\n";
 }
 
 =head2 debugStandout
@@ -163,9 +179,8 @@ convert data to JSON and send it
 =cut
 sub httpJSON
 {
-    my ($cgi, $location) =  @_;
-    my $op = JSON->new->utf8->pretty(1);
-    my $json = $op->encode($location);
+    my ($cgi, $location, $compact) =  @_;
+    my $json = $jsonEncoder->pretty(1)->encode($location);
     # debug( __LINE__ . " " . "\$json", \$json );
 
     print $cgi->header( -type => 'application/json', -charset => 'utf-8');
@@ -429,13 +444,16 @@ sub processRequest
 {
     my ($cgi, $config) = @_;
     my $action = $cgi->url_param('action');
-    debug $action . " will run", Dumper(\$cgi);
     if (! $action) {
         http400($cgi, "URL parameter 'action' missing.");
-    } elsif ($action eq 'create') {
+    }
+    debug $action . " will run", Dumper(\$cgi);
+    if ($action eq 'create') {
         processCreateRequest($cgi, $config);
     } elsif ($action eq 'save') {
         processSaveRequest($cgi, $config);
+    } elsif ($action eq 'history') {
+        processHistoryRequest($cgi, $config);
     } else {
         http400($cgi, "URL parameter 'action' must be 'create' or 'save', not %s", $action);
     }
@@ -479,6 +497,31 @@ sub processSaveRequest
     saveTransliteration($cgi, $config, $location->{correctionHtml}, $transliterations);
     saveComments($cgi, $config, $location->{commentsTxt}, $pageComment, $lineComments);
     return httpJSON($cgi, { result => 1 });
+}
+
+sub processHistoryRequest
+{
+    my ($cgi, $config) = @_;
+    my $query = $cgi->param('q');
+    my $mine = defined $cgi->param('mine');
+    open my $RL, "<", $REQUESTLOG_FILENAME;
+    my $n = 100;
+    my @lines;
+    my $ip = $ENV{REMOTE_ADDR};
+    while (<$RL>) {
+        if ($mine) {
+            continue unless m/.*\Q$ip\E.*/;
+        }
+        if ($query) {
+            continue unless m/.*\Q$query\E.*/;
+        }
+        push @lines, $_;
+    }
+    @lines = ($n >= @lines ? @lines : @lines[-$n .. -1]);
+    print $cgi->header( -type => 'application/json', -charset => 'utf-8');
+    print "[";
+    print join(',',@lines);
+    print "]";
 }
 
 debugStandout('START REQUEST');

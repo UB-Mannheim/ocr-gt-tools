@@ -5,6 +5,8 @@ var UISettings = {
     zoomOutFactor: 0.8,
     cgiUrl: 'ocr-gt-tools.cgi'
 };
+console.log(UISettings.cgiUrl);
+console.log(UISettings.cgiUrl + '?action=save');
 
 var Utils = {};
 
