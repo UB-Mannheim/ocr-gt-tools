@@ -154,3 +154,9 @@ div[contenteditable]
   padding-top: 7.5px;
 }
 
+.select-col input {
+  width: 32px;
+  height: 32px;
+  padding-top: 32px;
+}
+

@@ -371,6 +371,10 @@ function setupDragAndDrop() {
     });
 }
 
+function toggleSelectMode() {
+    $(".select-col").toggleClass('hidden');
+}
+
 $(function onPageLoaded() {
     compileTemplates();
     window.onhashchange = onHashChange;
@@ -419,6 +423,8 @@ $(function onPageLoaded() {
         $(".hide-line-comment").each(hideLineComment);
         onScroll();
     });
+
+    $("#toggle-select").on('click', toggleSelectMode);
     onHashChange();
 });
 

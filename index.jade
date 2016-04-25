@@ -21,7 +21,7 @@ html(lang='de')
 		// A line of page
 		script#tpl-line(type='text/x-handlebars-template')
 			.row
-				.col-sm-1.hidden
+				.col-sm-1.select-col.hidden
 					input(type="checkbox")
 				.col-sm-11
 					.panel.panel-default.line(id="line-{{ id }}")
@@ -146,10 +146,10 @@ html(lang='de')
 							i.fa.fa-4x.fa-filter
 						ul.dropdown-menu.navbar-default
 							li
-								.btn-group
-									button.btn.btn-default
+								.btn-group.btn-group-vertical
+									button#toggle-select.btn.btn-default
 										i.fa.fa-plus-square-o
-										| TODO
+										| Multi-Select
 
 		//- Here be dragons
 		.container-fluid

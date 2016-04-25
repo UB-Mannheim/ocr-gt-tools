@@ -23,7 +23,7 @@
     <!-- A line of page-->
     <script id="tpl-line" type="text/x-handlebars-template">
       <div class="row">
-        <div class="col-sm-1 hidden">
+        <div class="col-sm-1 select-col hidden">
           <input type="checkbox">
         </div>
         <div class="col-sm-11">
@@ -127,8 +127,8 @@
           <li class="dropdown"><a data-toggle="dropdown" class="btn dropdown-toggle"><i class="fa fa-4x fa-filter"></i></a>
             <ul class="dropdown-menu navbar-default">
               <li>
-                <div class="btn-group">
-                  <button class="btn btn-default"><i class="fa fa-plus-square-o"></i>TODO</button>
+                <div class="btn-group btn-group-vertical">
+                  <button id="toggle-select" class="btn btn-default"><i class="fa fa-plus-square-o"></i>Multi-Select</button>
                 </div>
               </li>
             </ul>
