@@ -121,7 +121,7 @@ sub loadConfig
     }
 
     my %config = (
-        #'/var/www/html/
+        #'/var/www/html
         docRoot                 => $cfg->val('PATH', 'doc-root'),
         #<docRoot>/fileadmin
         scansRoot               => $cfg->val('PATH', 'scans-root'),
@@ -129,6 +129,7 @@ sub loadConfig
         correctionsRoot         => $cfg->val('PATH', 'corrections-root'),
         hocrExtractImagesBinary => $cfg->val('PATH', 'hocr-extract-imagesPath') . '/hocr-extract-images',
         ocropusGteditBinary     => $cfg->val('PATH', 'ocropus-gteditPath' ). '/ocropus-gtedit',
+        baseUrl                 => $cfg->val('MISC', 'baseUrl'),
         correctionDir_owner     => $cfg->val('MISC', 'correctionDir-owner'),
         correctionDir_group     => $cfg->val('MISC', 'correctionDir-group'),
         commentsFilename        => $cfg->val('TEMPLATE', 'comments-filename'),
@@ -147,7 +148,8 @@ sub loadConfig
 Send an HTTP error message
 
 =cut
-sub httpError {
+sub httpError 
+{
     my ($cgi, $status) = (shift(), shift());
     print $cgi->header(
         -type   => 'text/plain',
@@ -163,14 +165,20 @@ sub httpError {
 Send a server error message
 
 =cut
-sub http500 { httpError(shift(), '500 Internal Server Error', @_); }
+sub http500 
+{
+    httpError(shift(), '500 Internal Server Error', @_); 
+}
 
 =head2 http400
 
 Send a client error message
 
 =cut
-sub http400 { httpError(shift(), '400 Method Not Allowed', @_); }
+sub http400 
+{
+    httpError(shift(), '400 Method Not Allowed', @_); 
+}
 
 =head2 httpJSON
 
@@ -256,6 +264,7 @@ sub mapUrltoFile
 
     # ex: 'ocr-corrections/digi/445442158/gt/0126/correction.html
     $location{correctionUrl} = join '/'
+        , $config->{baseUrl}
         , $config->{correctionsRoot}
         , $location{pathSection}
         , $location{pathId}
@@ -270,6 +279,7 @@ sub mapUrltoFile
 
     # ex: 'ocr-corrections/digi/445442158/gt/0126/anmerkungen.txt
     $location{commentsUrl} = join '/'
+        , $config->{baseUrl}
         , $config->{correctionsRoot}
         , $location{pathSection}
         , $location{pathId}
@@ -428,7 +438,6 @@ sub saveTransliteration
     rename $temp, $correctionHtml;
 }
 
-
 =head2
 
 Save comments.
@@ -499,6 +508,11 @@ sub processCreateRequest
     unlink glob sprintf("%s/line-*", $location->{correctionDir});
 }
 
+=head2 processCreateRequest
+
+Save transliterations and comments passed via POST params.
+
+=cut
 sub processSaveRequest
 {
     my ($cgi, $config) = @_;
@@ -512,6 +526,11 @@ sub processSaveRequest
     return httpJSON($cgi, { result => 1 });
 }
 
+=head2 processCreateRequest
+
+Send the request log for the calling IP address.
+
+=cut
 sub processHistoryRequest
 {
     my ($cgi, $config) = @_;

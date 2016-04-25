@@ -174,9 +174,7 @@ dev-browser:
 dist: dist/vendor.css dist/vendor.js dist/fonts dist/index.html dist/ocr-gt-tools.js dist/ocr-gt-tools.css
 
 dist/ocr-gt-tools.js: ocr-gt-tools.js
-	# TODO
-	# cat $< | sed 's/%doc-root-baseuri%/kj
-	$(CP) $< $@
+	$(UGLIFYJS) --compress --output $@ $<
 
 dist/ocr-gt-tools.css: ocr-gt-tools.styl
 	$(STYLUS) < $< > $@
