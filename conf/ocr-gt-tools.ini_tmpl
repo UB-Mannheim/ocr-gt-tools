@@ -22,7 +22,7 @@
 # │                   └── <id>_<page>.jpg
 
 # absolute path to root of documents (without trailing '/')
-doc-root=htdocs
+doc-root=example
 
 # Directory relative to 'doc-root' containing the images
 # relative path (without leading and trailing '/')

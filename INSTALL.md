@@ -8,6 +8,14 @@ Install dependencies
 make deps
 ```
 
+Optionally rebuild the distribution
+
+```
+npm install
+bower install
+make dist
+```
+
 Copy configuration template:
 
 ```
@@ -29,6 +37,28 @@ Do some transliterating and commenting.
 Click "Speichern".
 
 Checkout the contents of [./htdocs/ocr-corrections/](./htdocs/ocr-corrections/).
+
+## Developing the frontend
+
+Install the development dependencies: The `npm` package (which pulls in nodejs) and some nodejs-based tools:
+
+```
+make dev-deps
+```
+
+After changing CSS/Javascript, make sure to regenerate the `dist` folder:
+
+```
+make dist
+```
+
+This will 
+
+* Download web fonts to `./dist/fonts/` and generate a matching CSS file in `./dist/css/`
+* copy all CSS stylesheets to `./dist/css/` and minify them to `./dist/style.css`
+* copy all JS scripts to `./dist/js/` and minify them, in the right order, to `./dist/script.js` with source map
+
+Javascript/CSS project dependencies are managed by bower, see `bower.json`
 
 ## After download:
 

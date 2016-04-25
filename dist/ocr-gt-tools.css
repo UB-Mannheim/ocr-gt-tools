@@ -1,0 +1,145 @@
+@media (min-width: 768px) {
+  body {
+    padding-top: 0;
+  }
+  .container-fluid {
+    margin-left: 100px;
+  }
+  .navbar-collapse {
+    height: auto;
+    border-top: 0;
+    box-shadow: none;
+    max-height: none;
+    padding-left: 0;
+    padding-right: 0;
+  }
+  .navbar-collapse.collapse {
+    display: block !important;
+    width: auto !important;
+    padding-bottom: 0;
+    overflow: visible !important;
+  }
+  .navbar-collapse.in {
+    overflow-x: visible;
+  }
+  .navbar-collapse .navbar-nav.navbar-right:last-child {
+    margin-right: 0;
+  }
+  .navbar {
+    max-width: 96px;
+    height: 100vh;
+    margin-right: 0;
+    margin-left: 0;
+    float: left;
+    position: fixed;
+    z-index: 10001;
+  }
+  .navbar:after {
+    clear: both;
+  }
+  .navbar .btn-group {
+    display: block;
+  }
+  .navbar .dropdown-menu {
+    top: 0;
+    left: 100%;
+    padding: 0;
+  }
+  .navbar .navbar-nav,
+  .navbar .navbar-nav > li,
+  .navbar .navbar-left,
+  .navbar .navbar-right,
+  .navbar .navbar-header {
+    float: none !important;
+  }
+  .navbar .navbar-right .dropdown-menu {
+    left: 0;
+    right: auto;
+  }
+  .navbar-default .dropdown-menu i {
+    display: inline-block;
+    float: left;
+    top: 2px;
+    font-size: 2em;
+  }
+  .modal-admin {
+    width: 80%;
+    left: 100px;
+    position: fixed;
+    max-height: 100vh;
+    overflow: scroll;
+  }
+  .line .list-group-item {
+    padding: 0 0 0 0;
+  }
+}
+#dropzone {
+  position: fixed;
+  height: 90vh;
+  margin: 5vh;
+  padding-top: 40vh;
+  font-size: 300%;
+  text-align: center;
+  z-index: 100022;
+}
+#dropzone.droppable {
+  border-style: dashed;
+  border-width: 10px;
+  border-color: #00f;
+}
+.hidden {
+  display: none;
+}
+.selected {
+  background: #f00;
+}
+div[contenteditable] {
+  display: inline-block;
+  white-space: pre-wrap;
+  color: #000060;
+  font-family: 'EB Garamond', serif;
+  font-size: 20px;
+  min-height: 24px;
+  width: 100%;
+  height: auto;
+}
+.line-comment,
+.page-comment {
+  background-color: #ffffe0;
+  font-family: 'EB Garamond', serif;
+  font-size: 20px;
+  min-height: 24px;
+}
+#file-correction .panel {
+  margin: 0;
+}
+#file-correction .panel-heading {
+  padding: 0;
+}
+#file-correction .panel-heading h4 {
+  padding-top: 7.5px;
+}
+#page-info {
+  position: fixed;
+  right: 0;
+}
+#select-bar {
+  position: fixed;
+  background-color: #ff0;
+  border: 2px solid #00f;
+  top: 0;
+  left: 200px;
+  height: 48px;
+  z-index: 1001;
+}
+.select-col {
+  padding-left: 40px;
+  border: 1px solid #ccc;
+  margin-top: 32px;
+}
+.select-col input[type="checkbox"] {
+  width: 32px;
+  height: 32px;
+  padding-top: 32px;
+}
+
