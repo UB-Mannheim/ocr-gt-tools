@@ -2,6 +2,9 @@
   body {
     padding-top: 0;
   }
+  .container-fluid {
+    margin-left: 100px;
+  }
   .navbar-collapse {
     height: auto;
     border-top: 0;
@@ -22,6 +25,15 @@
   .navbar-collapse .navbar-nav.navbar-right:last-child {
     margin-right: 0;
   }
+  .navbar {
+    max-width: 96px;
+    height: 100vh;
+    margin-right: 0;
+    margin-left: 0;
+    float: left;
+    position: fixed;
+    z-index: 10001;
+  }
   .navbar:after {
     clear: both;
   }
@@ -33,7 +45,14 @@
     left: 100%;
     padding: 0;
   }
-  .navbar-right .dropdown-menu {
+  .navbar .navbar-nav,
+  .navbar .navbar-nav > li,
+  .navbar .navbar-left,
+  .navbar .navbar-right,
+  .navbar .navbar-header {
+    float: none !important;
+  }
+  .navbar .navbar-right .dropdown-menu {
     left: 0;
     right: auto;
   }
@@ -52,26 +71,6 @@
   }
   .line .list-group-item {
     padding: 0 0 0 0;
-  }
-  .navbar {
-    max-width: 96px;
-    height: 100vh;
-    margin-right: 0;
-    margin-left: 0;
-    float: left;
-    position: fixed;
-    z-index: 10001;
-  }
-  .container,
-  .container-fluid {
-    margin-left: 100px;
-  }
-  .navbar-nav,
-  .navbar-nav > li,
-  .navbar-left,
-  .navbar-right,
-  .navbar-header {
-    float: none !important;
   }
 }
 #dropzone {
@@ -121,6 +120,10 @@ div[contenteditable] {
 }
 #file_correction .panel-heading h4 {
   padding-top: 7.5px;
+}
+#page-info {
+  position: fixed;
+  right: 0;
 }
 .select-col {
   padding-left: 40px;

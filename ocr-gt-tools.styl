@@ -1,6 +1,8 @@
 @media (min-width: 768px)
 	body
 		padding-top 0
+	.container-fluid
+		margin-left 100px
 	.navbar-collapse
 		height auto
 		border-top 0
@@ -20,6 +22,13 @@
 				&:last-child
 					margin-right 0
 	.navbar
+		max-width 96px
+		height 100vh
+		margin-right 0
+		margin-left 0
+		float left
+		position fixed
+		z-index 10001
 		&:after
 			clear both
 		.btn-group
@@ -28,10 +37,16 @@
 			top 0
 			left 100%
 			padding 0
-	.navbar-right
-		.dropdown-menu
-			left 0
-			right auto
+		.navbar-nav,
+		.navbar-nav > li,
+		.navbar-left,
+		.navbar-right,
+		.navbar-header
+			float none !important
+		.navbar-right
+			.dropdown-menu
+				left 0
+				right auto
 	.navbar-default
 		.dropdown-menu
 			i
@@ -48,22 +63,6 @@
 	.line
 		.list-group-item
 			padding 0 0 0 0
-	.navbar
-		max-width 96px
-		height 100vh
-		margin-right 0
-		margin-left 0
-		float left
-		position fixed
-		z-index 10001
-	.container, .container-fluid
-		margin-left 100px
-	.navbar-nav,
-		.navbar-nav > li,
-		.navbar-left,
-		.navbar-right,
-		.navbar-header
-			float none !important
 
 #dropzone
 	position fixed
@@ -111,6 +110,10 @@ div[contenteditable]
 		padding 0
 		h4
 			padding-top 7.5px
+
+#page-info
+	position fixed
+	right 0
 
 .select-col
 	padding-left: 40px

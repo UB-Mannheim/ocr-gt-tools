@@ -17,6 +17,13 @@ html(lang='de')
 						img(src="{{ imageUrl }}")
 					.page-comment
 						div(contenteditable) {{ pageComment }}
+					.list-group
+						a#download-comments.list-group-item(target="_blank")
+							i.fa.fa-download.pull-left
+							| Anmerkungen
+						a#download-correction.list-group-item(target="_blank")
+							i.fa.fa-download.pull-left
+							| Korrektur
 
 		// A line of page
 		script#tpl-line(type='text/x-handlebars-template')
@@ -169,10 +176,5 @@ html(lang='de')
 							span.input-group-btn
 								button.btn.btn-default.btn-lg(type="button") Los!
 					#file_correction
-				.col-sm-3(style="position: fixed; right: 0")
-					#page-info
-					//- #file_links
-					//- #file_name
-					//- #file_image
-//
-	vim: sw=2 ts=2 noet :
+				.col-sm-3#page-info
+// vim: sw=2 ts=2 noet ft=jade :
