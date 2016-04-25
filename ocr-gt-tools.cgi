@@ -205,6 +205,14 @@ sub mapUrltoFile
         , 'gt'
         , $location{pathPage};
 
+    # ex: '/home/user/ocr-gt-tools/htdocs/ocr-corrections/digi/445442158/gt
+    $location{correctionDirGt} = join '/'
+        , $config->{docRoot}
+        , $config->{correctionsRoot}
+        , $location{pathSection}
+        , $location{pathId}
+        , 'gt';
+
     # ex: '/home/user/ocr-gt-tools/htdocs/ocr-corrections/digi/445442158/gt/0126/correction.html
     $location{correctionHtml} = join '/'
         , $location{correctionDir}
@@ -304,19 +312,24 @@ sub ensureCorrection
         , $location->{imageDir}
         , $location->{hocr_file}
     );
-    debug("About to execute '%s' in '%s'", $cmd_extract, $location->{correctionDir});
+    debug("About to execute '%s' in '%s' for '%s'", $cmd_extract, $location->{correctionDir}, $location{pathPage});
     open my $EXTRACT, "-|", $cmd_extract or do { http500($cgi, "Could not run hocr-extract-images: $!\n\n"); };
     while( <$EXTRACT>) {
         debug($_);
     }
     close $EXTRACT;
 
+    # ocropusGtedit sollte vom übergeordneten Verzeichnis aufgerufen werden,
+    # sonst haben nachgeordnete Scripte probleme weil Verzeichnisname in correction.html
+    # nicht enthalten ist Vergleiche Issue #22
+    chdir $location->{correctionDirGt};
+
     # Korrigierwebseite erstellen
     open my $GTEDIT, "-|", join(' '
             , $config->{ocropusGteditBinary}
             , 'html'
             , '-x xxx'
-            , 'line*.png'
+            , $location{pathPage} . '/line*.png'
             , '-o'
             , $config->{correctionHtml_basename})
             or do { http500($cgi, "Could not run ocropus-gtedit: $!\n\n"); };
