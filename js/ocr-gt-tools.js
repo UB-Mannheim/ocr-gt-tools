@@ -109,8 +109,7 @@ function loadGtEditLocation(url) {
             // Add links to downloads to the DOM
             $("#file_links").html(
                 "<div id='file_rem'><a download href='" + res.commentsUrl + "' target='_blank'>anmerkungen.txt</a></div>" +
-                "<div id='file_o_rem'><a download href='" + res.correctionUrl + "' target='_blank'>correction.html</a></div>" +
-                "<div id='file_m_rem'><a download href='" + res.correctionPath + "correction_remarks.html' target='_blank'>correction_remarks.html</a></div>");
+                "<div id='file_o_rem'><a download href='" + res.correctionUrl + "' target='_blank'>correction.html</a></div>");
 
         },
         error: function(x, e) {
@@ -307,6 +306,9 @@ function onDrop(e) {
         if (!url) {
             url = $(dropped).find('a').addBack('a').attr('href');
         }
+        if (!url) {
+            url = e.originalEvent.dataTransfer.getData('text/plain');
+        }
         if (url) {
             loadGtEditLocation(url);
         } else {
@@ -343,9 +345,7 @@ $(function onPageLoaded() {
         // Prevent the default browser drop action:
         e.preventDefault();
     });
-    $(document).bind('drop', function(e) {
-        onDrop(e);
-    });
+    $(document).bind('drop', onDrop);
     // event listeners
     $("#save_button").on("click", saveGtEditLocation);
     $("#zoom_button_plus").on("click", zoomIn);
