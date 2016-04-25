@@ -153,6 +153,26 @@ sub httpJSON
 
 =head2
 
+Get page dirs
+
+=cut
+sub getPageDirs {
+    my ($cgi, $location) = @_;
+    my $DIR;
+    opendir($DIR, $location->{correctionDirGt});
+    my @pages = grep { /^(\d{4,4})/ && -d "$location->{correctionDirGt}/$_" } readdir ($DIR);
+    #loop through the array printing out the filenames
+    foreach my $subdir (sort {$a cmp $b} (@pages)) {
+        #print $ERRORLOG "$subdir\n";
+        $location->{pages} .= $subdir . '|';
+    }
+    closedir($DIR);
+    return $location;
+}
+
+
+=head2
+
 Map a URL to local file paths
 
 =cut
@@ -449,6 +469,7 @@ sub processCreateRequest
     }
     # Create file object
     my $location = mapUrltoFile($cgi, $config, $url);
+    listPageDirs($cgi, $location);
     # Make sure the correctionDir exists
     ensureCorrectionDir($cgi, $config, $location);
     # Make sure the correction HTML exists
