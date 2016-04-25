@@ -490,6 +490,14 @@ $(function onPageLoaded() {
         });
     });
 
+    $("#sort-length").on('click', function() {
+        $("#file-correction").append(
+            $(".line").sort(function(a, b) {
+                return $(a).find('img')[0].clientWidth <= $(b).find('img')[0].clientWidth;
+            }).detach()
+        );
+    });
+
     // Trigger hash change
     onHashChange();
 });
