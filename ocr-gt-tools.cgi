@@ -331,7 +331,7 @@ sub ensureCorrection
             , '-x xxx'
             , $location->{pathPage} . '/line*.png'
             , '-o'
-            , $config->{correctionHtml_basename})
+            , $location->{pathPage} . '/' . $config->{correctionHtml_basename})
             or do { http500($cgi, "Could not run ocropus-gtedit: $!\n\n"); };
     while( <$GTEDIT>) {
         debug($_);
