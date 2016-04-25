@@ -40,6 +40,31 @@ Click "Speichern".
 
 Checkout the contents of [./example/ocr-corrections/](./example/ocr-corrections/).
 
+### On Apache
+
+```sh
+cd /var/www/html
+# Enable CGI in Apache
+sudo a2enmod cgi
+# sudo $EDITOR /etc/apache2/sites-available/000-default.conf
+# Make sure scripts ending in `.cgi` are executable in the directory with `ocr-gt-tools.cgi`
+#    <Directory "/path-to-htdocs/ocr-gt-tools">
+#        Options +ExecCGI
+#        AddHandler cgi-script .cgi
+#    </Directory>
+# Clone the software
+sudo -u www-data git clone https://github.com/UB-Mannheim/ocr-gt-tools
+# Clone the related tools
+make vendor
+# Generate the log files
+sudo -u www-data ./ocr-gt-tools.cgi
+# Copy the configuration
+sudo -u www-data cp conf/ocr-gt-tools.ini_tmpl conf/ocr-gt-tools.ini
+# sudo $EDIT as needed!
+# Restart/Reload apache
+sudo systemctl restart apache2
+```
+
 ## Developing the frontend
 
 Install the development dependencies: The `npm` package (which pulls in nodejs) and some nodejs-based tools:
