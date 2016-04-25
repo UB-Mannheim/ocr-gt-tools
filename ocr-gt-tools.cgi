@@ -312,7 +312,7 @@ sub ensureCorrection
         , $location->{imageDir}
         , $location->{hocr_file}
     );
-    debug("About to execute '%s' in '%s' for '%s'", $cmd_extract, $location->{correctionDir}, $location{pathPage});
+    debug("About to execute '%s' in '%s' for '%s'", $cmd_extract, $location->{correctionDir}, $location->{pathPage});
     open my $EXTRACT, "-|", $cmd_extract or do { http500($cgi, "Could not run hocr-extract-images: $!\n\n"); };
     while( <$EXTRACT>) {
         debug($_);
@@ -329,7 +329,7 @@ sub ensureCorrection
             , $config->{ocropusGteditBinary}
             , 'html'
             , '-x xxx'
-            , $location{pathPage} . '/line*.png'
+            , $location->{pathPage} . '/line*.png'
             , '-o'
             , $config->{correctionHtml_basename})
             or do { http500($cgi, "Could not run ocropus-gtedit: $!\n\n"); };
@@ -473,6 +473,7 @@ sub processSaveRequest
     return httpJSON($cgi, { result => 1 });
 }
 
+print $ERRORLOG "test ob Protokoll benutzt wird\n";
 debugStandout('START REQUEST');
 my $cgi = CGI->new;
 my $config = loadConfig();
