@@ -154,6 +154,7 @@ function unescapeNewline(str) {
 function markChanged() {
     window.ocrGtLocation.changed = true;
     $("#save_button").removeClass("disabled");
+    updateCommentButtonColor();
 }
 
 function markSaved() {
@@ -217,9 +218,6 @@ function addCommentFields() {
             "comment": unescapeNewline(window.ocrGtLocation.lineComments[curLine]),
         };
         var $line = $(window.templates.line(line));
-        if (line.comment.match(/\S/)) {
-            $(".show-line-comment", $line).removeClass('btn-default').addClass('btn-info');
-        }
         $(":checkbox", $line).on('change', function() {
             $(this).closest('.row').toggleClass('selected');
         });
@@ -230,6 +228,7 @@ function addCommentFields() {
     $(".show-line-comment").on('click', toggleLineComment);
     $(".hide-line-comment").on('click', toggleLineComment);
     $(".add-comment").on('click', addComment);
+    updateCommentButtonColor();
 }
 
 /**
@@ -259,6 +258,22 @@ function zoomReset(e) {
     e.stopPropagation();
     $('#file-correction img').each(function() {
         Utils.scaleHeight(this, 1);
+    });
+}
+
+/**
+ * Update the color of the comment toggle button depending on whether it has
+ * comments or not.
+ */
+function updateCommentButtonColor() {
+    $(".line").each(function() {
+        var $line = (this);
+        var $lineComment = $(".line-comment div[contenteditable]", $line);
+        if ($lineComment.html().match(/\S/)) {
+            $(".show-line-comment", $line).removeClass('btn-default').addClass('btn-info');
+        } else {
+            $(".show-line-comment", $line).addClass('btn-default').removeClass('btn-info');
+        }
     });
 }
 
