@@ -153,6 +153,26 @@ sub httpJSON
 
 =head2
 
+Get page dirs
+
+=cut
+sub getPageDirs {
+    my ($cgi, $location) = @_;
+    my $DIR;
+    opendir($DIR, $location->{correctionDirGt});
+    my @pages = grep { /^(\d{4,4})/ && -d "$location->{correctionDirGt}/$_" } readdir ($DIR);
+    #loop through the array printing out the filenames
+    foreach my $subdir (sort {$a cmp $b} (@pages)) {
+        #print $ERRORLOG "$subdir\n";
+        $location->{pages} .= $subdir . '|';
+    }
+    closedir($DIR);
+    return $location;
+}
+
+
+=head2
+
 Map a URL to local file paths
 
 =cut
@@ -204,6 +224,14 @@ sub mapUrltoFile
         , $location{pathId}
         , 'gt'
         , $location{pathPage};
+
+    # ex: '/home/user/ocr-gt-tools/htdocs/ocr-corrections/digi/445442158/gt
+    $location{correctionDirGt} = join '/'
+        , $config->{docRoot}
+        , $config->{correctionsRoot}
+        , $location{pathSection}
+        , $location{pathId}
+        , 'gt';
 
     # ex: '/home/user/ocr-gt-tools/htdocs/ocr-corrections/digi/445442158/gt/0126/correction.html
     $location{correctionHtml} = join '/'
@@ -304,21 +332,26 @@ sub ensureCorrection
         , $location->{imageDir}
         , $location->{hocr_file}
     );
-    debug("About to execute '%s' in '%s'", $cmd_extract, $location->{correctionDir});
+    debug("About to execute '%s' in '%s' for '%s'", $cmd_extract, $location->{correctionDir}, $location->{pathPage});
     open my $EXTRACT, "-|", $cmd_extract or do { http500($cgi, "Could not run hocr-extract-images: $!\n\n"); };
     while( <$EXTRACT>) {
         debug($_);
     }
     close $EXTRACT;
 
+    # ocropusGtedit sollte vom übergeordneten Verzeichnis aufgerufen werden,
+    # sonst haben nachgeordnete Scripte probleme weil Verzeichnisname in correction.html
+    # nicht enthalten ist Vergleiche Issue #22
+    chdir $location->{correctionDirGt};
+
     # Korrigierwebseite erstellen
     open my $GTEDIT, "-|", join(' '
             , $config->{ocropusGteditBinary}
             , 'html'
             , '-x xxx'
-            , 'line*.png'
+            , $location->{pathPage} . '/line*.png'
             , '-o'
-            , $config->{correctionHtml_basename})
+            , $location->{pathPage} . '/' . $config->{correctionHtml_basename})
             or do { http500($cgi, "Could not run ocropus-gtedit: $!\n\n"); };
     while( <$GTEDIT>) {
         debug($_);
@@ -436,6 +469,7 @@ sub processCreateRequest
     }
     # Create file object
     my $location = mapUrltoFile($cgi, $config, $url);
+    listPageDirs($cgi, $location);
     # Make sure the correctionDir exists
     ensureCorrectionDir($cgi, $config, $location);
     # Make sure the correction HTML exists
@@ -460,6 +494,7 @@ sub processSaveRequest
     return httpJSON($cgi, { result => 1 });
 }
 
+print $ERRORLOG "test ob Protokoll benutzt wird\n";
 debugStandout('START REQUEST');
 my $cgi = CGI->new;
 my $config = loadConfig();
