@@ -263,8 +263,7 @@ sub mapUrltoFile
         , $config->{correctionHtml_basename};
 
     # ex: 'ocr-corrections/digi/445442158/gt/0126/correction.html
-    $location{correctionUrl} = join '/'
-        , $config->{baseUrl}
+    $location{correctionUrl} = $config->{baseUrl} .  join '/'
         , $config->{correctionsRoot}
         , $location{pathSection}
         , $location{pathId}
@@ -278,8 +277,7 @@ sub mapUrltoFile
         , $config->{commentsFilename};
 
     # ex: 'ocr-corrections/digi/445442158/gt/0126/anmerkungen.txt
-    $location{commentsUrl} = join '/'
-        , $config->{baseUrl}
+    $location{commentsUrl} = $config->{baseUrl} .  join '/'
         , $config->{correctionsRoot}
         , $location{pathSection}
         , $location{pathId}

@@ -22,6 +22,7 @@
 # │                   └── <id>_<page>.jpg
 
 # absolute path to root of documents (without trailing '/')
+# doc-root=/var/www/html
 doc-root=example
 
 # Directory relative to 'doc-root' containing the images
@@ -45,7 +46,8 @@ ocropus-gteditPath=vendor/ocropy
 [MISC]
 
 # The base URL of the doc-root folder
-baseurl=/
+# baseUrl=/
+baseUrl=/ocr-gt-tools/example/
 
 # If the 'correctionDir' is newly created, use this owner, e.g. www-data
 # Set to false-ish value to use default owner
