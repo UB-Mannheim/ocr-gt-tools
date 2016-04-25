@@ -289,7 +289,7 @@ sub mapUrltoFile
     $location{hocr_file} = join '/'
         , $config->{docRoot}
         , $config->{scansRoot}
-        , $location{pathSection}
+         , $location{pathSection}
         , $location{pathId}
         , 'hocr'
         , $location{cFile} . '.hocr';

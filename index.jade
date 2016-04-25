@@ -1,3 +1,4 @@
+// vim: sw=2 ts=2 noet ft=jade :
 doctype html
 html(lang='de')
 	head
@@ -28,16 +29,21 @@ html(lang='de')
 		// A line of page
 		script#tpl-line(type='text/x-handlebars-template')
 			.row
-				.col-sm-1.select-col.hidden
+				.col-sm-1.select-col.hidden(data-target="#line-comment-{{ id }}")
 					input(type="checkbox")
 				.col-sm-11
 					.panel.panel-default.line(id="line-{{ id }}")
 						.panel-heading.clearfix
 							h4.panel-title.pull-left {{ title }}
 							.btn-group.pull-right
-								a.btn.btn-danger.btn-sm Falsch erkannt
-								a.btn.btn-default.show-line-comment(data-target="#line-comment-{{ id }}")
-									i.fa.fa-commenting-o
+								a.btn.btn-sm.btn-default.add-comment(data-target="#line-comment-{{ id }}", data-tag="text-italic")
+									i.fa.btn-sm.fa-italic
+									| Kursiv
+								a.btn.btn-sm.btn-warning.add-comment(data-target="#line-comment-{{ id }}", data-tag="wrong-image-section")
+									i.fa.btn-sm.fa-exclamation-circle
+									| Fehler in Vorlage
+								a.btn.btn-sm.btn-default.show-line-comment(data-target="#line-comment-{{ id }}")
+									i.fa.btn-sm.fa-commenting-o
 								a.btn.btn-default.hide-line-comment.hidden(data-target="#line-comment-{{ id }}")
 									i.fa.fa-map-o
 						ul.list-group
@@ -77,6 +83,17 @@ html(lang='de')
 
 		// Will contain the raw HTML
 		#raw-html.hidden
+
+		// Will contain the toolbar for the multi select mode
+		#select-bar.hidden
+			.panel-heading.clearfix
+				.btn-group.pull-right
+					a.btn.btn-sm.btn-default.add-multi-comment(data-tag="text-italic")
+						i.fa.btn-sm.fa-italic
+						| Kursiv
+					a.btn.btn-sm.btn-warning.add-multi-comment(data-tag="wrong-image-section")
+						i.fa.btn-sm.fa-exclamation-circle
+						| Fehler in Vorlage
 
 		// The navbar on the left side
 		nav.navbar.navbar-default(role='navigation')
@@ -163,7 +180,7 @@ html(lang='de')
 			.row
 				.col-sm-9#root
 					#dropzone.jumbotron
-						span#wait_load.hidden
+						span#wait-load.hidden
 							i.fa.fa-spinner.fa-pulse.fa-fw
 						| Grafik auf dem Dokument ablegen
 						br
@@ -175,6 +192,5 @@ html(lang='de')
 							input.input-lg.form-control(type='text')
 							span.input-group-btn
 								button.btn.btn-default.btn-lg(type="button") Los!
-					#file_correction
+					#file-correction
 				.col-sm-3#page-info
-// vim: sw=2 ts=2 noet ft=jade :

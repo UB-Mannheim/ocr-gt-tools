@@ -90,6 +90,9 @@
 .hidden {
   display: none;
 }
+.selected {
+  background: #f00;
+}
 div[contenteditable] {
   display: inline-block;
   white-space: pre-wrap;
@@ -107,23 +110,27 @@ div[contenteditable] {
   font-size: 20px;
   min-height: 24px;
 }
-#delete_button {
-  top: 0;
-  width: auto;
-  float: left;
-}
-#file_correction .panel {
+#file-correction .panel {
   margin: 0;
 }
-#file_correction .panel-heading {
+#file-correction .panel-heading {
   padding: 0;
 }
-#file_correction .panel-heading h4 {
+#file-correction .panel-heading h4 {
   padding-top: 7.5px;
 }
 #page-info {
   position: fixed;
   right: 0;
+}
+#select-bar {
+  position: fixed;
+  background-color: #ff0;
+  border: 2px solid #00f;
+  top: 0;
+  left: 200px;
+  height: 48px;
+  z-index: 1001;
 }
 .select-col {
   padding-left: 40px;

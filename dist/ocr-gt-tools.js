@@ -3,7 +3,7 @@
 var UISettings = {
     zoomInFactor: 1.4,
     zoomOutFactor: 0.8,
-    cgiUrl: 'ocr-gt-tools.cgi'
+    cgiUrl: '../ocr-gt-tools.cgi'
 };
 
 var Utils = {};
@@ -102,7 +102,7 @@ function loadGtEditLocation(url) {
         data: {'data_url': url},
         beforeSend: function(xhr) {
             // to instantly see when a new document has been retrieved
-            $("#file_correction").addClass("hidden");
+            $("#file-correction").addClass("hidden");
         },
         success: function(res) {
             // file correction will be loaded
@@ -122,11 +122,9 @@ function loadGtEditLocation(url) {
                             Utils.parseLineComments(response, window.ocrGtLocation);
                             addCommentFields();
                             // hide waiting spinner
-                            // $("#wait_load").addClass("hidden");
+                            // $("#wait-load").addClass("hidden");
                             // show new document
-                            $("#file_correction").removeClass("hidden");
-                            // make lines as wide as the widest line
-                            // normalizeInputLengths();
+                            $("#file-correction").removeClass("hidden");
                             onScroll();
                         }
                     });
@@ -136,7 +134,7 @@ function loadGtEditLocation(url) {
             $("#zoom-in").removeClass("hidden");
             $("#zoom-out").removeClass("hidden");
             $("#save_button").removeClass("hidden");
-            // activate button if #file_correction is changed
+            // activate button if #file-correction is changed
 
             // Add links to downloads to the DOM
             $("#download-comments").attr('href', res.commentsUrl);
@@ -149,11 +147,23 @@ function loadGtEditLocation(url) {
 }
 
 function escapeNewline(str) {
-    return str.replace(/\n*$/, '').replace(/\n/g, '<br>');
+    return str.replace(/^\n*/, '').replace(/\n*$/, '').replace(/\n/g, '<br>');
 }
 
 function unescapeNewline(str) {
-    return str.replace(/<br>/g, "\n");
+    return str.replace(/^(<br>)*/, '').replace(/(<br>)*$/, '').replace(/<br>/g, "\n");
+}
+
+function markChanged() {
+    window.ocrGtLocation.changed = true;
+    $("#save_button").removeClass("disabled");
+}
+
+function markSaved() {
+    window.ocrGtLocation.changed = false;
+    $("#wait_save").removeClass("wait").addClass("hidden");
+    $("#disk").removeClass("hidden");
+    $("#save_button").addClass("disabled");
 }
 
 /**
@@ -184,13 +194,7 @@ function saveGtEditLocation() {
         type: 'post',
         url: UISettings.cgiUrl + '?action=save',
         data: window.ocrGtLocation,
-        success: function() {
-            // after #file_correction is saved
-            window.ocrGtLocation.changed = false;
-            $("#wait_save").removeClass("wait").addClass("hidden");
-            $("#disk").removeClass("hidden");
-            $("#save_button").addClass("disabled");
-        },
+        success: markSaved,
         error: function(x, e) {
             window.alert(x.status + " FEHLER aufgetreten");
         }
@@ -214,14 +218,24 @@ function addCommentFields() {
             "transcription": unescapeNewline($this.find("td")[2].innerHTML),
             "comment": unescapeNewline(window.ocrGtLocation.lineComments[curLine]),
         };
-        $("#file_correction").append(window.templates.line(line));
-        $("*[data-target='#line-comment-" + curLine + "']").on('click', toggleLineComment);
+        var $line = $(window.templates.line(line));
+        if (line.comment.match(/\S/)) {
+            $(".show-line-comment", $line).removeClass('btn-default').addClass('btn-info');
+        }
+        //  TODO hack lookup proper traversion fn
+        $(":checkbox", $line).on('change', function() {
+            $(this).parent().parent().toggleClass('selected');
+        });
+        $("#file-correction").append($line);
     });
     $("#page-info").html(window.templates.page({
         "imageUrl": window.ocrGtLocation.imageUrl,
         "pageComment": unescapeNewline(window.ocrGtLocation.pageComment),
     }));
-    $("#wait_load").removeClass("hidden");
+    $("#wait-load").removeClass("hidden");
+    $(".show-line-comment").on('click', toggleLineComment);
+    $(".hide-line-comment").on('click', toggleLineComment);
+    $(".add-comment").on('click', addComment);
 }
 
 /**
@@ -229,7 +243,7 @@ function addCommentFields() {
  */
 function zoomIn(e) {
     e.stopPropagation();
-    $('#file_correction img').each(function() {
+    $('#file-correction img').each(function() {
         Utils.scaleHeight(this, UISettings.zoomInFactor);
     });
 }
@@ -239,7 +253,7 @@ function zoomIn(e) {
  */
 function zoomOut(e) {
     e.stopPropagation();
-    $('#file_correction img').each(function() {
+    $('#file-correction img').each(function() {
         Utils.scaleHeight(this, UISettings.zoomOutFactor);
     });
 }
@@ -249,7 +263,7 @@ function zoomOut(e) {
  */
 function zoomReset(e) {
     e.stopPropagation();
-    $('#file_correction img').each(function() {
+    $('#file-correction img').each(function() {
         Utils.scaleHeight(this, 1);
     });
 }
@@ -273,6 +287,31 @@ function showLineComment() {
     $(target).removeClass("hidden");
     $(".hide-line-class[data-target='#" + target + "']").removeClass('hidden');
     $(".show-line-class[data-target='#" + target + "']").addClass('hidden');
+}
+
+function addMultiComment() {
+    var tag = '#' + $(this).attr('data-tag');
+    $(".selected").find('.lineComment').each(function() {
+        console.log(this);
+        addTagToElement($("div", $(this)), tag);
+    });
+}
+
+function addComment() {
+    var target = $($(this).attr('data-target')).find('div[contenteditable]');
+    var tag = '#' + $(this).attr('data-tag');
+    addTagToElement($(target), tag);
+}
+
+function addTagToElement($target, tag) {
+    if ($target.html().indexOf(tag) == -1) {
+        if ($target.html().match(/^.*\S.*$/)) {
+            $target.append('\n');
+        }
+        $target.append(tag);
+        $target.append('\n');
+        markChanged();
+    }
 }
 
 /******************/
@@ -373,6 +412,7 @@ function setupDragAndDrop() {
 
 function toggleSelectMode() {
     $(".select-col").toggleClass('hidden');
+    $("#select-bar").toggleClass('hidden');
 }
 
 $(function onPageLoaded() {
@@ -391,10 +431,8 @@ $(function onPageLoaded() {
     $("#zoom-reset").on("click", zoomReset);
 
     // Notice changed input and make save button available
-    $("#file_correction").on('input', function onInput() {
-        $("#save_button").removeClass("disabled");
-        window.ocrGtLocation.changed = true;
-    });
+    $("#file-correction").on('input', markChanged);
+    $("#page-info").on('input', markChanged);
 
     // Open history modal
     $('button[data-target="#history-modal"]').on('click', function() {
@@ -424,7 +462,11 @@ $(function onPageLoaded() {
         onScroll();
     });
 
+    // Select Mode
     $("#toggle-select").on('click', toggleSelectMode);
+    $('.add-multi-comment').on('click', addMultiComment);
+
+    // Trigger hash change
     onHashChange();
 });
 

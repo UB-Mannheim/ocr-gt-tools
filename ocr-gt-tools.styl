@@ -80,6 +80,9 @@
 .hidden
 	display none
 
+.selected
+	background: red;
+
 div[contenteditable],
 div[contenteditable]
 	display inline-block
@@ -98,12 +101,7 @@ div[contenteditable]
 	font-size 20px
 	min-height 24px
 
-#delete_button
-	top 0
-	width auto
-	float left
-
-#file_correction
+#file-correction
 	.panel
 		margin 0
 	.panel-heading
@@ -114,6 +112,15 @@ div[contenteditable]
 #page-info
 	position fixed
 	right 0
+
+#select-bar
+	position fixed
+	background-color yellow
+	border: 2px solid blue
+	top 0
+	left 200px
+	height 48px
+	z-index: 1001
 
 .select-col
 	padding-left: 40px
