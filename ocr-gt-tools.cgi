@@ -469,7 +469,7 @@ sub processCreateRequest
     }
     # Create file object
     my $location = mapUrltoFile($cgi, $config, $url);
-    listPageDirs($cgi, $location);
+    getPageDirs($cgi, $location);
     # Make sure the correctionDir exists
     ensureCorrectionDir($cgi, $config, $location);
     # Make sure the correction HTML exists
