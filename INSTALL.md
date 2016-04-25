@@ -2,33 +2,37 @@
 
 ## Repository-local server
 
-Install dependencies
+### Install dependencies
 
 ```
 make deps
 ```
 
-Optionally rebuild the distribution
+### Optionally rebuild the distribution
 
 ```
-npm install
-bower install
-make dist
+make dev-deps dist
 ```
 
-Copy configuration template:
+If the apt-get command fails because of `npm`, you can try skipping the Debian package installation:
+
+```
+make APT_GET dev-deps
+```
+
+### Copy configuration template and edit as needed.
 
 ```
 cp conf/ocr-gt-tools.ini_tmpl conf/ocr-gt-tools.ini
 ```
 
-Start server
+### Start server
 
 ```
 make dev-server
 ```
 
-Navigate to [http://localhost:9090/index.html](http://localhost:9090/index.html).
+Navigate to [http://localhost:9090/dist/index.html](http://localhost:9090/index.html).
 
 Drop a file, such as [this thumbnail](http://digi.bib.uni-mannheim.de/fileadmin/digi/445442158/thumbs/445442158_0126.jpg) onto the document.
 
@@ -36,7 +40,7 @@ Do some transliterating and commenting.
 
 Click "Speichern".
 
-Checkout the contents of [./htdocs/ocr-corrections/](./htdocs/ocr-corrections/).
+Checkout the contents of [./example/ocr-corrections/](./example/ocr-corrections/).
 
 ## Developing the frontend
 
