@@ -223,9 +223,8 @@ function addCommentFields() {
         if (line.comment.match(/\S/)) {
             $(".show-line-comment", $line).removeClass('btn-default').addClass('btn-info');
         }
-        //  TODO hack lookup proper traversion fn
         $(":checkbox", $line).on('change', function() {
-            $(this).parent().parent().toggleClass('selected');
+            $(this).closest('.row').toggleClass('selected');
         });
         $("#file-correction").append($line);
     });
