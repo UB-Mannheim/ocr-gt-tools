@@ -410,6 +410,7 @@ function setupDragAndDrop() {
 }
 
 function toggleSelectMode() {
+    $(".selected").toggleClass('selected');
     $(".select-col").toggleClass('hidden');
     $("#select-bar").toggleClass('hidden');
 }
