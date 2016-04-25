@@ -39,6 +39,9 @@ WEBFONTDL     = webfont-dl $(WEBFONTDL_OPTS)
 # Jade is a templating engine
 JADE_OPTS     = --pretty
 JADE          = jade $(JADE_OPTS)
+# Stylus is a CSS compiler
+#
+STYLUS  = stylus
 # Chokidar is a file system change watcher (think: inotify)
 # https://github.com/kimmobrunfeldt/chokidar-cli
 CHOKIDAR_OPTS = --verbose --polling --initial --debounce 100
@@ -151,6 +154,7 @@ conf/ocr-gt-tools.ini:
 	@echo "Copy conf/ocr-gt-tools.ini_tmpl to conf/ocr-gt-tools.ini and set paths."
 	exit 1
 
+dev-server:
 	$(PLACKUP) app.psgi
 
 dev-browser:
@@ -163,8 +167,11 @@ dev-browser:
 
 dist: dist/vendor.css dist/vendor.js dist/fonts dist/index.html dist/ocr-gt-tools.js dist/ocr-gt-tools.css
 
-dist/ocr-gt-tools.%: ocr-gt-tools.%
+dist/ocr-gt-tools.js: ocr-gt-tools.js
 	$(CP) $< $@
+
+dist/ocr-gt-tools.css: ocr-gt-tools.styl
+	$(STYLUS) < $< > $@
 
 dist/fonts:
 	$(MKDIR) $@
