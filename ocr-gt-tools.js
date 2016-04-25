@@ -291,11 +291,19 @@ function hideLineComment() {
     $(".hide-line-class[data-target='#" + target + "']").addClass('hidden');
     $(".show-line-class[data-target='#" + target + "']").removeClass('hidden');
 }
+function hideAllLineComments() {
+    $(".hide-line-comment").each(hideLineComment);
+    onScroll();
+}
 function showLineComment() {
     var target = $(this).attr('data-target');
     $(target).removeClass("hidden");
     $(".hide-line-class[data-target='#" + target + "']").removeClass('hidden');
     $(".show-line-class[data-target='#" + target + "']").addClass('hidden');
+}
+function showAllLineComments() {
+    $(".show-line-comment").each(showLineComment);
+    onScroll();
 }
 
 function addMultiComment() {
@@ -460,20 +468,27 @@ $(function onPageLoaded() {
     });
 
     // Expand all comments
-    $("#expand_all_comments").on("click", function onClickExpand() {
-        $(".show-line-comment").each(showLineComment);
-        onScroll();
-    });
+    $("#expand_all_comments").on("click", showAllLineComments);
 
     // Collapse all comments
-    $("#collapse_all_comments").on("click", function onClickCollapse() {
-        $(".hide-line-comment").each(hideLineComment);
-        onScroll();
-    });
+    $("#collapse_all_comments").on("click", hideAllLineComments);
 
     // Select Mode
     $("#toggle-select").on('click', toggleSelectMode);
     $('.add-multi-comment').on('click', addMultiComment);
+
+    $(".set-view").on('click', function() {
+        $(".line *").addClass('view-hidden');
+        var selectors = $(this).attr('data-target');
+        $.each(selectors.split(/\s*,\s*/), function(idx, selector) {
+            if (selector === '.line-comment') {
+                showAllLineComments();
+            }
+            console.log(selector);
+            $(selector).removeClass('view-hidden');
+            $(selector).parents().removeClass('view-hidden');
+        });
+    });
 
     // Trigger hash change
     onHashChange();

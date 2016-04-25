@@ -98,6 +98,9 @@
 .hidden {
   display: none;
 }
+.view-hidden {
+  display: none;
+}
 .selected {
   background: #f00;
 }

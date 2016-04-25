@@ -158,6 +158,34 @@ html(lang='de')
 					//- Show/hide comments
 					li.dropdown
 						a.btn.dropdown-toggle(data-toggle='dropdown')
+							i.fa.fa-4x.fa-eye
+						ul.dropdown-menu.navbar-default
+							li
+								.btn-group.btn-group-vertical
+									button.set-view.btn.btn-default(type='button', data-target='*')
+										i.fa.fa-plus-square-o
+										| Vollansicht
+									button.set-view.btn.btn-default(type='button', data-target='img')
+										i.fa.fa-picture-o
+										| Nur Bilder
+									button.set-view.btn.btn-default(type='button', data-target='.transcription')
+										i.fa.fa-align-left
+										| Nur Text
+									button.set-view.btn.btn-default(type='button', data-target='.line-comment')
+										i.fa.fa-commenting-o
+										| Nur Kommentare
+									button.set-view.btn.btn-default(type='button', data-target='.transcription,img')
+										i.fa.fa-picture-o
+										i.fa.fa-align-left
+										| Nur Bilder + Text
+									button.set-view.btn.btn-default(type='button', data-target='.line-comment,img')
+										i.fa.fa-commenting-o
+										i.fa.fa-picture-o
+										| Nur Bilder + Kommentare
+
+					//- Show/hide comments
+					li.dropdown
+						a.btn.dropdown-toggle(data-toggle='dropdown')
 							i.fa.fa-4x.fa-caret-square-o-down
 						ul.dropdown-menu.navbar-default
 							li
