@@ -291,9 +291,8 @@ function showLineComment() {
 
 function addMultiComment() {
     var tag = '#' + $(this).attr('data-tag');
-    $(".selected").find('.lineComment').each(function() {
-        console.log(this);
-        addTagToElement($("div", $(this)), tag);
+    $('.selected .line-comment').each(function() {
+        addTagToElement($("div[contenteditable]", $(this)), tag);
     });
 }
 
