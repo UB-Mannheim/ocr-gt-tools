@@ -1,36 +1,34 @@
-# Install.md
+# Installation Instructions
 
-## Repository-local server
-
-### Install dependencies
+## Install dependencies
 
 ```
 make deps
 ```
 
-### Optionally rebuild the distribution
+This will install debian packages (`make apt-get`) and current Git revisions of hocr-tools and ocropus (`make vendor`).
+
+To skip installing the Debian packages, skip the `apt-get` goal:
 
 ```
-make dev-deps dist
+make vendor
 ```
 
-If the apt-get command fails because of `npm`, you can try skipping the Debian package installation:
-
-```
-make APT_GET dev-deps
-```
-
-### Copy configuration template and edit as needed.
+## Copy configuration template and edit as needed
 
 ```
 cp conf/ocr-gt-tools.ini_tmpl conf/ocr-gt-tools.ini
 ```
 
-### Start server
+## Deploy on a server
+
+### Bundled standalone server
 
 ```
 make dev-server
 ```
+
+### 
 
 Navigate to [http://localhost:9090/dist/index.html](http://localhost:9090/index.html).
 
@@ -48,6 +46,12 @@ Install the development dependencies: The `npm` package (which pulls in nodejs) 
 
 ```
 make dev-deps
+```
+
+If the apt-get command fails because of `npm`, you can try skipping the Debian package installation:
+
+```
+make APT_GET dev-deps
 ```
 
 After changing CSS/Javascript, make sure to regenerate the `dist` folder:

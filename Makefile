@@ -120,7 +120,7 @@ deps: apt-get vendor
 apt-get:
 	$(APT_GET) install $(DEBIAN_PACKAGES)
 
-vendor: vendor/hocr-tools vendor/ocropy
+vendor: vendor/hocr-tools vendor/ocropy log/ocr-gt-tools.log log/request.log
 
 vendor/hocr-tools:
 	$(MKDIR) vendor
@@ -129,6 +129,12 @@ vendor/hocr-tools:
 vendor/ocropy:
 	$(MKDIR) vendor
 	$(GIT_CLONE) https://github.com/tmbdev/ocropy $@
+
+log/ocr-gt-tools.log:
+	touch $@
+
+log/request.log:
+	touch $@
 
 #
 # Options for development
@@ -168,6 +174,8 @@ dev-browser:
 dist: dist/vendor.css dist/vendor.js dist/fonts dist/index.html dist/ocr-gt-tools.js dist/ocr-gt-tools.css
 
 dist/ocr-gt-tools.js: ocr-gt-tools.js
+	# TODO
+	# cat $< | sed 's/%doc-root-baseuri%/kj
 	$(CP) $< $@
 
 dist/ocr-gt-tools.css: ocr-gt-tools.styl

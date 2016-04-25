@@ -42,6 +42,10 @@ hocr-extract-imagesPath=vendor/hocr-tools
 # (see https://github.com/tmbdev/ocropy)
 ocropus-gteditPath=vendor/ocropy
 
+# The base URL of the doc-root folder
+# XXX currently not used but will be used to make the URL absolute
+doc-root-baseuri=/
+
 [MISC]
 
 # If the 'correctionDir' is newly created, use this owner, e.g. www-data

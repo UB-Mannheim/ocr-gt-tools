@@ -3,6 +3,7 @@
 var UISettings = {
     zoomInFactor: 1.4,
     zoomOutFactor: 0.8,
+    baseUrl: '/ocr-gt-tools/example/',
     cgiUrl: '../ocr-gt-tools.cgi'
 };
 
@@ -107,6 +108,11 @@ function loadGtEditLocation(url) {
         success: function(res) {
             // file correction will be loaded
             $("#dropzone").addClass('hidden');
+            // res.imageUrl = UISettings.baseUrl + res.imageUrl;
+            // console.log(correctionUrl);
+            res.correctionUrl = UISettings.baseUrl + res.correctionUrl;
+            res.commentsUrl = UISettings.baseUrl + res.commentsUrl;
+            console.log(res.correctionUrl);
             window.ocrGtLocation = res;
             window.location.hash = window.ocrGtLocation.imageUrl;
             $("#raw-html").load(
