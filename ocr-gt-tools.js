@@ -23,6 +23,7 @@ Utils.parseLineComments = function parseLineComments(txt, target) {
     var lineComments = [];
     for (var i = 0; i < lines.length ; i++) {
         var lineComment = lines[i].replace(/^\d+:\s*/, '');
+        lineComment = unescapeNewline(lineComment);
         lineComments.push(lineComment);
     }
     target.pageComment = lineComments[0];
@@ -135,10 +136,6 @@ function loadGtEditLocation(url) {
             $("#zoom-out").removeClass("hidden");
             $("#save_button").removeClass("hidden");
             // activate button if #file-correction is changed
-
-            // Add links to downloads to the DOM
-            $("#download-comments").attr('href', res.commentsUrl);
-            $("#download-correction").attr('href', res.correctionUrl);
         },
         error: function(x, e) {
             window.alert(x.status + " FEHLER aufgetreten: \n" + e);
@@ -228,10 +225,7 @@ function addCommentFields() {
         });
         $("#file-correction").append($line);
     });
-    $("#page-info").html(window.templates.page({
-        "imageUrl": window.ocrGtLocation.imageUrl,
-        "pageComment": unescapeNewline(window.ocrGtLocation.pageComment),
-    }));
+    $("#page-info").html(window.templates.page(window.ocrGtLocation));
     $("#wait-load").removeClass("hidden");
     $(".show-line-comment").on('click', toggleLineComment);
     $(".hide-line-comment").on('click', toggleLineComment);

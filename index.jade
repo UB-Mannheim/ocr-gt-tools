@@ -13,18 +13,23 @@ html(lang='de')
 			.panel.panel-info
 				.panel-heading.clearfix
 					h4.panel-title Seiten-Info
-				.panel-body
-					a(href="{{ imageUrl }}")
+				.list-group
+					a.list-group-item(target="_blank", href="{{ imageUrl }}")
 						img(src="{{ imageUrl }}")
-					.page-comment
-						div(contenteditable) {{ pageComment }}
-					.list-group
-						a#download-comments.list-group-item(target="_blank")
-							i.fa.fa-download.pull-left
-							| Anmerkungen
-						a#download-correction.list-group-item(target="_blank")
-							i.fa.fa-download.pull-left
-							| Korrektur
+					a#download-comments.list-group-item(target="_blank", href="{{ commentsUrl }}")
+						i.fa.fa-download.pull-left
+						| Anmerkungen
+					a#open-work.list-group-item(target="_blank", href="http://digi.bib.uni-mannheim.de/en/suchergebnis/?tx_dlf[query]={{ pathId }}")
+						i.fa.fa-download
+						| Werk in Digitaler Bibliothek
+					a#download-correction.list-group-item(target="_blank", href="{{ correctionUrl }}")
+						i.fa.fa-download.pull-left
+						| Korrektur
+			.panel.panel-default
+				.panel-heading.clearfix
+					h4.panel-title Seiten-Kommentar
+				.page-comment
+					div(contenteditable) {{ pageComment }}
 
 		// A line of page
 		script#tpl-line(type='text/x-handlebars-template')

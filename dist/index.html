@@ -14,11 +14,14 @@
         <div class="panel-heading clearfix">
           <h4 class="panel-title">Seiten-Info</h4>
         </div>
-        <div class="panel-body"><a href="{{ imageUrl }}"><img src="{{ imageUrl }}"></a>
-          <div class="page-comment">
-            <div contenteditable>{{ pageComment }}</div>
-          </div>
-          <div class="list-group"><a id="download-comments" target="_blank" class="list-group-item"><i class="fa fa-download pull-left"></i>Anmerkungen</a><a id="download-correction" target="_blank" class="list-group-item"><i class="fa fa-download pull-left"></i>Korrektur</a></div>
+        <div class="list-group"><a target="_blank" href="{{ imageUrl }}" class="list-group-item"><img src="{{ imageUrl }}"></a><a id="download-comments" target="_blank" href="{{ commentsUrl }}" class="list-group-item"><i class="fa fa-download pull-left"></i>Anmerkungen</a><a id="open-work" target="_blank" href="http://digi.bib.uni-mannheim.de/en/suchergebnis/?tx_dlf[query]={{ pathId }}" class="list-group-item"><i class="fa fa-download"></i>Werk in Digitaler Bibliothek</a><a id="download-correction" target="_blank" href="{{ correctionUrl }}" class="list-group-item"><i class="fa fa-download pull-left"></i>Korrektur</a></div>
+      </div>
+      <div class="panel panel-default">
+        <div class="panel-heading clearfix">
+          <h4 class="panel-title">Seiten-Kommentar</h4>
+        </div>
+        <div class="page-comment">
+          <div contenteditable>{{ pageComment }}</div>
         </div>
       </div>
     </script>
