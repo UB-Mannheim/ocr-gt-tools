@@ -82,7 +82,7 @@ JS_FILES    = bower_components/jquery/dist/jquery.js \
               bower_components/bootstrap/dist/js/bootstrap.js \
               bower_components/handlebars/handlebars.min.js
 # The HTML files, described in the Jade shorthand / templating language
-JADE_FILES  = index.jade
+JADE_FILES  = ocr-gt-tools.jade
 # The files to watch for changes for to trigger a rebuild
 WATCH_FILES = Makefile ocr-gt-tools.* ${JADE_FILES} *.json
 
@@ -204,7 +204,7 @@ dist/vendor.js: ${JS_FILES}
 # sed "s,\(=.\)dist/,\1,g" $< | $(JADE) > $@
 dist/index.html: ${JADE_FILES}
 	$(MKDIR) dist
-	@$(JADE) $< --out dist
+	$(JADE) < $< > $@
 
 #
 # Automatically rebuild on file change
