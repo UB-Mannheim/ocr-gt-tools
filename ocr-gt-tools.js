@@ -209,6 +209,7 @@ function saveGtEditLocation() {
  * Adds comment fields
  */
 function addCommentFields() {
+    $("#file-correction").empty();
     $("#raw-html table").each(function(curLine) {
         var $this = $(this);
         var line = {
