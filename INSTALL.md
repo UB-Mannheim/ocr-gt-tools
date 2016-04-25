@@ -8,6 +8,14 @@ Install dependencies
 make deps
 ```
 
+Optionally rebuild the distribution
+
+```
+npm install
+bower install
+make dist
+```
+
 Copy configuration template:
 
 ```
