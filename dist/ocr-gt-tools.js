@@ -96,11 +96,6 @@ function loadGtEditLocation(url) {
         return;
     }
 
-    $("#page-info").html(window.templates.page({
-        "imageUrl": url
-    }));
-    $("#wait_load").removeClass("hidden");
-
     $.ajax({
         type: 'POST',
         url: UISettings.cgiUrl + '?action=create',
@@ -153,6 +148,14 @@ function loadGtEditLocation(url) {
     });
 }
 
+function escapeNewline(str) {
+    return str.replace(/\n*$/, '').replace(/\n/g, '<br>');
+}
+
+function unescapeNewline(str) {
+    return str.replace(/<br>/g, "\n");
+}
+
 /**
  * When the document should be saved back to the server.
  *
@@ -167,14 +170,15 @@ function saveGtEditLocation() {
     $("#wait_save").addClass("wait").removeClass("hidden");
     $("#disk").addClass("hidden");
     window.ocrGtLocation.transliterations = $('li.transcription div').map(function() {
-        return $(this).html();
+        return escapeNewline($(this).html());
     }).get();
-    window.ocrGtLocation.lineComments = $("li.lineComment div").map(function() {
-        return $(this).html();
+    window.ocrGtLocation.lineComments = $("li.line-comment div").map(function() {
+        return escapeNewline($(this).html());
     }).get();
+    window.ocrGtLocation.pageComment = escapeNewline($(".page-comment div").html());
+    console.log(window.ocrGtLocation.pageComment);
     console.log(window.ocrGtLocation.transliterations);
     console.log(window.ocrGtLocation.lineComments);
-    window.ocrGtLocation.pageComment = $(".pageComment").html();
 
     $.ajax({
         type: 'post',
@@ -203,20 +207,21 @@ function saveGtEditLocation() {
 function addCommentFields() {
     $("#raw-html table").each(function(curLine) {
         var $this = $(this);
-        $("#file_correction").append(
-            window.templates.line({
-                "id": curLine,
-                "title": $this.find("td")[0].innerHTML,
-                "transcription": $this.find("td")[2].innerHTML,
-                "imgSrc": $this.find("img")[0].getAttribute('src'),
-                "comment": window.ocrGtLocation.lineComments[curLine],
-            }));
+        var line = {
+            "id": curLine,
+            "title": $this.find("td")[0].innerHTML,
+            "imgSrc": $this.find("img")[0].getAttribute('src'),
+            "transcription": unescapeNewline($this.find("td")[2].innerHTML),
+            "comment": unescapeNewline(window.ocrGtLocation.lineComments[curLine]),
+        };
+        $("#file_correction").append(window.templates.line(line));
+        $("*[data-target='#line-comment-" + curLine + "']").on('click', toggleLineComment);
     });
-    // $("#file_correction").prepend(
-    //     '<div class="pageComment" contenteditable>' +
-    //         window.ocrGtLocation.pageComment +
-    //     '</div>'
-    // );
+    $("#page-info").html(window.templates.page({
+        "imageUrl": window.ocrGtLocation.imageUrl,
+        "pageComment": unescapeNewline(window.ocrGtLocation.pageComment),
+    }));
+    $("#wait_load").removeClass("hidden");
 }
 
 /**
@@ -250,13 +255,24 @@ function zoomReset(e) {
 }
 
 /**
- * Show/hide the line comments for a particular row
+ * Show/hide the line comments for a particular line
  */
-function toggleLineComment($tr) {
-    $tr.toggleClass("hidden");
-    var $prevTr = $tr.prev();
-    $("span.lineCommentOpen", $prevTr).toggleClass("hidden");
-    $("span.lineCommentClosed", $prevTr).toggleClass("hidden");
+function toggleLineComment() {
+    var target = $(this).attr('data-target');
+    $(target).toggleClass("hidden");
+    $("*[data-target='#" + target + "']").toggleClass("hidden");
+}
+function hideLineComment() {
+    var target = $(this).attr('data-target');
+    $(target).addClass("hidden");
+    $(".hide-line-class[data-target='#" + target + "']").addClass('hidden');
+    $(".show-line-class[data-target='#" + target + "']").removeClass('hidden');
+}
+function showLineComment() {
+    var target = $(this).attr('data-target');
+    $(target).removeClass("hidden");
+    $(".hide-line-class[data-target='#" + target + "']").removeClass('hidden');
+    $(".show-line-class[data-target='#" + target + "']").addClass('hidden');
 }
 
 /******************/
@@ -292,7 +308,6 @@ function getUrlFromDragEvent(e) {
     if (!url) {
         url = e.originalEvent.dataTransfer.getData('text/plain');
     }
-    console.log(elem);
     return url;
 }
 
@@ -395,13 +410,13 @@ $(function onPageLoaded() {
 
     // Expand all comments
     $("#expand_all_comments").on("click", function onClickExpand() {
-        $(".lineComment").collapse('toggle');
+        $(".show-line-comment").each(showLineComment);
         onScroll();
     });
 
     // Collapse all comments
     $("#collapse_all_comments").on("click", function onClickCollapse() {
-        $(".lineComment").collapse('hide');
+        $(".hide-line-comment").each(hideLineComment);
         onScroll();
     });
     onHashChange();

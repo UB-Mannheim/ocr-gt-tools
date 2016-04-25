@@ -405,10 +405,10 @@ sub saveTransliteration
         sprintf( "Could not writeTo '%s': %s\n", $temp, $!));
     my $i = 0;
     while (<$CORR_IN>) {
-        if (m/(spellcheck='true'>).*?</) {
+        if (m/(spellcheck='true'>).*?<\/td/) {
             my $transliteration = $transliterations->[ $i++ ];
             my $leftOfClosingTag = $1;
-            s/$&/$leftOfClosingTag$transliteration</;
+            s/$&/$leftOfClosingTag$transliteration<\/td/;
         }
         print $CORR_OUT $_;
     }

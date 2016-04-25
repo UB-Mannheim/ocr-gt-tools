@@ -85,7 +85,7 @@
     overflow: scroll;
   }
 
-  .line-entry .list-group-item {
+  .line .list-group-item {
       padding: 0 0 0 0;
     }
 
@@ -116,23 +116,21 @@
     display: none;
 }
 
-td[contenteditable],
 div[contenteditable],
-.line-entry input
+div[contenteditable]
 {
+    display: inline-block; /* Damit enter ein newline und kein <div> einfuegt */
+    white-space: pre-wrap; /* Damit enter ein newline und kein <div> einfuegt */
     color: #000060;
     font-family: 'EB Garamond', serif;
     font-size:20px;
     min-height:24px;
+    width: 100%;
+    height: auto;
 }
 
-tbody tr:nth-child(2)
-{
-  background:#B9AF96;
-}
-
-.lineComment,
-.pageComment
+.line-comment,
+.page-comment
 {
     background-color: lightyellow;
     font-family: 'EB Garamond', serif;

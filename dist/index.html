@@ -8,7 +8,18 @@
   </head>
   <body>
     <!-- Page info on the right-->
-    <script id="tpl-page" type="text/x-handlebars-template"><a href="{{ imageUrl }}"><img src="{{ imageUrl }}"></a></script>
+    <script id="tpl-page" type="text/x-handlebars-template">
+      <div class="panel panel-info">
+        <div class="panel-heading clearfix">
+          <h4 class="panel-title">Seiten-Info</h4>
+        </div>
+        <div class="panel-body"><a href="{{ imageUrl }}"><img src="{{ imageUrl }}"></a>
+          <div class="page-comment">
+            <div contenteditable>{{ pageComment }}</div>
+          </div>
+        </div>
+      </div>
+    </script>
     <!-- A line of page-->
     <script id="tpl-line" type="text/x-handlebars-template">
       <div class="row">
@@ -16,18 +27,18 @@
           <input type="checkbox">
         </div>
         <div class="col-sm-11">
-          <div class="panel panel-default line-entry">
+          <div id="line-{{ id }}" class="panel panel-default line">
             <div class="panel-heading clearfix">
               <h4 class="panel-title pull-left">{{ title }}</h4>
-              <div class="btn-group pull-right"><a class="btn btn-danger btn-sm">Falsch erkannt</a><a data-toggle="collapse" data-target="#lineComment-{{ id }}" class="btn btn-default btn-sm">Kommentar</a></div>
+              <div class="btn-group pull-right"><a class="btn btn-danger btn-sm">Falsch erkannt</a><a data-target="#line-comment-{{ id }}" class="btn btn-default show-line-comment"><i class="fa fa-commenting-o"></i></a><a data-target="#line-comment-{{ id }}" class="btn btn-default hide-line-comment hidden"><i class="fa fa-map-o"></i></a></div>
             </div>
             <ul class="list-group">
               <li class="list-group-item"><img src="{{ imgSrc }}" height="30"></li>
               <li class="list-group-item transcription">
-                <div contenteditable type="text">{{ transcription }}</div>
+                <div contenteditable>{{ transcription }}</div>
               </li>
-              <li id="lineComment-{{ id }}" style="height: 1px" class="list-group-item lineComment">
-                <div contenteditable type="text">{{ comment }}</div>
+              <li id="line-comment-{{ id }}" class="list-group-item line-comment hidden">
+                <div contenteditable>{{ comment }}</div>
               </li>
             </ul>
           </div>
