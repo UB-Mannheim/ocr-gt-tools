@@ -31,6 +31,16 @@ html(lang='de')
 				.page-comment
 					div(contenteditable) {{ pageComment }}
 
+		// A cheatsheet entry
+		script#tpl-cheatsheetEntry(type='text/x-handlebars-template')
+			tr
+				td 
+					a(href="https://github.com/UB-Mannheim/ocr-gt-tools/wiki/Special-Characters#{{ id }}")
+						| {{ name.de }}
+				td {{{ sample }}}
+				td
+					code {{ recognition }}
+
 		// A line of page
 		script#tpl-line(type='text/x-handlebars-template')
 			.row
@@ -73,7 +83,7 @@ html(lang='de')
 			.modal-admin
 				.modal-content
 					.modal-header
-						h4.modal-title Verlauf
+						h2.modal-title Verlauf
 							button.close(type='button', data-dismiss='modal')
 								span &times;
 					.modal-body
@@ -85,6 +95,18 @@ html(lang='de')
 									th Action
 									th IP
 							tbody
+
+		// Help modal
+		#cheatsheet-modal.modal.fade(tabindex"-1")
+			.modal-admin
+				.modal-content
+					.modal-header
+						h4.modal-title Eingabe Spickzettel
+						button.close(type='button', data-dismiss='modal')
+							span &times;
+					.modal-body
+						table.table.table-condensed
+							tbody.cheatsheet
 
 		// Will contain the raw HTML
 		#raw-html.hidden
@@ -121,21 +143,15 @@ html(lang='de')
 					//- Info
 					li.dropdown
 						a.btn.dropdown-toggle(data-toggle='dropdown')
-							i.fa.fa-4x.fa-info
+							i.fa.fa-4x.fa-info-circle
 						ul.dropdown-menu.navbar-default
 							li
 								.btn-group.btn-group-vertical
-									button.btn.btn-default
-										i.fa.fa-info.pull-left
-										| Seiten-Info
-									a#download-comments.btn.btn-default(target="_blank")
-										i.fa.fa-download.pull-left
-										| Anmerkungen
-									a#download-correction.btn.btn-default(target="_blank")
-										i.fa.fa-download.pull-left
-										| Korrektur
+									button.btn.btn-default(data-toggle="modal",data-target="#cheatsheet-modal",data-keyboard="true")
+										i.fa.fa-question
+										| Spickzettel
 									button.btn.btn-default(data-toggle="modal",data-target="#history-modal",data-keyboard="true")
-										i.fa.fa-history.pull-left
+										i.fa.fa-history
 										| Verlauf
 
 					//- Zoom

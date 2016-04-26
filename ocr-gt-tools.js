@@ -510,6 +510,27 @@ $(function onPageLoaded() {
         });
     });
 
+    // Open cheatsheet modal
+    $('button[data-target="#cheatsheet-modal"]').on('click', function() {
+        $.ajax({
+            url: 'special-chars.json',
+            type: "json",
+            success: function(data) {
+                var keys = Object.keys(data);
+                $("#cheatsheet-modal .cheatsheet").empty();
+                for (var i = 0; i < keys.length; i++) {
+                    var key = keys[i];
+                    data[key].id = key;
+                    $("#cheatsheet-modal .cheatsheet").append(window.templates.cheatsheetEntry(data[key]));
+                }
+            },
+            error: function(x, e) {
+                console.log(x);
+                window.alert(x.status + " FEHLER aufgetreten");
+            }
+        });
+    });
+
     // Expand all comments
     $("#expand_all_comments").on("click", showAllLineComments);
 
