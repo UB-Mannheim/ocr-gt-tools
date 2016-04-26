@@ -136,7 +136,7 @@ function loadGtEditLocation(url) {
                         type: 'GET',
                         url: Utils.uncachedURL(window.ocrGtLocation.commentsUrl),
                         error: function(x, e) {
-                            console.log(x);
+                            console.log(arguments);
                             window.alert(x.status + " FEHLER aufgetreten: \n" + e);
                         },
                         success: function(response, status, xhr) {
@@ -238,8 +238,12 @@ function addCommentFields() {
             "comment": unescapeNewline(window.ocrGtLocation.lineComments[curLine]),
         };
         var $line = $(window.templates.line(line));
-        $(":checkbox", $line).on('change', function() {
+        $(":checkbox", $line).on('click', function(e) {
             $(this).closest('.row').toggleClass('selected');
+            e.stopPropagation();
+        });
+        $(".select-col", $line).on('click', function(e) {
+            $(this).find(':checkbox').click();
         });
         $("#file-correction").append($line);
     });
@@ -290,7 +294,6 @@ function updateCommentButtonColor() {
         var $line = (this);
         var $lineComment = $(".line-comment div[contenteditable]", $line);
         var lineCommentId = $(".line-comment", $line).attr('id');
-        console.log(lineCommentId);
         if ($lineComment.text().match(/\S/)) {
             $(".show-line-comment[data-target='#" + lineCommentId + "']").removeClass('btn-default').addClass('btn-info');
         } else {
@@ -541,7 +544,7 @@ $(function onPageLoaded() {
                 }
             },
             error: function(x, e) {
-                console.log(x);
+                console.log(arguments);
                 window.alert(x.status + " FEHLER aufgetreten");
             }
         });
@@ -558,13 +561,12 @@ $(function onPageLoaded() {
     $('.add-multi-comment').on('click', addMultiComment);
 
     $(".set-view").on('click', function() {
-        $(".line *").addClass('view-hidden');
+        $(".lines-col .panel *").addClass('view-hidden');
         var selectors = $(this).attr('data-target');
         $.each(selectors.split(/\s*,\s*/), function(idx, selector) {
             if (selector === '.line-comment') {
                 showAllLineComments();
             }
-            console.log(selector);
             $(selector).removeClass('view-hidden');
             $(selector).parents().removeClass('view-hidden');
         });
@@ -578,6 +580,17 @@ $(function onPageLoaded() {
     $("#load-image button").on('click', function() {
         window.location.hash = '#' + $("#load-image input").val();
     });
+
+    $(".select-row").on('click', function(e) {
+        if (!$('#select-bar').hasClass('hidden')) {
+            console.log('yay');
+            $("input[type='checkbox']", this).each(function() {
+                var $checkbox = $(this);
+                checkbox.prop('checked', !checkbox.prop('checked'));
+            });
+        }
+    });
+
 
     // Trigger hash change
     onHashChange();

@@ -104,6 +104,12 @@
 .selected {
   background: #f00;
 }
+.selected .list-group-item.image {
+  background: #f00;
+}
+.selected .panel {
+  background: #f00;
+}
 div[contenteditable] {
   display: inline-block;
   white-space: pre-wrap;
@@ -156,20 +162,23 @@ div[contenteditable] {
   font-weight: bold;
 }
 .select-col {
-  padding-left: 40px;
-  border: 1px solid #ccc;
+  padding-left: 20px;
 }
 .select-col input[type="checkbox"] {
-  width: 32px;
-  height: 32px;
+  width: 23px;
+  height: 23px;
+  padding: 0;
+  margin: 4px 0 0 0;
 }
 .button-col {
+  padding-left: 0;
   padding-right: 0;
 }
 .button-col .btn {
+  padding: 0;
   text-align: left;
 }
 .button-col .btn i {
-  padding-right: 5px;
+  padding: 5px;
 }
 

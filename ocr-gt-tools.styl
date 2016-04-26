@@ -1,3 +1,5 @@
+selectedColor = red
+
 @media (min-width: 768px)
 	body
 		padding-top 0
@@ -91,7 +93,11 @@
 	display none
 
 .selected
-	background: red;
+	background: selectedColor
+	.list-group-item.image
+		background: selectedColor
+	.panel
+		background: selectedColor
 
 div[contenteditable],
 div[contenteditable]
@@ -144,19 +150,22 @@ div[contenteditable]
 		font-weight: bold
 
 .select-col
-	padding-left: 40px
-	border: 1px solid #ccc
+	padding-left: 20px
 	// margin-top: 32px
 	input[type="checkbox"]
-		width 32px
-		height 32px
+		width 23px
+		height 23px
+		padding: 0
+		margin: 4px 0 0 0
 		// padding-top 32px
 
 .button-col
+	padding-left 0
 	padding-right 0
 	.btn
+		padding:0
 		text-align left
 		i
-			padding-right: 5px;
+			padding: 5px;
 
 // vim: sw=4 ts=4 noet :
