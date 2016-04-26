@@ -35,16 +35,25 @@
     </script>
     <!-- A line of page-->
     <script id="tpl-line" type="text/x-handlebars-template">
-      <div class="row">
+      <div id="line-{{ id }}" class="row line">
+        <div data-target="#line-comment-{{ id }}" class="col-sm-1 button-col">
+          <div role="group" class="btn-group btn-group-sm">
+            <div role="group" class="btn-group"><a data-target="#line-comment-{{ id }}" class="btn btn-default show-line-comment"><i class="fa fa-commenting-o"></i></a><a data-target="#line-comment-{{ id }}" class="btn btn-default hide-line-comment hidden"><i class="fa fa-map-o"></i></a></div>
+            <div role="group" class="btn-group">
+              <button data-toggle="dropdown" type="button" aria-haspopup="true" aria-expanded="false" class="btn btn-default dropdown-toggle"><i class="fa fa-exclamation"></i><span class="caret"></span></button>
+              <ul class="dropdown-menu">
+                <li><a>foo</a></li>
+                <li><a data-target="#line-comment-{{ id }}" data-tag="text-italic" class="btn btn-default add-comment"><i class="fa fa-italic"></i>Kursiv</a></li>
+                <li><a data-target="#line-comment-{{ id }}" data-tag="wrong-image-section" class="btn btn-warning add-comment"><i class="fa fa-exclamation-circle"></i>Fehler in Vorlage</a></li>
+              </ul>
+            </div>
+          </div>
+        </div>
         <div data-target="#line-comment-{{ id }}" class="col-sm-1 select-col hidden">
           <input type="checkbox">
         </div>
-        <div class="col-sm-11">
-          <div id="line-{{ id }}" class="panel panel-default line">
-            <div class="panel-heading clearfix">
-              <h4 class="panel-title pull-left">{{ title }}</h4>
-              <div class="btn-group pull-right"><a data-target="#line-comment-{{ id }}" data-tag="text-italic" class="btn btn-sm btn-default add-comment"><i class="fa btn-sm fa-italic"></i>Kursiv</a><a data-target="#line-comment-{{ id }}" data-tag="wrong-image-section" class="btn btn-sm btn-warning add-comment"><i class="fa btn-sm fa-exclamation-circle"></i>Fehler in Vorlage</a><a data-target="#line-comment-{{ id }}" class="btn btn-sm btn-default show-line-comment"><i class="fa btn-sm fa-commenting-o"></i></a><a data-target="#line-comment-{{ id }}" class="btn btn-default hide-line-comment hidden"><i class="fa fa-map-o"></i></a></div>
-            </div>
+        <div class="col-sm-11 lines-col">
+          <div class="panel panel-default">
             <ul class="list-group">
               <li class="list-group-item"><img src="{{ imgSrc }}" height="30"></li>
               <li class="list-group-item transcription">

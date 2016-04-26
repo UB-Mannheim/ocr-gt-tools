@@ -289,10 +289,12 @@ function updateCommentButtonColor() {
     $(".line").each(function() {
         var $line = (this);
         var $lineComment = $(".line-comment div[contenteditable]", $line);
+        var lineCommentId = $(".line-comment", $line).attr('id');
+        console.log(lineCommentId);
         if ($lineComment.html().match(/\S/)) {
-            $(".show-line-comment", $line).removeClass('btn-default').addClass('btn-info');
+            $(".show-line-comment[data-target='#" + lineCommentId + "']").removeClass('btn-default').addClass('btn-info');
         } else {
-            $(".show-line-comment", $line).addClass('btn-default').removeClass('btn-info');
+            $(".show-line-comment[data-target='#" + lineCommentId + "']").addClass('btn-default').removeClass('btn-info');
         }
     });
 }
@@ -347,6 +349,7 @@ function addTagToElement($target, tag) {
         }
         $target.append(tag);
         $target.append('\n');
+        $target.parent().removeClass("hidden");
         markChanged();
     }
 }
@@ -358,8 +361,8 @@ function addTagToElement($target, tag) {
  */
 function sortRowsByWidth(order) {
     var order = order || 1;
-    $("#file-correction").append(
-        $("#file-correction .row").sort(function(a, b) {
+    $("#file-correction .lines-col").append(
+        $("#file-correction .panel").sort(function(a, b) {
             var aWidth = getImageWidth(a);
             var bWidth = getImageWidth(b);
             return (aWidth - bWidth) * order;
@@ -374,10 +377,10 @@ function sortRowsByWidth(order) {
  */
 function sortRowsByLine(order) {
     var order = order || 1;
-    $("#file-correction").append(
-        $("#file-correction .row").sort(function(a, b) {
-            var aLine = $(a).find(".select-col").attr('data-target').replace(/[^\d]/g, '');
-            var bLine = $(b).find(".select-col").attr('data-target').replace(/[^\d]/g, '');
+    $("#file-correction .lines-col").append(
+        $("#file-correction .lines-col").sort(function(a, b) {
+            var aLine = $(a).closest(".row").attr('id').replace(/[^\d]/g, '');
+            var bLine = $(b).closest(".row").attr('id').replace(/[^\d]/g, '');
             return (aLine - bLine) * order;
         }).detach()
     );
@@ -484,6 +487,7 @@ function setupDragAndDrop() {
 function toggleSelectMode() {
     $(".selected").toggleClass('selected');
     $(".select-col").toggleClass('hidden');
+    $(".button-col").toggleClass('hidden');
     $("#select-bar").toggleClass('hidden');
 }
 

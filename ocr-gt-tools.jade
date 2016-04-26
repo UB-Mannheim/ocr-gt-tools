@@ -43,24 +43,36 @@ html(lang='de')
 
 		// A line of page
 		script#tpl-line(type='text/x-handlebars-template')
-			.row
+			.row.line(id="line-{{ id }}")
+
+				.col-sm-1.button-col(data-target="#line-comment-{{ id }}")
+					.btn-group.btn-group-sm(role='group')
+						.btn-group(role='group')
+							a.btn.btn-default.show-line-comment(data-target="#line-comment-{{ id }}")
+								i.fa.fa-commenting-o
+							a.btn.btn-default.hide-line-comment.hidden(data-target="#line-comment-{{ id }}")
+								i.fa.fa-map-o
+						.btn-group(role='group')
+							button.btn.btn-default.dropdown-toggle(data-toggle="dropdown", type='button', aria-haspopup="true", aria-expanded="false")
+								i.fa.fa-exclamation
+								span.caret
+							ul.dropdown-menu
+								li
+									a foo
+								li
+									a.btn.btn-default.add-comment(data-target="#line-comment-{{ id }}", data-tag="text-italic")
+										i.fa.fa-italic
+										| Kursiv
+								li
+									a.btn.btn-warning.add-comment(data-target="#line-comment-{{ id }}", data-tag="wrong-image-section")
+										i.fa.fa-exclamation-circle
+										| Fehler in Vorlage
+
 				.col-sm-1.select-col.hidden(data-target="#line-comment-{{ id }}")
 					input(type="checkbox")
-				.col-sm-11
-					.panel.panel-default.line(id="line-{{ id }}")
-						.panel-heading.clearfix
-							h4.panel-title.pull-left {{ title }}
-							.btn-group.pull-right
-								a.btn.btn-sm.btn-default.add-comment(data-target="#line-comment-{{ id }}", data-tag="text-italic")
-									i.fa.btn-sm.fa-italic
-									| Kursiv
-								a.btn.btn-sm.btn-warning.add-comment(data-target="#line-comment-{{ id }}", data-tag="wrong-image-section")
-									i.fa.btn-sm.fa-exclamation-circle
-									| Fehler in Vorlage
-								a.btn.btn-sm.btn-default.show-line-comment(data-target="#line-comment-{{ id }}")
-									i.fa.btn-sm.fa-commenting-o
-								a.btn.btn-default.hide-line-comment.hidden(data-target="#line-comment-{{ id }}")
-									i.fa.fa-map-o
+
+				.col-sm-11.lines-col
+					.panel.panel-default
 						ul.list-group
 							li.list-group-item
 								img(src="{{ imgSrc }}", height="30")

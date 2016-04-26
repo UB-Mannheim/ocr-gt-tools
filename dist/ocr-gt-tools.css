@@ -163,4 +163,13 @@ div[contenteditable] {
   width: 32px;
   height: 32px;
 }
+.button-col {
+  padding-right: 0;
+}
+.button-col .btn {
+  text-align: left;
+}
+.button-col .btn i {
+  padding-right: 5px;
+}
 
