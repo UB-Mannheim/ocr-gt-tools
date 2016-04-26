@@ -155,7 +155,7 @@ html(lang='de')
 										| Verlauf
 
 					//- Zoom
-					li.dropdown
+					li.dropdown.disabled
 						a.btn.dropdown-toggle(data-toggle='dropdown')
 							i.fa.fa-search-plus.fa-4x
 						ul.dropdown-menu.navbar-default
@@ -172,7 +172,7 @@ html(lang='de')
 										| Kleiner
 
 					//- Show/hide comments
-					li.dropdown
+					li.dropdown.disabled
 						a.btn.dropdown-toggle(data-toggle='dropdown')
 							i.fa.fa-4x.fa-eye
 						ul.dropdown-menu.navbar-default
@@ -204,7 +204,7 @@ html(lang='de')
 										| Text + Kommentar
 
 					//- Show/hide comments
-					li.dropdown
+					li.dropdown.disabled
 						a.btn.dropdown-toggle(data-toggle='dropdown')
 							i.fa.fa-4x.fa-plus-square-o
 						ul.dropdown-menu.navbar-default
@@ -218,7 +218,7 @@ html(lang='de')
 										| Alle ausklappen
 
 					//- Filter
-					li.dropdown
+					li.dropdown.disabled
 						a.btn.dropdown-toggle(data-toggle='dropdown')
 							i.fa.fa-4x.fa-filter
 						ul.dropdown-menu.navbar-default
@@ -253,7 +253,7 @@ html(lang='de')
 						br
 						| URL angeben:
 						br
-						div.input-group
+						div.input-group#load-image
 							input.input-lg.form-control(type='text')
 							span.input-group-btn
 								button.btn.btn-default.btn-lg(type="button") Los!

@@ -136,6 +136,7 @@ function loadGtEditLocation(url) {
                         type: 'GET',
                         url: Utils.uncachedURL(window.ocrGtLocation.commentsUrl),
                         error: function(x, e) {
+                            console.log(x);
                             window.alert(x.status + " FEHLER aufgetreten: \n" + e);
                         },
                         success: function(response, status, xhr) {
@@ -145,6 +146,7 @@ function loadGtEditLocation(url) {
                             // $("#wait-load").addClass("hidden");
                             // show new document
                             $("#file-correction").removeClass("hidden");
+                            $("ul.navbar-nav li").removeClass("disabled");
                             onScroll();
                         }
                     });
@@ -567,6 +569,10 @@ $(function onPageLoaded() {
     $("#sort-line-desc").on('click', function() { sortRowsByLine(-1); });
     $("#sort-width").on('click', function() { sortRowsByWidth(1); });
     $("#sort-width-desc").on('click', function() { sortRowsByWidth(-1); });
+
+    $("#load-image button").on('click', function() {
+        window.location.hash = '#' + $("#load-image input").val();
+    });
 
     // Trigger hash change
     onHashChange();
