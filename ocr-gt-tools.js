@@ -492,8 +492,12 @@ $(function onPageLoaded() {
 
     $("#sort-length").on('click', function() {
         $("#file-correction").append(
-            $(".line").sort(function(a, b) {
-                return $(a).find('img')[0].clientWidth <= $(b).find('img')[0].clientWidth;
+            $("#file-correction .row").sort(function(a, b) {
+                var aWidth = $(a).find('img')[0].clientWidth;
+                var bWidth = $(b).find('img')[0].clientWidth;
+                return (aWidth > bWidth) ? 1
+                    : (bWidth > aWidth) ? -1
+                    : 0;
             }).detach()
         );
     });
