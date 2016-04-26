@@ -8,7 +8,9 @@
     <link href="ocr-gt-tools.css" rel="stylesheet">
   </head>
   <body>
+    <!---->
     <!-- Page info on the right-->
+    <!---->
     <script id="tpl-page" type="text/x-handlebars-template">
       <div class="panel panel-info">
         <div class="panel-heading clearfix">
@@ -25,7 +27,9 @@
         </div>
       </div>
     </script>
+    <!---->
     <!-- A cheatsheet entry-->
+    <!---->
     <script id="tpl-cheatsheetEntry" type="text/x-handlebars-template">
       <tr>
         <td> <a target="_blank" href="https://github.com/UB-Mannheim/ocr-gt-tools/wiki/Special-Characters#{{ id }}">{{ name.de }}</a></td>
@@ -33,7 +37,9 @@
         <td><code>{{ recognition }}</code></td>
       </tr>
     </script>
+    <!---->
     <!-- A line of page-->
+    <!---->
     <script id="tpl-line" type="text/x-handlebars-template">
       <div id="line-{{ id }}" class="row line">
         <div data-target="#line-comment-{{ id }}" class="col-sm-1 button-col">
@@ -42,7 +48,6 @@
             <div role="group" class="btn-group">
               <button data-toggle="dropdown" type="button" aria-haspopup="true" aria-expanded="false" class="btn btn-default dropdown-toggle"><i class="fa fa-exclamation"></i><span class="caret"></span></button>
               <ul class="dropdown-menu">
-                <li><a>foo</a></li>
                 <li><a data-target="#line-comment-{{ id }}" data-tag="text-italic" class="btn btn-default add-comment"><i class="fa fa-italic"></i>Kursiv</a></li>
                 <li><a data-target="#line-comment-{{ id }}" data-tag="wrong-image-section" class="btn btn-warning add-comment"><i class="fa fa-exclamation-circle"></i>Fehler in Vorlage</a></li>
               </ul>
@@ -67,7 +72,9 @@
         </div>
       </div>
     </script>
+    <!---->
     <!-- A row of history-->
+    <!---->
     <script id="tpl-historyItem" type="text/x-handlebars-template">
       <tr>
         <td>{{ date }}</td>
@@ -76,7 +83,9 @@
         <td>{{ ip }}</td>
       </tr>
     </script>
+    <!---->
     <!-- Modal popup containing the history-->
+    <!---->
     <div id="history-modal" tabindex="-1" class="modal fade">
       <div class="modal-admin">
         <div class="modal-content">
@@ -101,7 +110,9 @@
         </div>
       </div>
     </div>
+    <!---->
     <!-- Help modal-->
+    <!---->
     <div id="cheatsheet-modal" tabindex"-1 class="modal fade">
       <div class="modal-admin">
         <div class="modal-content">
@@ -117,15 +128,21 @@
         </div>
       </div>
     </div>
+    <!---->
     <!-- Will contain the raw HTML-->
+    <!---->
     <div id="raw-html" class="hidden"></div>
+    <!---->
     <!-- Will contain the toolbar for the multi select mode-->
+    <!---->
     <div id="select-bar" class="hidden">
       <div class="panel-heading clearfix">
         <div class="btn-group pull-right"><a class="btn btn-sm btn-default select-all"><i class="fa btn-sm fa-arrows-alt"></i>Alle auswählen</a><a class="btn btn-sm btn-default select-none"><i class="fa btn-sm fa-arrows-alt"></i>Auswahl aufheben</a><a class="btn btn-sm btn-default select-toggle"><i class="fa btn-sm fa-arrows-alt"></i>Auswahl umkehren</a><a data-tag="text-italic" class="btn btn-sm btn-default add-multi-comment"><i class="fa btn-sm fa-italic"></i>Kursiv</a><a data-tag="wrong-image-section" class="btn btn-sm btn-warning add-multi-comment"><i class="fa btn-sm fa-exclamation-circle"></i>Fehler in Vorlage</a></div>
       </div>
     </div>
+    <!---->
     <!-- The navbar on the left side-->
+    <!---->
     <nav role="navigation" class="navbar navbar-default">
       <!-- Brand and toggle get grouped for better mobile display-->
       <div class="navbar-header">
@@ -199,6 +216,8 @@
         </ul>
       </div>
     </nav>
+    <!---->
+    <!---->
     <div class="container-fluid">
       <div class="row">
         <div id="root" class="col-sm-9">

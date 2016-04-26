@@ -364,8 +364,8 @@ function addTagToElement($target, tag) {
  */
 function sortRowsByWidth(order) {
     var order = order || 1;
-    $("#file-correction .lines-col").append(
-        $("#file-correction .panel").sort(function(a, b) {
+    $("#file-correction").append(
+        $("#file-correction .row").sort(function(a, b) {
             var aWidth = getImageWidth(a);
             var bWidth = getImageWidth(b);
             return (aWidth - bWidth) * order;
@@ -380,10 +380,10 @@ function sortRowsByWidth(order) {
  */
 function sortRowsByLine(order) {
     var order = order || 1;
-    $("#file-correction .lines-col").append(
-        $("#file-correction .lines-col").sort(function(a, b) {
-            var aLine = $(a).closest(".row").attr('id').replace(/[^\d]/g, '');
-            var bLine = $(b).closest(".row").attr('id').replace(/[^\d]/g, '');
+    $("#file-correction").append(
+        $("#file-correction .row").sort(function(a, b) {
+            var aLine = $(a).attr('id').replace(/[^\d]/g, '');
+            var bLine = $(b).attr('id').replace(/[^\d]/g, '');
             return (aLine - bLine) * order;
         }).detach()
     );
