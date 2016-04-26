@@ -249,6 +249,8 @@ sub mapUrltoFile
     unless ($location{pathServer} && $location{pathSection} && $location{pathId} && $location{cFile}) {
         http400($cgi, "Cannot map URL to filesystem: $url");
     }
+    $location{hiresUrl} = $url;
+    $location{hiresUrl} =~ s/thumbs/max/smx;
     $location{cFile} =~ m/.*?\_([0-9]{4})/;
     $location{pathPage} = $1;
     unless ($location{pathPage}) {
