@@ -389,6 +389,20 @@ function sortRowsByLine(order) {
     );
 }
 
+function changeSelection(action) {
+    $('.select-col').each(function() {
+        var $this = $(this);
+        var isSelected = $this.closest('.row').hasClass('selected');
+        if (action === 'select' && !isSelected) {
+            $this.trigger('click');
+        } else if (action === 'unselect' && isSelected) {
+            $this.trigger('click');
+        } else if (action === 'toggle') {
+            $this.trigger('click');
+        }
+    });
+}
+
 /******************/
 /* Event handlers */
 /******************/
@@ -580,17 +594,9 @@ $(function onPageLoaded() {
     $("#load-image button").on('click', function() {
         window.location.hash = '#' + $("#load-image input").val();
     });
-
-    $(".select-row").on('click', function(e) {
-        if (!$('#select-bar').hasClass('hidden')) {
-            console.log('yay');
-            $("input[type='checkbox']", this).each(function() {
-                var $checkbox = $(this);
-                checkbox.prop('checked', !checkbox.prop('checked'));
-            });
-        }
-    });
-
+    $(".select-all").on('click', function() { changeSelection('select'); });
+    $(".select-none").on('click', function() { changeSelection('unselect'); });
+    $(".select-toggle").on('click', function() { changeSelection('toggle'); });
 
     // Trigger hash change
     onHashChange();
