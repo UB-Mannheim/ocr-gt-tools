@@ -571,7 +571,7 @@ sub processHistoryRequest
     @lines = ($n >= @lines ? @lines : @lines[-$n .. -1]);
     print $cgi->header( -type => 'application/json', -charset => 'utf-8');
     print "[";
-    print join(',',@lines);
+    print join(',', reverse @lines);
     print "]";
 }
 
