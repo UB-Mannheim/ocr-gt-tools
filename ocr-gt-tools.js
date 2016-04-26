@@ -119,7 +119,7 @@ function loadGtEditLocation(url) {
     $.ajax({
         type: 'POST',
         url: UISettings.cgiUrl + '?action=create',
-        data: {'data_url': url},
+        data: {'imageUrl': url},
         beforeSend: function(xhr) {
             // to instantly see when a new document has been retrieved
             $("#file-correction").addClass("hidden");

@@ -65,10 +65,7 @@ Log the IP and scan URL to request.log
 sub logRequest
 {
     my $cgi = shift;
-    my $url = $cgi->param('data_url');
-    if (!$url) {
-        $url = $cgi->param('imageUrl');
-    }
+    my $url = $cgi->param('imageUrl');
     if (!$url) {
         debug("No URL to log for this request");
         return;
@@ -509,9 +506,9 @@ Create process to create the files necessary
 sub processCreateRequest
 {
     my ($cgi, $config) = @_;
-    my $url = $cgi->param('data_url');
+    my $url = $cgi->param('imageUrl');
     my @missing;
-    push @missing, 'data_url' unless ($url);
+    push @missing, 'imageUrl' unless ($url);
     if (scalar @missing) {
         http400($cgi, "Missing params: %s\n\n", join(', ', @missing));
     }
