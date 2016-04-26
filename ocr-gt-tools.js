@@ -71,7 +71,6 @@ function isElementInViewport(el) {
 /**
  * Compile the Handlebars templates
  */
-
 function compileTemplates() {
     window.templates = {};
     $("*[id^='tpl-']").each(function() {
@@ -81,6 +80,18 @@ function compileTemplates() {
     });
 }
 
+/**
+ * Get the width of the first image in an element.
+ */
+function getImageWidth(el) {
+    if (el.tagName !== 'IMG') {
+        el = $(el).find('img')[0];
+        if (!el) {
+            return -1;
+        }
+    }
+    return el.clientWidth;
+}
 
 /*******************************/
 /* Client-Server communication */
@@ -330,6 +341,38 @@ function addTagToElement($target, tag) {
     }
 }
 
+/**
+ * Sort the rows by image width
+ *
+ * @param {number} order Sort descending (-1) or ascending (1, default)
+ */
+function sortRowsByWidth(order) {
+    var order = order || 1;
+    $("#file-correction").append(
+        $("#file-correction .row").sort(function(a, b) {
+            var aWidth = getImageWidth(a);
+            var bWidth = getImageWidth(b);
+            return (aWidth - bWidth) * order;
+        }).detach()
+    );
+}
+
+/**
+ * Sort the rows by line number
+ *
+ * @param {number} order Sort descending (-1) or ascending (1, default)
+ */
+function sortRowsByLine(order) {
+    var order = order || 1;
+    $("#file-correction").append(
+        $("#file-correction .row").sort(function(a, b) {
+            var aLine = $(a).find(".select-col").attr('data-target').replace(/[^\d]/g, '');
+            var bLine = $(b).find(".select-col").attr('data-target').replace(/[^\d]/g, '');
+            return (aLine - bLine) * order;
+        }).detach()
+    );
+}
+
 /******************/
 /* Event handlers */
 /******************/
@@ -490,20 +533,13 @@ $(function onPageLoaded() {
         });
     });
 
-    $("#sort-length").on('click', function() {
-        $("#file-correction").append(
-            $("#file-correction .row").sort(function(a, b) {
-                var aWidth = $(a).find('img')[0].clientWidth;
-                var bWidth = $(b).find('img')[0].clientWidth;
-                return (aWidth > bWidth) ? 1
-                    : (bWidth > aWidth) ? -1
-                    : 0;
-            }).detach()
-        );
-    });
+    $("#sort-line").on('click', function() { sortRowsByLine(1); });
+    $("#sort-line-desc").on('click', function() { sortRowsByLine(-1); });
+    $("#sort-width").on('click', function() { sortRowsByWidth(1); });
+    $("#sort-width-desc").on('click', function() { sortRowsByWidth(-1); });
 
     // Trigger hash change
     onHashChange();
 });
 
-// vim: sw=4 ts=4 :
+// vim: sw=4 ts=4 fmr={,} :

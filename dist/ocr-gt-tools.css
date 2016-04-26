@@ -44,6 +44,7 @@
     top: 0;
     left: 100%;
     padding: 0;
+    width: 220px;
   }
   .navbar .btn.disabled {
     opacity: 0.35;

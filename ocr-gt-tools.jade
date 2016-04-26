@@ -163,38 +163,38 @@ html(lang='de')
 							li
 								.btn-group.btn-group-vertical
 									button.set-view.btn.btn-default(type='button', data-target='*')
-										i.fa.fa-plus-square-o
+										i.fa.fa-arrows-alt
 										| Vollansicht
 									button.set-view.btn.btn-default(type='button', data-target='img')
 										i.fa.fa-picture-o
-										| Nur Bilder
+										| Bild
 									button.set-view.btn.btn-default(type='button', data-target='.transcription')
 										i.fa.fa-align-left
-										| Nur Text
+										| Text
 									button.set-view.btn.btn-default(type='button', data-target='.line-comment')
 										i.fa.fa-commenting-o
-										| Nur Kommentare
+										| Kommentar
 									button.set-view.btn.btn-default(type='button', data-target='.transcription,img')
 										i.fa.fa-picture-o
 										i.fa.fa-align-left
-										| Nur Bilder + Text
+										| Bild + Text
 									button.set-view.btn.btn-default(type='button', data-target='.line-comment,img')
-										i.fa.fa-commenting-o
 										i.fa.fa-picture-o
-										| Nur Bilder + Kommentare
+										i.fa.fa-commenting-o
+										| Bild + Kommentar
 
 					//- Show/hide comments
 					li.dropdown
 						a.btn.dropdown-toggle(data-toggle='dropdown')
-							i.fa.fa-4x.fa-caret-square-o-down
+							i.fa.fa-4x.fa-plus-square-o
 						ul.dropdown-menu.navbar-default
 							li
 								.btn-group.btn-group-vertical
 									button#collapse_all_comments.btn.btn-default(type='button')
-										i.fa.fa-plus-square-o
+										i.fa.fa-minus-square-o
 										| Alle einklappen
 									button#expand_all_comments.btn.btn-default(type='button')
-										i.fa.fa-minus-square-o
+										i.fa.fa-plus-square-o
 										| Alle ausklappen
 
 					//- Filter
@@ -207,10 +207,18 @@ html(lang='de')
 									button#toggle-select.btn.btn-default
 										i.fa.fa-plus-square-o
 										| Multi-Select
-									button#sort-length.btn.btn-default
+									button#sort-line.btn.btn-default
 										i.fa.fa-sort
-										i.fa.fa-sorting
-										| Nach Länge sortieren
+										| Normale Sortierung (auf)
+									button#sort-line-desc.btn.btn-default
+										i.fa.fa-sort
+										| Umgekehrte Sortierung (ab)
+									button#sort-width.btn.btn-default
+										i.fa.fa-sort
+										| Nach Breite sortieren (auf)
+									button#sort-width-desc.btn.btn-default
+										i.fa.fa-sort
+										| Nach Breite sortieren (ab)
 
 		//- Here be dragons
 		.container-fluid

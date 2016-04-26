@@ -129,22 +129,22 @@
             <ul class="dropdown-menu navbar-default">
               <li>
                 <div class="btn-group btn-group-vertical">
-                  <button type="button" data-target="*" class="set-view btn btn-default"><i class="fa fa-plus-square-o"></i>Vollansicht</button>
-                  <button type="button" data-target="img" class="set-view btn btn-default"><i class="fa fa-picture-o"></i>Nur Bilder</button>
-                  <button type="button" data-target=".transcription" class="set-view btn btn-default"><i class="fa fa-align-left"></i>Nur Text</button>
-                  <button type="button" data-target=".line-comment" class="set-view btn btn-default"><i class="fa fa-commenting-o"></i>Nur Kommentare</button>
-                  <button type="button" data-target=".transcription,img" class="set-view btn btn-default"><i class="fa fa-picture-o"></i><i class="fa fa-align-left"></i>Nur Bilder + Text</button>
-                  <button type="button" data-target=".line-comment,img" class="set-view btn btn-default"><i class="fa fa-commenting-o"></i><i class="fa fa-picture-o"></i>Nur Bilder + Kommentare</button>
+                  <button type="button" data-target="*" class="set-view btn btn-default"><i class="fa fa-arrows-alt"></i>Vollansicht</button>
+                  <button type="button" data-target="img" class="set-view btn btn-default"><i class="fa fa-picture-o"></i>Bild</button>
+                  <button type="button" data-target=".transcription" class="set-view btn btn-default"><i class="fa fa-align-left"></i>Text</button>
+                  <button type="button" data-target=".line-comment" class="set-view btn btn-default"><i class="fa fa-commenting-o"></i>Kommentar</button>
+                  <button type="button" data-target=".transcription,img" class="set-view btn btn-default"><i class="fa fa-picture-o"></i><i class="fa fa-align-left"></i>Bild + Text</button>
+                  <button type="button" data-target=".line-comment,img" class="set-view btn btn-default"><i class="fa fa-picture-o"></i><i class="fa fa-commenting-o"></i>Bild + Kommentar</button>
                 </div>
               </li>
             </ul>
           </li>
-          <li class="dropdown"><a data-toggle="dropdown" class="btn dropdown-toggle"><i class="fa fa-4x fa-caret-square-o-down"></i></a>
+          <li class="dropdown"><a data-toggle="dropdown" class="btn dropdown-toggle"><i class="fa fa-4x fa-plus-square-o"></i></a>
             <ul class="dropdown-menu navbar-default">
               <li>
                 <div class="btn-group btn-group-vertical">
-                  <button id="collapse_all_comments" type="button" class="btn btn-default"><i class="fa fa-plus-square-o"></i>Alle einklappen</button>
-                  <button id="expand_all_comments" type="button" class="btn btn-default"><i class="fa fa-minus-square-o"></i>Alle ausklappen</button>
+                  <button id="collapse_all_comments" type="button" class="btn btn-default"><i class="fa fa-minus-square-o"></i>Alle einklappen</button>
+                  <button id="expand_all_comments" type="button" class="btn btn-default"><i class="fa fa-plus-square-o"></i>Alle ausklappen</button>
                 </div>
               </li>
             </ul>
@@ -154,7 +154,10 @@
               <li>
                 <div class="btn-group btn-group-vertical">
                   <button id="toggle-select" class="btn btn-default"><i class="fa fa-plus-square-o"></i>Multi-Select</button>
-                  <button id="sort-length" class="btn btn-default"><i class="fa fa-sort"></i><i class="fa fa-sorting"></i>Nach Länge sortieren</button>
+                  <button id="sort-line" class="btn btn-default"><i class="fa fa-sort"></i>Normale Sortierung (auf)</button>
+                  <button id="sort-line-desc" class="btn btn-default"><i class="fa fa-sort"></i>Umgekehrte Sortierung (ab)</button>
+                  <button id="sort-width" class="btn btn-default"><i class="fa fa-sort"></i>Nach Breite sortieren (auf)</button>
+                  <button id="sort-width-desc" class="btn btn-default"><i class="fa fa-sort"></i>Nach Breite sortieren (ab)</button>
                 </div>
               </li>
             </ul>
