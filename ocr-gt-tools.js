@@ -189,7 +189,7 @@ function saveGtEditLocation() {
     console.log(window.ocrGtLocation.lineComments);
 
     $.ajax({
-        type: 'post',
+        type: 'POST',
         url: UISettings.cgiUrl + '?action=save',
         data: window.ocrGtLocation,
         success: markSaved,
@@ -509,7 +509,7 @@ $(function onPageLoaded() {
     $('button[data-target="#history-modal"]').on('click', function() {
         $.ajax({
             url: UISettings.cgiUrl + '?action=history&mine=true',
-            type: "json",
+            dataType: "json",
             success: function(data) {
                 for (var i = 0; i < data.length ; i++) {
                     $("#history-modal tbody").append(window.templates.historyItem(data[i]));
@@ -525,7 +525,7 @@ $(function onPageLoaded() {
     $('button[data-target="#cheatsheet-modal"]').on('click', function() {
         $.ajax({
             url: 'special-chars.json',
-            type: "json",
+            dataType: "json",
             success: function(data) {
                 var keys = Object.keys(data);
                 $("#cheatsheet-modal .cheatsheet").empty();
