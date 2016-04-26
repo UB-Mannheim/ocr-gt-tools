@@ -93,6 +93,14 @@ function getImageWidth(el) {
     return el.clientWidth;
 }
 
+function escapeNewline(str) {
+    return str.replace(/^\n*/, '').replace(/\n*$/, '').replace(/\n/g, '<br>');
+}
+
+function unescapeNewline(str) {
+    return str.replace(/^(<br>)*/, '').replace(/(<br>)*$/, '').replace(/<br>/g, "\n");
+}
+
 /*******************************/
 /* Client-Server communication */
 /*******************************/
@@ -154,27 +162,6 @@ function loadGtEditLocation(url) {
     });
 }
 
-function escapeNewline(str) {
-    return str.replace(/^\n*/, '').replace(/\n*$/, '').replace(/\n/g, '<br>');
-}
-
-function unescapeNewline(str) {
-    return str.replace(/^(<br>)*/, '').replace(/(<br>)*$/, '').replace(/<br>/g, "\n");
-}
-
-function markChanged() {
-    window.ocrGtLocation.changed = true;
-    $("#save_button").removeClass("disabled");
-    updateCommentButtonColor();
-}
-
-function markSaved() {
-    window.ocrGtLocation.changed = false;
-    $("#wait_save").removeClass("wait").addClass("hidden");
-    $("#disk").removeClass("hidden");
-    $("#save_button").addClass("disabled");
-}
-
 /**
  * When the document should be saved back to the server.
  *
@@ -214,6 +201,26 @@ function saveGtEditLocation() {
 /* DOM manipulation */
 /********************/
 
+
+/**
+ * Mark the current page as 'changed'.
+ */
+function markChanged() {
+    window.ocrGtLocation.changed = true;
+    $("#save_button").removeClass("disabled");
+    updateCommentButtonColor();
+}
+
+/**
+ * Mark the current page as 'saved'.
+ */
+function markSaved() {
+    window.ocrGtLocation.changed = false;
+    $("#wait_save").removeClass("wait").addClass("hidden");
+    $("#disk").removeClass("hidden");
+    $("#save_button").addClass("disabled");
+}
+
 /**
  * Adds comment fields
  */
@@ -243,7 +250,7 @@ function addCommentFields() {
 }
 
 /**
- * Increase zoom by UISettings.zoomInFactor
+ * Increase image zoom by UISettings.zoomInFactor
  */
 function zoomIn(e) {
     e.stopPropagation();
@@ -253,7 +260,7 @@ function zoomIn(e) {
 }
 
 /**
- * Decrease zoom by UISettings.zoomOutFactor
+ * Decrease image zoom by UISettings.zoomOutFactor
  */
 function zoomOut(e) {
     e.stopPropagation();
@@ -273,7 +280,7 @@ function zoomReset(e) {
 }
 
 /**
- * Update the color of the comment toggle button depending on whether it has
+ * Update the color of the comment toggle button depending on whether line has
  * comments or not.
  */
 function updateCommentButtonColor() {
@@ -432,41 +439,43 @@ function setupDragAndDrop() {
         e.preventDefault();
     });
     // Show the drop zone on as soon as something is dragged
-    $(document).bind('dragenter', function onDragEnter(e) {
-        e.preventDefault();
-        $("#dropzone").removeClass('hidden');
-    });
-    $(document).bind('dragend', function onDragEnd(e) {
-        e.preventDefault();
-        $("#dropzone").addClass('hidden');
-    });
-    $("#dropzone").bind('dragover', function onDragOver(e) {
-        e.preventDefault();
-        $("#dropzone").addClass('droppable').removeClass('hidden');
-    });
-    $("#dropzone").bind('dragenter', function onDragEnterDropZone(e) {
-        e.preventDefault();
-        e.stopPropagation();
-        $("#dropzone").addClass('droppable').removeClass('hidden');
-    });
-    $("#dropzone").bind('dragleave', function onDragLeaveDropZone(e) {
-        e.preventDefault();
-        $("#dropzone").removeClass('droppable').addClass('hidden');
-    });
-    $("#dropzone").bind('drop', function onDrop(e) {
-        e.preventDefault();
+    $(document)
+        .bind('dragenter', function onDragEnter(e) {
+            e.preventDefault();
+            $("#file-correction").addClass('hidden');
+            $("#dropzone").removeClass('hidden');
+        })
+        .bind('dragend', function onDragEnd(e) {
+            e.preventDefault();
+            $("#file-correction").removeClass('hidden');
+            $("#dropzone").addClass('hidden');
+        });
+    $("#dropzone")
+        .bind('dragover dragenter', function onDragOver(e) {
+            e.preventDefault();
+            $("#dropzone").addClass('droppable').removeClass('hidden');
+        })
+        .bind('dragenter', function onDragEnterDropZone(e) {
+            e.stopPropagation();
+        })
+        .bind('dragleave', function onDragLeaveDropZone(e) {
+            e.preventDefault();
+            $("#dropzone").removeClass('droppable').addClass('hidden');
+        })
+        .bind('drop', function onDrop(e) {
+            e.preventDefault();
 
-        if (window.ocrGtLocation && window.ocrGtLocation.changed) {
-            window.alert("Ungesicherte Inhalte vorhanden, bitte zuerst speichern!");
-        } else {
-            var url = getUrlFromDragEvent(e);
-            if (url) {
-                loadGtEditLocation(url);
+            if (window.ocrGtLocation && window.ocrGtLocation.changed) {
+                window.alert("Ungesicherte Inhalte vorhanden, bitte zuerst speichern!");
             } else {
-                window.alert("Konnte keine URL erkennen.");
+                var url = getUrlFromDragEvent(e);
+                if (url) {
+                    loadGtEditLocation(url);
+                } else {
+                    window.alert("Konnte keine URL erkennen.");
+                }
             }
-        }
-    });
+        });
 }
 
 function toggleSelectMode() {
