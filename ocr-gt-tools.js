@@ -291,7 +291,7 @@ function updateCommentButtonColor() {
         var $lineComment = $(".line-comment div[contenteditable]", $line);
         var lineCommentId = $(".line-comment", $line).attr('id');
         console.log(lineCommentId);
-        if ($lineComment.html().match(/\S/)) {
+        if ($lineComment.text().match(/\S/)) {
             $(".show-line-comment[data-target='#" + lineCommentId + "']").removeClass('btn-default').addClass('btn-info');
         } else {
             $(".show-line-comment[data-target='#" + lineCommentId + "']").addClass('btn-default').removeClass('btn-info');
