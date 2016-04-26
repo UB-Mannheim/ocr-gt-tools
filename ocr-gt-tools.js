@@ -340,8 +340,9 @@ function addComment() {
 }
 
 function addTagToElement($target, tag) {
+    $target.html($target.html().trim());
     if ($target.html().indexOf(tag) == -1) {
-        if ($target.html().match(/^.*\S.*$/)) {
+        if ($target.html().match(/\S/)) {
             $target.append('\n');
         }
         $target.append(tag);
