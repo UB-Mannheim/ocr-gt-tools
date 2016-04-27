@@ -1,0 +1,171 @@
+selectedColor = red
+
+@media (min-width: 768px)
+	body
+		padding-top 0
+	.container-fluid
+		margin-left 100px
+	.navbar-collapse
+		height auto
+		border-top 0
+		box-shadow none
+		max-height none
+		padding-left 0
+		padding-right 0
+		&.collapse
+			display block !important
+			width auto !important
+			padding-bottom 0
+			overflow visible !important
+		&.in
+			overflow-x visible
+		.navbar-nav
+			&.navbar-right
+				&:last-child
+					margin-right 0
+	.navbar
+		max-width 96px
+		height 100vh
+		margin-right 0
+		margin-left 0
+		float left
+		position fixed
+		z-index 10001
+		&:after
+			clear both
+		.btn-group
+			display block
+		.dropdown-menu
+			top 0
+			left 100%
+			padding 0
+			width 220px
+		.btn.disabled
+			opacity .35
+		.navbar-nav,
+		.navbar-nav > li,
+		.navbar-left,
+		.navbar-right,
+		.navbar-header
+			float none !important
+		.navbar-right
+			.dropdown-menu
+				left 0
+				right auto
+	.navbar-default
+		.dropdown-menu
+			i
+				display inline-block
+				float left
+				top 2px
+				font-size 2em
+	.modal-admin
+		width 80%
+		left 100px
+		position fixed
+		max-height 100vh
+		overflow scroll
+	.line
+		.list-group-item
+			padding 0 0 0 0
+		.btn
+			i
+				padding-top 0
+				padding-bottom 0
+				font-size: 20px
+
+#dropzone
+	position fixed
+	height 90vh
+	margin 5vh
+	padding-top 40vh
+	font-size 300%
+	text-align center
+	&.droppable
+		border-style dashed
+		border-width 10px
+		border-color blue
+
+.hidden
+	display none
+
+.view-hidden
+	display none
+
+.selected
+	background: selectedColor
+	.list-group-item.image
+		background: selectedColor
+	.panel
+		background: selectedColor
+
+div[contenteditable],
+div[contenteditable]
+	display inline-block
+	white-space pre-wrap
+	color #000060
+	font-family 'EB Garamond', serif
+	font-size 20px
+	min-height 24px
+	width 100%
+	height auto
+
+.line-comment,
+.page-comment
+	background-color lightyellow
+	font-family 'EB Garamond', serif
+	font-size 20px
+	min-height 24px
+
+#file-correction
+	.panel
+		margin 0
+	.panel-heading
+		padding 0
+		h4
+			padding-top 7.5px
+
+#page-info
+	position fixed
+	right 0
+	.list-group-item
+		i
+			padding-right: 5px;
+
+#select-bar
+	position fixed
+	background-color yellow
+	border: 2px solid blue
+	top 0
+	left 200px
+	height 48px
+	z-index: 1001
+
+#cheatsheet-modal
+	img
+		height: 64px
+	code
+		font-size: 64px
+	th
+		font-weight: bold
+
+.select-col
+	padding-left: 20px
+	// margin-top: 32px
+	input[type="checkbox"]
+		width 23px
+		height 23px
+		padding: 0
+		margin: 4px 0 0 0
+		// padding-top 32px
+
+.button-col
+	padding-left 0
+	padding-right 0
+	.btn
+		padding:0
+		text-align left
+		i
+			padding: 5px;
+
+// vim: sw=4 ts=4 noet :

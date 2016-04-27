@@ -1,0 +1,27 @@
+{
+  "name": "ocr-gt-tools",
+  "description": "",
+  "main": "js/ocr-gt-tools.js",
+  "moduleType": [],
+  "authors": [
+    "bfallert",
+    "kba"
+  ],
+  "license": "GPLv2+",
+  "homepage": "https://github.com/UB-Mannheim/ocr-gt-tools",
+  "private": true,
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ],
+  "dependencies": {
+    "bootstrap": "^3.3.6",
+    "font-awesome": "Font-Awesome#^4.6.1",
+    "jquery": "^2.2.3",
+    "reset-css": "^2.0.2011012603",
+    "handlebars": "^4.0.5"
+  }
+}
