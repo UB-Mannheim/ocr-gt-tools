@@ -1,5 +1,11 @@
 # Installation Instructions
 
+## Docker
+
+    docker run -t -p kbai/ocr-gt-tools
+
+The server is available on port 9090.
+
 ## Install dependencies
 
 ```

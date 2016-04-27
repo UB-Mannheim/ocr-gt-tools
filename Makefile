@@ -160,15 +160,11 @@ conf/ocr-gt-tools.ini:
 	@echo "Copy conf/ocr-gt-tools.ini_tmpl to conf/ocr-gt-tools.ini and set paths."
 	exit 1
 
-docker:
-	docker build -t 'ocr-gt-tools' .
-
 dev-server:
 	$(PLACKUP) app.psgi
 
 dev-browser:
 	xdg-open http://localhost:9090/dist/index.html
-
 
 #
 # Set up dist folder
@@ -214,9 +210,6 @@ dist/index.html: ${JADE_FILES}
 #
 dist-watch:
 	$(CHOKIDAR) $(WATCH_FILES) -c 'time $(MAKE) --no-print-directory dist'
-
-docker:
-	docker build -t 'ocr-gt-tools' .
 
 #
 # Clean up, delete files
