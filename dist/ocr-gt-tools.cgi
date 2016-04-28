@@ -583,10 +583,10 @@ sub processHistoryRequest
     my $ip = $ENV{REMOTE_ADDR};
     while (<$RL>) {
         if ($mine) {
-            continue unless m/.*\Q$ip\E.*/;
+            next unless m/.*\Q$ip\E.*/;
         }
         if ($query) {
-            continue unless m/.*\Q$query\E.*/;
+            next unless m/.*\Q$query\E.*/;
         }
         push @lines, $_;
     }
