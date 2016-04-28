@@ -1,0 +1,5 @@
+language: perl
+
+before_install:
+  - sudo apt-get update -q
+  - sudo apt-get update -q
