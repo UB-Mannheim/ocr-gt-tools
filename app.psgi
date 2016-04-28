@@ -30,7 +30,7 @@ builder {
     enable(
         "Plack::Middleware::Static",
         path => qr{^/(?!ocr-gt-tools.cgi).*},
-        root => './'
+        root => './dist'
     );
     mount "/" => $app;
 };

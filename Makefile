@@ -171,7 +171,18 @@ dev-browser:
 # Set up dist folder
 #
 
-dist: dist/vendor.css dist/vendor.js dist/fonts dist/index.html dist/ocr-gt-tools.js dist/ocr-gt-tools.css
+dist:\
+	dist/vendor.css\
+	dist/vendor.js\
+	dist/fonts\
+	dist/index.html\
+	dist/ocr-gt-tools.js\
+	dist/ocr-gt-tools.css\
+	dist/ocr-gt-tools.cgi
+
+dist/ocr-gt-tools.cgi: ocr-gt-tools.cgi
+	$(CP) $< $@
+	chmod a+x $@
 
 dist/ocr-gt-tools.js: ocr-gt-tools.js
 	$(UGLIFYJS) --source-map --compress --output $@ $<

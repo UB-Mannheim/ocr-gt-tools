@@ -3,7 +3,7 @@
 var UISettings = {
     zoomInFactor: 1.4,
     zoomOutFactor: 0.8,
-    cgiUrl: '../ocr-gt-tools.cgi'
+    cgiUrl: 'ocr-gt-tools.cgi'
 };
 
 var Utils = {};

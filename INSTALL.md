@@ -42,28 +42,61 @@ Checkout the contents of [./example/ocr-corrections/](./example/ocr-corrections/
 
 ### On Apache
 
+* Enable CGI on Apache
+
 ```sh
-cd /var/www/html
-# Enable CGI in Apache
 sudo a2enmod cgi
-# sudo $EDITOR /etc/apache2/sites-available/000-default.conf
-# Make sure scripts ending in `.cgi` are executable in the directory with `ocr-gt-tools.cgi`
-#    <Directory "/path-to-htdocs/ocr-gt-tools">
+```
+
+* Make sure scripts ending in `.cgi` are executable in the directory with `ocr-gt-tools.cgi`
+
+```
+sudo $EDITOR /etc/apache2/sites-available/000-default.conf
+#    <Directory "/var/www/html/ocr-gt-tools">
 #        Options +ExecCGI
 #        AddHandler cgi-script .cgi
 #    </Directory>
-# Clone the software
+```
+
+* Clone the repository as the user who owns the Apache document root, usually **`www-data`**
+
+```
+cd ~www-data
 sudo -u www-data git clone https://github.com/UB-Mannheim/ocr-gt-tools
-# Clone the related tools
+```
+
+* Clone the dependent tools (will pull ocropy and hocr-tools and create the log files)
+
+```
+cd ~www-data/ocr-gt-tools
 make vendor
-# Generate the log files
-sudo -u www-data ./ocr-gt-tools.cgi
-# Copy the configuration
+```
+
+* Copy the configuration
+
+```
 sudo -u www-data cp conf/ocr-gt-tools.ini_tmpl conf/ocr-gt-tools.ini
 # sudo $EDIT as needed!
-# Restart/Reload apache
+```
+
+* Symlink (or copy) the 'dist' folder below the document root
+
+```
+cd /var/www/html
+ln -s ~www-data/ocr-gt-tools/dist ocr-gt-tools
+# or
+# cp -r ~www-data/ocr-gt-tools/dist ocr-gt-tools
+```
+
+* Restart/reload apache 
+
+```
 sudo systemctl restart apache2
 ```
+<!--
+# Generate the log files
+sudo -u www-data ./ocr-gt-tools.cgi
+-->
 
 ## Developing the frontend
 
