@@ -7,14 +7,15 @@ SAMPLE_COMM="example/ocr-corrections/digi/445442158/gt/0126/anmerkungen.txt"
 
 # rm request log files, samples, start the server, wait a second, see if it's still running
 start_server() {
-    rm -f log/request.log $SAMPLE_COMM $SAMPLE_CORR
+    rm -f log/* $SAMPLE_COMM $SAMPLE_CORR
     plackup --port=$PORT app.psgi & SERVER_PID=$!
     sleep 1
-    ps -p $SERVER_PID 2>/dev/null
+    ps -p "$SERVER_PID" 2>/dev/null
 }
 
 stop_server() {
-    pkill $SERVER_PID && true
+    pkill "$SERVER_PID" && true
+    cat log/ocr-gt-tools.log
 }
 
 # Test history
