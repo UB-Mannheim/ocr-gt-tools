@@ -242,3 +242,6 @@ clean: clean-js clean-css clean-fonts clean-html
 realclean:
 	$(RM) bower_components node_modules
 	$(RM) dist
+
+test:
+	bash ./test.sh

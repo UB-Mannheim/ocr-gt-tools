@@ -9,6 +9,7 @@ my $DATE_FORMAT = "%Y-%m-%d";
 my $TIME_FORMAT = "%H:%M:%S";
 
 use Data::Dumper;
+$Data::Dumper::Terse = 1;
 use JSON;
 use CGI;
 use File::Path qw(make_path);
@@ -158,7 +159,7 @@ sub loadConfig
     );
 
 
-    debug "Config loaded: %s", Dumper(\%config);
+    # debug "Config loaded: %s", Dumper(\%config);
 
     return \%config;
 }
@@ -168,7 +169,7 @@ sub loadConfig
 Send an HTTP error message
 
 =cut
-sub httpError 
+sub httpError
 {
     my ($cgi, $status) = (shift(), shift());
     print $cgi->header(
@@ -176,7 +177,7 @@ sub httpError
         -status => $status
     );
     printf @_;
-    debugStandout('REQUEST ERROR');
+    debugStandout("REQUEST ERROR $status");
     exit 1;
 }
 
@@ -185,9 +186,9 @@ sub httpError
 Send a server error message
 
 =cut
-sub http500 
+sub http500
 {
-    httpError(shift(), '500 Internal Server Error', @_); 
+    httpError(shift(), '500 Internal Server Error', @_);
 }
 
 =head2 http400
@@ -195,9 +196,9 @@ sub http500
 Send a client error message
 
 =cut
-sub http400 
+sub http400
 {
-    httpError(shift(), '400 Method Not Allowed', @_); 
+    httpError(shift(), '400 Method Not Allowed', @_);
 }
 
 =head2 httpJSON
@@ -399,11 +400,10 @@ sub ensureCorrection
         , $location->{hocr_file}
     );
     debug("About to execute '%s' in '%s' for '%s'", $cmd_extract, $location->{correctionDir}, $location->{pathPage});
-    open my $EXTRACT, "-|", $cmd_extract or do { http500($cgi, "Could not run hocr-extract-images: $!\n\n"); };
-    while( <$EXTRACT>) {
-        debug($_);
+    system $cmd_extract;
+    if($?) {
+        http500($cgi, "hocr-extract-images returned non-zero exit code $?\n\n");
     }
-    close $EXTRACT;
 
     # ocropusGtedit sollte vom übergeordneten Verzeichnis aufgerufen werden,
     # sonst haben nachgeordnete Scripte probleme weil Verzeichnisname in correction.html
@@ -411,18 +411,16 @@ sub ensureCorrection
     chdir $location->{correctionDirGt};
 
     # Korrigierwebseite erstellen
-    open my $GTEDIT, "-|", join(' '
+    system join(' '
             , $config->{ocropusGteditBinary}
             , 'html'
             , '-x xxx'
             , $location->{pathPage} . '/line*.png'
             , '-o'
-            , $location->{pathPage} . '/' . $config->{correctionHtml_basename})
-            or do { http500($cgi, "Could not run ocropus-gtedit: $!\n\n"); };
-    while( <$GTEDIT>) {
-        debug($_);
+            , $location->{pathPage} . '/' . $config->{correctionHtml_basename});
+    if($?) {
+        http500($cgi, "ocropus-gtedit returned non-zero exit code $?\n\n");
     }
-    close $GTEDIT;
 
     # debug("%s: %s/%s", $location->{correctionDir},  $correctionHtml_withRemarks_basename);
 }
@@ -509,7 +507,7 @@ sub processRequest
     if (! $action) {
         http400($cgi, "URL parameter 'action' missing.");
     }
-    debug $action . " will run", Dumper(\$cgi);
+    debug "CGI Params: %s", Dumper($cgi->{param});
     if ($action eq 'create') {
         processCreateRequest($cgi, $config);
     } elsif ($action eq 'save') {
