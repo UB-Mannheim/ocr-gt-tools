@@ -257,6 +257,11 @@ function addCommentFields() {
         $(".select-col", $line).on('click', function(e) {
             $(this).find(':checkbox').click();
         });
+        $(".transcription div[contenteditable]", $line).on('keydown', function(e) {
+            if (e.keyCode == 13) {
+                e.preventDefault();
+            }
+        });
         $("#file-correction").append($line);
     });
     $("#page-info").html(window.templates.page(window.ocrGtLocation));

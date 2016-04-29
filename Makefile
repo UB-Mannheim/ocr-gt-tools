@@ -172,7 +172,7 @@ dev-browser:
 # Set up dist folder
 #
 
-dist:\
+dist: bower_components \
 	dist/vendor.css\
 	dist/vendor.js\
 	dist/fonts\
