@@ -4,6 +4,8 @@ before_install:
   - sudo apt-get update -q
   - make deps
   - make dev-deps
+
+install:
   - npm install
   - bower install
 
