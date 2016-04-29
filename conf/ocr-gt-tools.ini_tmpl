@@ -46,8 +46,7 @@ ocropus-gteditPath=vendor/ocropy
 [MISC]
 
 # The base URL of the doc-root folder
-# baseUrl=/
-baseUrl=/example/
+baseUrl=/
 
 # If the 'correctionDir' is newly created, use this owner, e.g. www-data
 # Set to false-ish value to use default owner
