@@ -178,6 +178,7 @@ sub httpError
     );
     printf @_;
     debugStandout("REQUEST ERROR $status");
+    debug @_;
     exit 1;
 }
 
@@ -598,6 +599,9 @@ sub processHistoryRequest
 debugStandout('START REQUEST');
 my $cgi = CGI->new;
 my $config = loadConfig();
+if (! -d $config->{docRoot}) {
+    http500($cgi, "The 'docRoot' directory doesn't exist. Please check the configuration");
+}
 processRequest($cgi, $config);
 logRequest($cgi);
 debugStandout('END REQUEST');
