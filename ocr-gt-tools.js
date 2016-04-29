@@ -23,7 +23,7 @@ Utils.parseLineComments = function parseLineComments(txt, target) {
     var lineComments = [];
     for (var i = 0; i < lines.length ; i++) {
         var lineComment = lines[i].replace(/^\d+:\s*/, '');
-        lineComment = unescapeNewline(lineComment);
+        lineComment = encodeForServer(lineComment);
         lineComments.push(lineComment);
     }
     target.pageComment = lineComments[0];
@@ -93,12 +93,21 @@ function getImageWidth(el) {
     return el.clientWidth;
 }
 
-function escapeNewline(str) {
-    return str.replace(/^\n*/, '').replace(/\n*$/, '').replace(/\n/g, '<br>');
+function encodeForBrowser(str) {
+    return str
+        .replace(/&amp;/g, '&')
+        .replace(/&gt;/g, '>')
+        .replace(/&lt;/g, '<')
+        .replace(/^\n*/, '')
+        .replace(/\n*$/, '')
+        .replace(/\n/g, '<br>');
 }
 
-function unescapeNewline(str) {
-    return str.replace(/^(<br>)*/, '').replace(/(<br>)*$/, '').replace(/<br>/g, "\n");
+function encodeForServer(str) {
+    return str
+        .replace(/^(<br>)*/, '')
+        .replace(/(<br>)*$/, '')
+        .replace(/<br>/g, "\n");
 }
 
 /*******************************/
@@ -178,15 +187,15 @@ function saveGtEditLocation() {
     $("#wait_save").addClass("wait").removeClass("hidden");
     $("#disk").addClass("hidden");
     window.ocrGtLocation.transliterations = $('li.transcription div').map(function() {
-        return escapeNewline($(this).html());
+        return encodeForServer($(this).html());
     }).get();
     window.ocrGtLocation.lineComments = $("li.line-comment div").map(function() {
-        return escapeNewline($(this).html());
+        return encodeForServer($(this).html());
     }).get();
-    window.ocrGtLocation.pageComment = escapeNewline($(".page-comment div").html());
-    console.log(window.ocrGtLocation.pageComment);
-    console.log(window.ocrGtLocation.transliterations);
-    console.log(window.ocrGtLocation.lineComments);
+    window.ocrGtLocation.pageComment = encodeForServer($(".page-comment div").html());
+    // console.log(window.ocrGtLocation.pageComment);
+    // console.log(window.ocrGtLocation.transliterations);
+    // console.log(window.ocrGtLocation.lineComments);
 
     $.ajax({
         type: 'POST',
@@ -234,8 +243,8 @@ function addCommentFields() {
             "id": curLine,
             "title": $this.find("td")[0].innerHTML,
             "imgSrc": $this.find("img")[0].getAttribute('src'),
-            "transcription": unescapeNewline($this.find("td")[2].innerHTML),
-            "comment": unescapeNewline(window.ocrGtLocation.lineComments[curLine]),
+            "transcription": encodeForBrowser($this.find("td")[2].innerHTML),
+            "comment": encodeForBrowser(window.ocrGtLocation.lineComments[curLine]),
         };
         var $line = $(window.templates.line(line));
         $(":checkbox", $line).on('click', function(e) {
