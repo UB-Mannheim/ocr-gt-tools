@@ -1,18 +1,22 @@
-language: perl
+language: python
 dist: trusty
 sudo: required
+cache:
+  directories:
+    - $HOME/.npm
+    - $HOME/.npm-packages
 
 before_install:
-  - sudo apt-get update -q
-  - make deps
-  - make dev-deps
+  - sudo apt-get update -qq
+  - sudo apt-get install -y python-pip
+  - sudo pip install --upgrade pillow
 
 install:
-  - npm install
-  - bower install
+  - make deps
+  - make dev-deps
+  - make node_modules bower_components vendor
+  - cp conf/ocr-gt-tools.ini_tmpl conf/ocr-gt-tools.ini
 
 script:
-  - make vendor
   - make dist
-  - cp conf/ocr-gt-tools.ini_tmpl conf/ocr-gt-tools.ini
   - bash ./test.sh

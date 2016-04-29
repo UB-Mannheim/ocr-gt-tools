@@ -56,8 +56,8 @@ DEBIAN_PACKAGES = \
 	git \
 	libjson-perl \
 	libconfig-inifiles-perl \
+	python-pillow \
 	python-numpy \
-	python-imaging \
 	python-scipy \
 	python-matplotlib
 # Debian packages required for running the dev-server and rebuild the frontend
@@ -173,7 +173,7 @@ dev-browser:
 # Set up dist folder
 #
 
-dist: bower_components \
+dist: \
 	dist/vendor.css\
 	dist/vendor.js\
 	dist/fonts\
@@ -238,8 +238,7 @@ clean-fonts:
 clean-%:
 	$(RM) dist/$* dist/*.$* dist/*.$*.map
 
-clean: clean-js clean-css clean-fonts clean-html
+clean: clean-js clean-css clean-fonts clean-html clean-cgi
 
 realclean:
 	$(RM) bower_components node_modules
-	$(RM) dist
