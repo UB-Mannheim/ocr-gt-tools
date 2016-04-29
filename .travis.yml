@@ -4,7 +4,10 @@ before_install:
   - sudo apt-get update -q
   - make deps
   - make dev-deps
+  - npm install
+  - bower install
 
 script:
   - make vendor
+  - make dist
   - bash ./test.sh

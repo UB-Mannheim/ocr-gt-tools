@@ -150,7 +150,7 @@ bower_components: bower.json
 dev-apt-get:
 	$(APT_GET) install $(DEV_DEBIAN_PACKAGES)
 
-dev-deps: dev-apt-get bower_components node_modules
+dev-deps: dev-apt-get node_modules bower_components
 
 #
 # Run the development standalone server on port 9090

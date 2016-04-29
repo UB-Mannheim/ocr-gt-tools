@@ -6,7 +6,9 @@
   "directories": {
     "example": "example"
   },
-  "dependencies": {},
+  "dependencies": {
+    "bower": "^1.7.9"
+  },
   "devDependencies": {
     "chokidar-cli": "^1.2.0",
     "clean-css": "^3.4.12",
