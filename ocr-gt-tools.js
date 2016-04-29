@@ -3,7 +3,8 @@
 var UISettings = {
     zoomInFactor: 1.4,
     zoomOutFactor: 0.8,
-    cgiUrl: 'ocr-gt-tools.cgi'
+    cgiUrl: 'ocr-gt-tools.cgi',
+    defaultViews: ['.transcription','img']
 };
 
 var Utils = {};
@@ -270,6 +271,7 @@ function addCommentFields() {
     $(".hide-line-comment").on('click', toggleLineComment);
     $(".add-comment").on('click', addComment);
     updateCommentButtonColor();
+    reduceViewToSelectors(UISettings.defaultViews);
 }
 
 /**
@@ -324,28 +326,8 @@ function updateCommentButtonColor() {
  */
 function toggleLineComment() {
     var target = $(this).attr('data-target');
-    $(target).toggleClass("hidden");
+    $(target).toggleClass("view-hidden");
     $("*[data-target='#" + target + "']").toggleClass("hidden");
-}
-function hideLineComment() {
-    var target = $(this).attr('data-target');
-    $(target).addClass("hidden");
-    $(".hide-line-class[data-target='#" + target + "']").addClass('hidden');
-    $(".show-line-class[data-target='#" + target + "']").removeClass('hidden');
-}
-function hideAllLineComments() {
-    $(".hide-line-comment").each(hideLineComment);
-    onScroll();
-}
-function showLineComment() {
-    var target = $(this).attr('data-target');
-    $(target).removeClass("hidden");
-    $(".hide-line-class[data-target='#" + target + "']").removeClass('hidden');
-    $(".show-line-class[data-target='#" + target + "']").addClass('hidden');
-}
-function showAllLineComments() {
-    $(".show-line-comment").each(showLineComment);
-    onScroll();
 }
 
 function addMultiComment() {
@@ -418,6 +400,15 @@ function changeSelection(action) {
             $this.trigger('click');
         }
     });
+}
+
+function reduceViewToSelectors(selectors) {
+    $(".lines-col .panel *").addClass('view-hidden');
+    for (var i = 0; i < selectors.length; i++) {
+        $(selectors[i])
+            .removeClass('view-hidden')
+            .parents().removeClass('view-hidden');
+    }
 }
 
 /******************/
@@ -583,26 +574,11 @@ $(function onPageLoaded() {
         });
     });
 
-    // Expand all comments
-    $("#expand_all_comments").on("click", showAllLineComments);
-
-    // Collapse all comments
-    $("#collapse_all_comments").on("click", hideAllLineComments);
-
     // Select Mode
     $("#toggle-select").on('click', toggleSelectMode);
     $('.add-multi-comment').on('click', addMultiComment);
-
     $(".set-view").on('click', function() {
-        $(".lines-col .panel *").addClass('view-hidden');
-        var selectors = $(this).attr('data-target');
-        $.each(selectors.split(/\s*,\s*/), function(idx, selector) {
-            if (selector === '.line-comment') {
-                showAllLineComments();
-            }
-            $(selector).removeClass('view-hidden');
-            $(selector).parents().removeClass('view-hidden');
-        });
+        reduceViewToSelectors($(this).attr('data-target').split(/\s*,\s*/));
     });
 
     $("#sort-line").on('click', function() { sortRowsByLine(1); });

@@ -67,7 +67,7 @@
               <li class="list-group-item transcription">
                 <div contenteditable>{{ transcription }}</div>
               </li>
-              <li id="line-comment-{{ id }}" class="list-group-item line-comment hidden">
+              <li id="line-comment-{{ id }}" class="list-group-item line-comment">
                 <div contenteditable>{{ comment }}</div>
               </li>
             </ul>
@@ -183,22 +183,12 @@
               <li>
                 <div class="btn-group btn-group-vertical">
                   <button type="button" data-target="*" class="set-view btn btn-default"><i class="fa fa-arrows-alt"></i>Vollansicht</button>
-                  <button type="button" data-target="img" class="set-view btn btn-default"><i class="fa fa-picture-o"></i>Bild</button>
-                  <button type="button" data-target=".transcription" class="set-view btn btn-default"><i class="fa fa-align-left"></i>Text</button>
-                  <button type="button" data-target=".line-comment" class="set-view btn btn-default"><i class="fa fa-commenting-o"></i>Kommentar</button>
                   <button type="button" data-target=".transcription,img" class="set-view btn btn-default"><i class="fa fa-picture-o"></i><i class="fa fa-align-left"></i>Bild + Text</button>
                   <button type="button" data-target=".line-comment,img" class="set-view btn btn-default"><i class="fa fa-picture-o"></i><i class="fa fa-commenting-o"></i>Bild + Kommentar</button>
                   <button type="button" data-target=".line-comment,.transcription" class="set-view btn btn-default"><i class="fa fa-align-left"></i><i class="fa fa-commenting-o"></i>Text + Kommentar</button>
-                </div>
-              </li>
-            </ul>
-          </li>
-          <li class="dropdown disabled"><a data-toggle="dropdown" class="btn dropdown-toggle"><i class="fa fa-4x fa-plus-square-o"></i></a>
-            <ul class="dropdown-menu navbar-default">
-              <li>
-                <div class="btn-group btn-group-vertical">
-                  <button id="collapse_all_comments" type="button" class="btn btn-default"><i class="fa fa-minus-square-o"></i>Alle einklappen</button>
-                  <button id="expand_all_comments" type="button" class="btn btn-default"><i class="fa fa-plus-square-o"></i>Alle ausklappen</button>
+                  <button type="button" data-target="img" class="set-view btn btn-default"><i class="fa fa-picture-o"></i>Bild</button>
+                  <button type="button" data-target=".transcription" class="set-view btn btn-default"><i class="fa fa-align-left"></i>Text</button>
+                  <button type="button" data-target=".line-comment" class="set-view btn btn-default"><i class="fa fa-commenting-o"></i>Kommentar</button>
                 </div>
               </li>
             </ul>
