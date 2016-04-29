@@ -2,4 +2,9 @@ language: perl
 
 before_install:
   - sudo apt-get update -q
-  - sudo apt-get update -q
+  - make deps
+  - make dev-deps
+
+script:
+  - make vendor
+  - bash ./test.sh
