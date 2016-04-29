@@ -105,9 +105,9 @@ function encodeForBrowser(str) {
 
 function encodeForServer(str) {
     return str
-        .replace(/^(<br>)*/, '')
-        .replace(/(<br>)*$/, '')
-        .replace(/<br>/g, "\n");
+        .replace(/^(<br[^>]*>)*/, '')
+        .replace(/(<br[^>]*>)*$/, '')
+        .replace(/<br[^>]*>/g, "\n");
 }
 
 /*******************************/
@@ -230,6 +230,9 @@ function markSaved() {
     $("#wait_save").removeClass("wait").addClass("hidden");
     $("#disk").removeClass("hidden");
     $("#save_button").addClass("disabled");
+    $(".line div[contenteditable]").each(function() {
+        $(this).html(encodeForBrowser(encodeForServer($(this).html())));
+    });
 }
 
 /**
