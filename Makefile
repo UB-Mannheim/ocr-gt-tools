@@ -57,6 +57,7 @@ DEBIAN_PACKAGES = \
 	libjson-perl \
 	libconfig-inifiles-perl \
 	python-numpy \
+	python-imaging \
 	python-scipy \
 	python-matplotlib
 # Debian packages required for running the dev-server and rebuild the frontend
