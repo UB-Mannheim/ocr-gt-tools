@@ -263,6 +263,9 @@ function addCommentFields() {
                 e.preventDefault();
             }
         });
+        $("div[contenteditable]", $line).on('blur', function(e) {
+            $(this).html(encodeForBrowser(encodeForServer($(this).html())));
+        });
         $("#file-correction").append($line);
     });
     $("#page-info").html(window.templates.page(window.ocrGtLocation));
