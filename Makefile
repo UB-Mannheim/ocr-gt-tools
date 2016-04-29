@@ -64,6 +64,7 @@ DEV_DEBIAN_PACKAGES = \
 	npm \
 	libplack-perl \
 	libcgi-emulate-psgi-perl \
+	libcgi-compile-perl \
 	curl
 # URLs of Web Fonts to embed
 FONT_URLS = https://fonts.googleapis.com/css?family=EB+Garamond&subset=latin,latin-ext
