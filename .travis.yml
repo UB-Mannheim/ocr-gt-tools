@@ -14,4 +14,5 @@ install:
 script:
   - make vendor
   - make dist
+  - cp conf/ocr-gt-tools.ini_tmpl conf/ocr-gt-tools.ini
   - bash ./test.sh
