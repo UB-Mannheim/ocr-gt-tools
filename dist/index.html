@@ -35,7 +35,9 @@
       <tr>
         <td> <a target="_blank" href="https://github.com/UB-Mannheim/ocr-gt-tools/wiki/Special-Characters#{{ id }}">{{ name.de }}</a></td>
         <td>{{{ sample }}}</td>
-        <td><code>{{ recognition }}</code></td>
+        <td>
+          <button data-clipboard-text="{{ recognition }}" class="code">{{ recognition }}</button>
+        </td>
       </tr>
     </script>
     <!---->

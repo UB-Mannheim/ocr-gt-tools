@@ -80,7 +80,8 @@ CSS_FILES   = bower_components/reset-css/reset.css \
 # NOTE: Javascript developed by us should not be bundled here
 JS_FILES    = bower_components/jquery/dist/jquery.js \
               bower_components/bootstrap/dist/js/bootstrap.js \
-              bower_components/handlebars/handlebars.min.js
+              bower_components/handlebars/handlebars.min.js \
+			  bower_components/clipboard/dist/clipboard.min.js
 # The HTML files, described in the Jade shorthand / templating language
 JADE_FILES  = ocr-gt-tools.jade
 # The files to watch for changes for to trigger a rebuild

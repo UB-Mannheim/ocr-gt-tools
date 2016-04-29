@@ -44,7 +44,8 @@ html(lang='de')
 						| {{ name.de }}
 				td {{{ sample }}}
 				td
-					code {{ recognition }}
+					button.code(data-clipboard-text="{{ recognition }}")
+						{{ recognition }}
 
 		//
 		// A line of page

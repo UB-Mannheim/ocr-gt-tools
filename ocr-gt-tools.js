@@ -566,7 +566,9 @@ $(function onPageLoaded() {
                 for (var i = 0; i < keys.length; i++) {
                     var key = keys[i];
                     data[key].id = key;
-                    $("#cheatsheet-modal .cheatsheet").append(window.templates.cheatsheetEntry(data[key]));
+                    $("#cheatsheet-modal .cheatsheet").append(
+                        window.templates.cheatsheetEntry(data[key])
+                    );
                 }
             },
             error: function(x, e) {
@@ -610,6 +612,7 @@ $(function onPageLoaded() {
     $(".select-none").on('click', function() { changeSelection('unselect'); });
     $(".select-toggle").on('click', function() { changeSelection('toggle'); });
 
+    new Clipboard('.code');
     // Trigger hash change
     onHashChange();
 });
