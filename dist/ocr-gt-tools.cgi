@@ -178,7 +178,6 @@ sub httpError
     );
     printf @_;
     debugStandout("REQUEST ERROR $status");
-    debug @_;
     exit 1;
 }
 
@@ -399,6 +398,8 @@ sub ensureCorrection
         , ' -b'
         , $location->{imageDir}
         , $location->{hocr_file}
+        , '>/dev/null'
+        , '2>/dev/null'
     );
     debug("About to execute '%s' in '%s' for '%s'", $cmd_extract, $location->{correctionDir}, $location->{pathPage});
     system $cmd_extract;
@@ -418,7 +419,9 @@ sub ensureCorrection
             , '-x xxx'
             , $location->{pathPage} . '/line*.png'
             , '-o'
-            , $location->{pathPage} . '/' . $config->{correctionHtml_basename});
+            , $location->{pathPage} . '/' . $config->{correctionHtml_basename}
+            , '>/dev/null'
+            , '2>/dev/null');
     if($?) {
         http500($cgi, "ocropus-gtedit returned non-zero exit code $?\n\n");
     }
@@ -504,7 +507,7 @@ Start processing CGI request
 sub processRequest
 {
     my ($cgi, $config) = @_;
-    my $action = $cgi->url_param('action');
+    my $action = $cgi->param('action');
     if (! $action) {
         http400($cgi, "URL parameter 'action' missing.");
     }
