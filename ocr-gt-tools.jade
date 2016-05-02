@@ -1,4 +1,3 @@
-// vim: sw=2 ts=2 noet ft=jade :
 doctype html
 html(lang='de')
 	head
@@ -9,9 +8,9 @@ html(lang='de')
 		link(href='ocr-gt-tools.css', rel='stylesheet')
 	body
 
-		//
+		//*
 		// Page info on the right
-		//
+		//*
 		script#tpl-page(type='text/x-handlebars-template')
 			.panel.panel-info
 				.panel-heading.clearfix
@@ -34,9 +33,9 @@ html(lang='de')
 				.page-comment
 					div(contenteditable) {{ pageComment }}
 
-		//
+		//*
 		// A cheatsheet entry
-		//
+		//*
 		script#tpl-cheatsheetEntry(type='text/x-handlebars-template')
 			tr
 				td 
@@ -45,11 +44,11 @@ html(lang='de')
 				td {{{ sample }}}
 				td
 					button.code(data-clipboard-text="{{ recognition }}")
-						{{ recognition }}
+						| {{ recognition }}
 
-		//
+		//*
 		// A line of page
-		//
+		//*
 		script#tpl-line(type='text/x-handlebars-template')
 			.row.line(id="line-{{ id }}")
 
@@ -87,9 +86,9 @@ html(lang='de')
 							li.list-group-item.line-comment(id="line-comment-{{ id }}")
 								div(contenteditable) {{ comment }}
 
-		//
+		//*
 		// A row of history
-		//
+		//*
 		script#tpl-historyItem(type='text/x-handlebars-template')
 			tr
 				td {{ date }}
@@ -98,9 +97,9 @@ html(lang='de')
 				td {{ action }}
 				td {{ ip }}
 
-		//
+		//*
 		// Modal popup containing the history
-		//
+		//*
 		#history-modal.modal.fade(tabindex="-1")
 			.modal-admin
 				.modal-content
@@ -118,9 +117,9 @@ html(lang='de')
 									th IP
 							tbody
 
-		//
+		//*
 		// Help modal
-		//
+		//*
 		#cheatsheet-modal.modal.fade(tabindex"-1")
 			.modal-admin
 				.modal-content
@@ -132,14 +131,14 @@ html(lang='de')
 						table.table.table-condensed
 							tbody.cheatsheet
 
-		//
+		//*
 		// Will contain the raw HTML
-		//
+		//*
 		#raw-html.hidden
 
-		//
+		//*
 		// Will contain the toolbar for the multi select mode
-		//
+		//*
 		#select-bar.hidden
 			.panel-heading.clearfix
 				.btn-group.pull-right
@@ -159,9 +158,9 @@ html(lang='de')
 						i.fa.btn-sm.fa-exclamation-circle
 						| Fehler in Vorlage
 
-		//
+		//*
 		// The navbar on the left side
-		//
+		//*
 		nav.navbar.navbar-default(role='navigation')
 
 			// Brand and toggle get grouped for better mobile display
@@ -268,9 +267,9 @@ html(lang='de')
 										i.fa.fa-sort
 										| Nach Breite sortieren (ab)
 
-		//
+		//*
 		//- Here be dragons
-		//
+		//*
 		.container-fluid
 			.row
 				.col-sm-9#root
@@ -289,3 +288,4 @@ html(lang='de')
 								button.btn.btn-default.btn-lg(type="button") Los!
 					#file-correction
 				.col-sm-3#page-info
+// vim: sw=2 ts=2 noet ft=jade :

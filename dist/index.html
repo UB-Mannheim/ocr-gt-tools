@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="de">
+  <head>
+    <script src="vendor.js"></script>
+    <link href="vendor.css" rel="stylesheet">
+    <script src="ocr-gt-tools.js"></script>
+    <link rel="shortcut icon" type="image/x-icon" href="favicon.ico">
+    <link href="ocr-gt-tools.css" rel="stylesheet">
+  </head>
+  <body>
+    <!--*-->
+    <!-- Page info on the right-->
+    <!--*-->
+    <script id="tpl-page" type="text/x-handlebars-template">
+      <div class="panel panel-info">
+        <div class="panel-heading clearfix">
+          <h4 class="panel-title">Seiten-Info</h4>
+        </div>
+        <div class="list-group"><a class="list-group-item" target="_blank" href="{{ hiresUrl }}"><img src="{{ imageUrl }}"></a><a class="list-group-item" id="download-comments" target="_blank" href="{{ commentsUrl }}"><i class="fa fa-download"></i>Anmerkungen</a><a class="list-group-item" id="open-work" target="_blank" href="http://digi.bib.uni-mannheim.de/en/suchergebnis/?tx_dlf[query]={{ pathId }}"><i class="fa fa-download"></i>Werk in Digitaler Bibliothek</a><a class="list-group-item" id="download-correction" target="_blank" href="{{ correctionUrl }}"><i class="fa fa-download"></i>Korrektur</a></div>
+      </div>
+      <div class="panel panel-default">
+        <div class="panel-heading clearfix">
+          <h4 class="panel-title">Seiten-Kommentar</h4>
+        </div>
+        <div class="page-comment">
+          <div contenteditable>{{ pageComment }}</div>
+        </div>
+      </div>
+    </script>
+    <!--*-->
+    <!-- A cheatsheet entry-->
+    <!--*-->
+    <script id="tpl-cheatsheetEntry" type="text/x-handlebars-template">
+      <tr>
+        <td> <a target="_blank" href="https://github.com/UB-Mannheim/ocr-gt-tools/wiki/Special-Characters#{{ id }}">{{ name.de }}</a></td>
+        <td>{{{ sample }}}</td>
+        <td>
+          <button class="code" data-clipboard-text="{{ recognition }}">{{ recognition }}</button>
+        </td>
+      </tr>
+    </script>
+    <!--*-->
+    <!-- A line of page-->
+    <!--*-->
+    <script id="tpl-line" type="text/x-handlebars-template">
+      <div class="row line" id="line-{{ id }}">
+        <div class="col-sm-1 button-col" data-target="#line-comment-{{ id }}">
+          <div class="btn-group btn-group-sm" role="group">
+            <div class="btn-group" role="group"><a class="btn btn-default show-line-comment" data-target="#line-comment-{{ id }}"><i class="fa fa-commenting-o"></i></a><a class="btn btn-default hide-line-comment hidden" data-target="#line-comment-{{ id }}"><i class="fa fa-map-o"></i></a></div>
+            <div class="btn-group" role="group">
+              <button class="btn btn-default dropdown-toggle" data-toggle="dropdown" type="button" aria-haspopup="true" aria-expanded="false" tabindex="-1"><i class="fa fa-exclamation"></i><span class="caret"></span></button>
+              <ul class="dropdown-menu">
+                <li><a class="btn btn-default add-comment" data-target="#line-comment-{{ id }}" data-tag="text-italic"><i class="fa fa-italic"></i>Kursiv</a></li>
+                <li><a class="btn btn-warning add-comment" data-target="#line-comment-{{ id }}" data-tag="wrong-image-section"><i class="fa fa-exclamation-circle"></i>Fehler in Vorlage</a></li>
+              </ul>
+            </div>
+          </div>
+        </div>
+        <div class="col-sm-1 select-col hidden" data-target="#line-comment-{{ id }}">
+          <input type="checkbox">
+        </div>
+        <div class="col-sm-11 lines-col">
+          <div class="panel panel-default">
+            <ul class="list-group">
+              <li class="list-group-item image"><img src="{{ imgSrc }}" height="30"></li>
+              <li class="list-group-item transcription">
+                <div contenteditable>{{ transcription }}</div>
+              </li>
+              <li class="list-group-item line-comment" id="line-comment-{{ id }}">
+                <div contenteditable>{{ comment }}</div>
+              </li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </script>
+    <!--*-->
+    <!-- A row of history-->
+    <!--*-->
+    <script id="tpl-historyItem" type="text/x-handlebars-template">
+      <tr>
+        <td>{{ date }}</td>
+        <td><a href="#{{ url }}">{{ url }}</a></td>
+        <td>{{ action }}</td>
+        <td>{{ ip }}</td>
+      </tr>
+    </script>
+    <!--*-->
+    <!-- Modal popup containing the history-->
+    <!--*-->
+    <div class="modal fade" id="history-modal" tabindex="-1">
+      <div class="modal-admin">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h2 class="modal-title">Verlauf
+              <button class="close" type="button" data-dismiss="modal"><span>&times;</span></button>
+            </h2>
+          </div>
+          <div class="modal-body">
+            <table class="table">
+              <thead>
+                <tr>
+                  <th>Date</th>
+                  <th>URL</th>
+                  <th>Action</th>
+                  <th>IP</th>
+                </tr>
+              </thead>
+              <tbody></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!--*-->
+    <!-- Help modal-->
+    <!--*-->
+    <div class="modal fade" id="cheatsheet-modal" tabindex"-1>
+      <div class="modal-admin">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h4 class="modal-title">Eingabe Spickzettel</h4>
+            <button class="close" type="button" data-dismiss="modal"><span>&times;</span></button>
+          </div>
+          <div class="modal-body">
+            <table class="table table-condensed">
+              <tbody class="cheatsheet"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!--*-->
+    <!-- Will contain the raw HTML-->
+    <!--*-->
+    <div class="hidden" id="raw-html"></div>
+    <!--*-->
+    <!-- Will contain the toolbar for the multi select mode-->
+    <!--*-->
+    <div class="hidden" id="select-bar">
+      <div class="panel-heading clearfix">
+        <div class="btn-group pull-right"><a class="btn btn-sm btn-default select-all"><i class="fa btn-sm fa-arrows-alt"></i>Alle auswählen</a><a class="btn btn-sm btn-default select-none"><i class="fa btn-sm fa-arrows-alt"></i>Auswahl aufheben</a><a class="btn btn-sm btn-default select-toggle"><i class="fa btn-sm fa-arrows-alt"></i>Auswahl umkehren</a><a class="btn btn-sm btn-default add-multi-comment" data-tag="text-italic"><i class="fa btn-sm fa-italic"></i>Kursiv</a><a class="btn btn-sm btn-warning add-multi-comment" data-tag="wrong-image-section"><i class="fa btn-sm fa-exclamation-circle"></i>Fehler in Vorlage</a></div>
+      </div>
+    </div>
+    <!--*-->
+    <!-- The navbar on the left side-->
+    <!--*-->
+    <nav class="navbar navbar-default" role="navigation">
+      <!-- Brand and toggle get grouped for better mobile display-->
+      <div class="navbar-header">
+        <button class="navbar-toggle" type="button" data-toggle="collapse" data-target=".navbar-ex1-collapse"><span class="sr-only">Toggle navigation</span></button>
+      </div>
+      <!-- Collect the nav links, forms, and other content for toggling-->
+      <div class="collapse navbar-collapse navbar-ex1-collapse">
+        <ul class="nav navbar-nav">
+          <li>
+            <button class="btn btn-success disabled" id="save_button"><span class="hidden" id="wait_save"><i class="fa fa-4x fa-spinner fa-pulse fa-fw"></i></span><span id="disk"><i class="fa fa-4x fa-save fa-fw"></i></span></button>
+          </li>
+          <li class="dropdown"><a class="btn dropdown-toggle" data-toggle="dropdown"><i class="fa fa-4x fa-info-circle"></i></a>
+            <ul class="dropdown-menu navbar-default">
+              <li>
+                <div class="btn-group btn-group-vertical"><a class="btn btn-default" target="_blank" href="https://github.com/UB-Mannheim/ocr-gt-tools/wiki/Error-Tags"><i class="fa fa-exclamation"></i>Fehler-Kategorien</a>
+                  <button class="btn btn-default" data-toggle="modal" data-target="#cheatsheet-modal" data-keyboard="true"><i class="fa fa-question"></i>Spickzettel</button>
+                  <button class="btn btn-default" data-toggle="modal" data-target="#history-modal" data-keyboard="true"><i class="fa fa-history"></i>Verlauf</button>
+                </div>
+              </li>
+            </ul>
+          </li>
+          <li class="dropdown disabled"><a class="btn dropdown-toggle" data-toggle="dropdown"><i class="fa fa-search-plus fa-4x"></i></a>
+            <ul class="dropdown-menu navbar-default">
+              <li>
+                <div class="btn-group btn-group-vertical">
+                  <button class="btn btn-default" id="zoom-in" type="button"><i class="fa fa-search-plus"></i>Größer</button>
+                  <button class="btn btn-default" id="zoom-reset" type="button"><i class="fa fa-search"></i>Zurücksetzen</button>
+                  <button class="btn btn-default" id="zoom-out" type="button"><i class="fa fa-search-minus"></i>Kleiner</button>
+                </div>
+              </li>
+            </ul>
+          </li>
+          <li class="dropdown disabled"><a class="btn dropdown-toggle" data-toggle="dropdown"><i class="fa fa-4x fa-eye"></i></a>
+            <ul class="dropdown-menu navbar-default">
+              <li>
+                <div class="btn-group btn-group-vertical">
+                  <button class="set-view btn btn-default" type="button" data-target="*"><i class="fa fa-arrows-alt"></i>Vollansicht</button>
+                  <button class="set-view btn btn-default" type="button" data-target=".transcription,img"><i class="fa fa-picture-o"></i><i class="fa fa-align-left"></i>Bild + Text</button>
+                  <button class="set-view btn btn-default" type="button" data-target=".line-comment,img"><i class="fa fa-picture-o"></i><i class="fa fa-commenting-o"></i>Bild + Kommentar</button>
+                  <button class="set-view btn btn-default" type="button" data-target=".line-comment,.transcription"><i class="fa fa-align-left"></i><i class="fa fa-commenting-o"></i>Text + Kommentar</button>
+                  <button class="set-view btn btn-default" type="button" data-target="img"><i class="fa fa-picture-o"></i>Bild</button>
+                  <button class="set-view btn btn-default" type="button" data-target=".transcription"><i class="fa fa-align-left"></i>Text</button>
+                  <button class="set-view btn btn-default" type="button" data-target=".line-comment"><i class="fa fa-commenting-o"></i>Kommentar</button>
+                </div>
+              </li>
+            </ul>
+          </li>
+          <li class="dropdown disabled"><a class="btn dropdown-toggle" data-toggle="dropdown"><i class="fa fa-4x fa-filter"></i></a>
+            <ul class="dropdown-menu navbar-default">
+              <li>
+                <div class="btn-group btn-group-vertical">
+                  <button class="btn btn-default" id="toggle-select"><i class="fa fa-plus-square-o"></i>Multi-Select</button>
+                  <button class="btn btn-default" id="sort-line"><i class="fa fa-sort"></i>Normale Sortierung (auf)</button>
+                  <button class="btn btn-default" id="sort-line-desc"><i class="fa fa-sort"></i>Umgekehrte Sortierung (ab)</button>
+                  <button class="btn btn-default" id="sort-width"><i class="fa fa-sort"></i>Nach Breite sortieren (auf)</button>
+                  <button class="btn btn-default" id="sort-width-desc"><i class="fa fa-sort"></i>Nach Breite sortieren (ab)</button>
+                </div>
+              </li>
+            </ul>
+          </li>
+        </ul>
+      </div>
+    </nav>
+    <!--*-->
+    <!--*-->
+    <div class="container-fluid">
+      <div class="row">
+        <div class="col-sm-9" id="root">
+          <div class="jumbotron" id="dropzone"><span class="hidden" id="wait-load"><i class="fa fa-spinner fa-pulse fa-fw"></i></span>Grafik auf dem Dokument ablegen<br>oder<br>URL angeben:<br>
+            <div class="input-group" id="load-image">
+              <input class="input-lg form-control" type="text"><span class="input-group-btn">
+                <button class="btn btn-default btn-lg" type="button">Los!</button></span>
+            </div>
+          </div>
+          <div id="file-correction"></div>
+        </div>
+        <div class="col-sm-3" id="page-info"></div>
+      </div>
+    </div>
+  </body>
+</html>
+<!-- vim: sw=2 ts=2 noet ft=jade :-->
