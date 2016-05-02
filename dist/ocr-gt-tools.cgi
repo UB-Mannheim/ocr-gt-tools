@@ -30,13 +30,11 @@ BEGIN {
     # - environment variable 'OCR_GT_BASEDIR'
     # - directory containing the CGI script
     # - parent directory of the CGI script
-    # - $HOME/ocr-gt-tools
     # - parent directory of the readlink'd path of the CGI script
     my @POSSIBLE_OCR_GT_BASEDIRS;
     push @POSSIBLE_OCR_GT_BASEDIRS, $ENV{OCR_GT_BASEDIR};
     push @POSSIBLE_OCR_GT_BASEDIRS, dirname(abs_path($0));
     push @POSSIBLE_OCR_GT_BASEDIRS, dirname(dirname(abs_path($0)));
-    push @POSSIBLE_OCR_GT_BASEDIRS, $ENV{HOME} . '/ocr-gt-tools';
     if (readlink(abs_path($0))) {
         push @POSSIBLE_OCR_GT_BASEDIRS, dirname(readlink(abs_path($0)));
     }
