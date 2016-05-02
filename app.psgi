@@ -18,13 +18,21 @@ my $app = Plack::App::WrapCGI->new(
 builder {
     enable(
         "Plack::Middleware::Static",
-        path => qr{^/(js|css|favicon.ico|index.html)},
-        root => './'
+        path => qr{^/(fileadmin|ocr-corrections)},
+        root => './example/'
     );
     enable(
         "Plack::Middleware::Static",
-        path => qr{^/(fileadmin|ocr-corrections)},
-        root => './htdocs/'
+        path => qr{^/(?!ocr-gt-tools.cgi).*},
+        pass_through => 1,
+        root => './dist'
+    );
+    enable(
+        "Plack::Middleware::Static",
+        path => qr{^/(?!ocr-gt-tools.cgi).*},
+        root => './dist'
     );
     mount "/" => $app;
 };
+
+# vim: ft=perl :

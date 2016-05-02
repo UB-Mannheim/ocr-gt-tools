@@ -1,0 +1,362 @@
+{
+  "a-with-circumflex": {
+    "recognition": "â",
+    "baseLetter": [
+      "a"
+    ],
+    "name": {
+      "de": "Kleines a betont mit Circumflex",
+      "en": "Lowercase a stressed with circumflex"
+    },
+    "sample": [
+      "<a href=\"http://digi.bib.uni-mannheim.de/seitenansicht_suche/dlf/1177/78/?cHash=40d55215d5107cab56fbd33245164847\"><img src=\"https://camo.githubusercontent.com/504935bdb7c05db18477ee4044f2c20403f720b1/68747470733a2f2f63646e2e7261776769742e636f6d2f55422d4d616e6e6865696d2f75626d612d73637265656e73686f74732f6d61737465722f6f63722d636861726163746572732f612d776974682d63697263756d666c65782e706e67\" alt=\"a-with-circumflex\" data-canonical-src=\"https://cdn.rawgit.com/UB-Mannheim/ubma-screenshots/master/ocr-characters/a-with-circumflex.png\"></a>"
+    ],
+    "shortcutWindows": "<kbd>^</kbd><kbd>a</kbd>"
+  },
+  "a-with-grave": {
+    "recognition": "à",
+    "baseLetter": [
+      "a"
+    ],
+    "name": {
+      "de": "Kleines a betont mit Gravis",
+      "en": "Lowercase e stressed with grave"
+    },
+    "sample": [
+      "<a href=\"http://digi.bib.uni-mannheim.de/seitenansicht_suche/dlf/1177/12/?cHash=9f62350f51944ebbfc4498e6f8736d72\"><img src=\"https://camo.githubusercontent.com/bdafd4c7582990d8bf41faaebc739b8d598c7478/68747470733a2f2f63646e2e7261776769742e636f6d2f55422d4d616e6e6865696d2f75626d612d73637265656e73686f74732f6d61737465722f6f63722d636861726163746572732f612d776974682d67726176652e706e67\" alt=\"a-with-grave\" data-canonical-src=\"https://cdn.rawgit.com/UB-Mannheim/ubma-screenshots/master/ocr-characters/a-with-grave.png\"></a>"
+    ],
+    "shortcutWindows": "<kbd>shift+´</kbd><kbd>a</kbd>"
+  },
+  "c-with-cedilla": {
+    "recognition": "ç",
+    "baseLetter": [
+      "c"
+    ],
+    "name": {
+      "de": "Kleines a betont mit Cedille",
+      "en": "Lowercase e stressed with cedilla"
+    },
+    "sample": [
+      "<a href=\"http://digi.bib.uni-mannheim.de/seitenansicht_suche/dlf/1177/12/?cHash=9f62350f51944ebbfc4498e6f8736d72\"><img src=\"https://camo.githubusercontent.com/f58c062cd8e18759f3b4d325d8d9092de8fea5d3/68747470733a2f2f63646e2e7261776769742e636f6d2f55422d4d616e6e6865696d2f75626d612d73637265656e73686f74732f6d61737465722f6f63722d636861726163746572732f632d776974682d636564696c6c612e706e67\" alt=\"c-with-cedilla\" data-canonical-src=\"https://cdn.rawgit.com/UB-Mannheim/ubma-screenshots/master/ocr-characters/c-with-cedilla.png\"></a>"
+    ],
+    "shortcutWindows": "<kbd>Alt Gr+´</kbd><kbd>c</kbd>"
+  },
+  "e-with-acute": {
+    "recognition": "é",
+    "baseLetter": [
+      "e"
+    ],
+    "name": {
+      "de": "Kleines e betont mit Akut",
+      "en": "Lowercase e stressed with acute"
+    },
+    "sample": [
+      "<a href=\"http://digi.bib.uni-mannheim.de/seitenansicht_suche/dlf/1177/12/?cHash=9f62350f51944ebbfc4498e6f8736d72\"><img src=\"https://camo.githubusercontent.com/ae2c093eb8178e264fe206cdceb2bc7ebba7cfa3/68747470733a2f2f63646e2e7261776769742e636f6d2f55422d4d616e6e6865696d2f75626d612d73637265656e73686f74732f6d61737465722f6f63722d636861726163746572732f652d776974682d61637574652e706e67\" alt=\"e-with-acute\" data-canonical-src=\"https://cdn.rawgit.com/UB-Mannheim/ubma-screenshots/master/ocr-characters/e-with-acute.png\"></a>"
+    ],
+    "shortcutWindows": "<kbd>´</kbd><kbd>e</kbd>"
+  },
+  "e-with-circumflex": {
+    "recognition": "ê",
+    "baseLetter": [
+      "e"
+    ],
+    "name": {
+      "de": "Kleines e betont mit Circumflex",
+      "en": "Lowercase e stressed with circumflex"
+    },
+    "sample": [
+      "<a href=\"http://digi.bib.uni-mannheim.de/seitenansicht_suche/dlf/1177/12/?cHash=9f62350f51944ebbfc4498e6f8736d72\"><img src=\"https://camo.githubusercontent.com/f8374d6d9bb2072092b95ca6cb2adf78c749631f/68747470733a2f2f63646e2e7261776769742e636f6d2f55422d4d616e6e6865696d2f75626d612d73637265656e73686f74732f6d61737465722f6f63722d636861726163746572732f652d776974682d63697263756d666c65782e706e67\" alt=\"e-with-circumflex\" data-canonical-src=\"https://cdn.rawgit.com/UB-Mannheim/ubma-screenshots/master/ocr-characters/e-with-circumflex.png\"></a>"
+    ],
+    "shortcutWindows": "<kbd>^</kbd><kbd>e</kbd>",
+    "shortcutLinux": "<kbd>^</kbd><kbd>e</kbd>"
+  },
+  "e-with-diaeresis": {
+    "recognition": "ë",
+    "baseLetter": [
+      "e"
+    ],
+    "name": {
+      "de": "Kleines e betont mit Trema/Umlaut",
+      "en": "Lowercase e stressed with diaeresis"
+    },
+    "sample": [
+      "<a href=\"http://digi.bib.uni-mannheim.de/seitenansicht_suche/dlf/1177/15/?cHash=30149126ee3a713675f604b9d1db6ba4\"><img src=\"https://camo.githubusercontent.com/3a0d7febf0f0cb2a999d2bf4fee0e59cc7068819/68747470733a2f2f63646e2e7261776769742e636f6d2f55422d4d616e6e6865696d2f75626d612d73637265656e73686f74732f6d61737465722f6f63722d636861726163746572732f652d776974682d6469616572657369732e706e67\" alt=\"e-with-diaeresis\" data-canonical-src=\"https://cdn.rawgit.com/UB-Mannheim/ubma-screenshots/master/ocr-characters/e-with-diaeresis.png\"></a>"
+    ]
+  },
+  "e-with-grave": {
+    "recognition": "è",
+    "baseLetter": [
+      "e"
+    ],
+    "name": {
+      "de": "Kleines e betont mit Gravis",
+      "en": "Lowercase e stressed with grave"
+    },
+    "sample": [
+      "<a href=\"http://digi.bib.uni-mannheim.de/seitenansicht_suche/dlf/1177/15/?cHash=30149126ee3a713675f604b9d1db6ba4\"><img src=\"https://camo.githubusercontent.com/f6d57df89a5fbb68b0d1b71dd26b1f6ace595cf8/68747470733a2f2f63646e2e7261776769742e636f6d2f55422d4d616e6e6865696d2f75626d612d73637265656e73686f74732f6d61737465722f6f63722d636861726163746572732f652d776974682d67726176652e706e67\" alt=\"e-with-grave\" data-canonical-src=\"https://cdn.rawgit.com/UB-Mannheim/ubma-screenshots/master/ocr-characters/e-with-grave.png\"></a>",
+      "<a href=\"http://digi.bib.uni-mannheim.de/fileadmin/digi/417576986/max/417576986_0012.jpg\"><img src=\"https://camo.githubusercontent.com/751fb22a01a5f14629e188c550d51168039e6acc/68747470733a2f2f63646e2e7261776769742e636f6d2f55422d4d616e6e6865696d2f75626d612d73637265656e73686f74732f6d61737465722f6f63722d636861726163746572732f652d776974682d67726176652d322e6a7067\" alt=\"e-with-grave-2\" data-canonical-src=\"https://cdn.rawgit.com/UB-Mannheim/ubma-screenshots/master/ocr-characters/e-with-grave-2.jpg\"></a>"
+    ],
+    "shortcutWindows": "<kbd>Shift+´</kbd><kbd>e</kbd>"
+  },
+  "e-with-macron": {
+    "recognition": "ē",
+    "baseLetter": [
+      "e"
+    ],
+    "name": {
+      "de": "Kleines e betont mit Makron",
+      "en": "Lowercase e stressed with macron"
+    },
+    "sample": [
+      "<a href=\"http://digi.bib.uni-mannheim.de/seitenansicht_sammlung//dlf/1327/11/\"><img src=\"https://camo.githubusercontent.com/3fd106eb30d256c8f00da4d72fc951b84e41c7c3/68747470733a2f2f63646e2e7261776769742e636f6d2f55422d4d616e6e6865696d2f75626d612d73637265656e73686f74732f6d61737465722f6f63722d636861726163746572732f652d776974682d74696c64652e706e67\" alt=\"e-with-macron\" data-canonical-src=\"https://cdn.rawgit.com/UB-Mannheim/ubma-screenshots/master/ocr-characters/e-with-tilde.png\"></a>"
+    ],
+    "shortcutWindows": "<kbd>Alt</kbd>+<kbd>0</kbd><kbd>2</kbd><kbd>7</kbd><kbd>5</kbd>",
+    "shortcutLinux": "<kbd>Strg</kbd>+<kbd>Shift</kbd>+<kbd>U</kbd>+<kbd>0</kbd><kbd>1</kbd><kbd>1</kbd><kbd>3</kbd>"
+  },
+  "i-with-diaeresis": {
+    "recognition": "ï",
+    "baseLetter": [
+      "i"
+    ],
+    "name": {
+      "de": "Kleines i betont mit Trema/Umlaut",
+      "en": "Lowercase i stressed with diaeresis"
+    },
+    "sample": [
+      "<a href=\"http://digi.bib.uni-mannheim.de/seitenansicht_suche/dlf/1177/206/?cHash=0417755c966804a219f6e1ff433ed811\"><img src=\"https://camo.githubusercontent.com/f08d7db062d9b445d2956e431b1b060039dd5fad/68747470733a2f2f63646e2e7261776769742e636f6d2f55422d4d616e6e6865696d2f75626d612d73637265656e73686f74732f6d61737465722f6f63722d636861726163746572732f692d776974682d6469616572657369732e706e67\" alt=\"i-with-diaeresis\" data-canonical-src=\"https://cdn.rawgit.com/UB-Mannheim/ubma-screenshots/master/ocr-characters/i-with-diaeresis.png\"></a>"
+    ]
+  },
+  "o-with-circumflex": {
+    "recognition": "ô",
+    "baseLetter": [
+      "o"
+    ],
+    "name": {
+      "de": "Kleines o betont mit Circumflex",
+      "en": "Lowercase i stressed with circumflex"
+    },
+    "sample": [
+      "<a href=\"http://digi.bib.uni-mannheim.de/seitenansicht_suche/dlf/1177/206/?cHash=0417755c966804a219f6e1ff433ed811\"><img src=\"https://camo.githubusercontent.com/5e2768a5bb98b9cf9fad791bc6db9ff2fffaaac6/68747470733a2f2f63646e2e7261776769742e636f6d2f55422d4d616e6e6865696d2f75626d612d73637265656e73686f74732f6d61737465722f6f63722d636861726163746572732f6f2d776974682d63697263756d666c65782e706e67\" alt=\"o-with-circumflex\" data-canonical-src=\"https://cdn.rawgit.com/UB-Mannheim/ubma-screenshots/master/ocr-characters/o-with-circumflex.png\"></a>"
+    ]
+  },
+  "u-with-circumflex": {
+    "recognition": "û",
+    "baseLetter": [
+      "u"
+    ],
+    "name": {
+      "de": "Kleines u betont mit Circumflex",
+      "en": "Lowercase u stressed with circumflex"
+    },
+    "sample": [
+      "<a href=\"http://digi.bib.uni-mannheim.de/seitenansicht_suche/dlf/1177/15/?cHash=30149126ee3a713675f604b9d1db6ba4\"><img src=\"https://camo.githubusercontent.com/badb763cf7b6f512cc2e45b168bf71bb4e93a1b8/68747470733a2f2f63646e2e7261776769742e636f6d2f55422d4d616e6e6865696d2f75626d612d73637265656e73686f74732f6d61737465722f6f63722d636861726163746572732f752d776974682d63697263756d666c65782e706e67\" alt=\"u-with-circumflex\" data-canonical-src=\"https://cdn.rawgit.com/UB-Mannheim/ubma-screenshots/master/ocr-characters/u-with-circumflex.png\"></a>"
+    ],
+    "shortcutWindows": "<kbd>^</kbd><kbd>u</kbd>"
+  },
+  "ligature-ct": {
+    "recognition": "ct",
+    "baseLetter": [
+      "ct",
+      "c",
+      "t"
+    ],
+    "name": {
+      "de": "ct-Ligatur",
+      "en": "ct-ligature"
+    },
+    "sample": [
+      "<a href=\"http://digi.bib.uni-mannheim.de/seitenansicht_suche/dlf/1177/15/?cHash=30149126ee3a713675f604b9d1db6ba4\"><img src=\"https://camo.githubusercontent.com/563eae4791a3bae403743e543ccc79f4d6542cb0/68747470733a2f2f63646e2e7261776769742e636f6d2f55422d4d616e6e6865696d2f75626d612d73637265656e73686f74732f6d61737465722f6f63722d636861726163746572732f6c696761747572652d63742e706e67\" alt=\"ligature-ct\" data-canonical-src=\"https://cdn.rawgit.com/UB-Mannheim/ubma-screenshots/master/ocr-characters/ligature-ct.png\"></a>"
+    ],
+    "notes": {
+      "de": "Konsonantische Ligaturen werden grundsätzlich gespalten",
+      "en": "Consonantal ligatures are principally to be split"
+    }
+  },
+  "capital-ligature-ae": {
+    "recognition": "Æ",
+    "baseLetter": [
+      "AE",
+      "A",
+      "E"
+    ],
+    "name": {
+      "de": "Große AE-Ligatur",
+      "en": "Uppercase AE-ligature"
+    },
+    "sample": [
+      "<a href=\"http://digi.bib.uni-mannheim.de/seitenansicht_suche/dlf/1286/624/?cHash=f1b2b162b8c7fe2d4fe9b1a7981a4643\"><img src=\"https://camo.githubusercontent.com/2a2f40f0b4b1b9a8cddc0d1798797d862d89a4e9/68747470733a2f2f63646e2e7261776769742e636f6d2f55422d4d616e6e6865696d2f75626d612d73637265656e73686f74732f6d61737465722f6f63722d636861726163746572732f6361706974616c2d6c696761747572652d61652e706e67\" alt=\"capital-ligature-ae\" data-canonical-src=\"https://cdn.rawgit.com/UB-Mannheim/ubma-screenshots/master/ocr-characters/capital-ligature-ae.png\"></a>"
+    ]
+  },
+  "ligature-st": {
+    "recognition": "st",
+    "baseLetter": [
+      "st",
+      "s",
+      "t"
+    ],
+    "name": {
+      "de": "st-ligatur mit scharfem S",
+      "en": "st-ligature with sharp s"
+    },
+    "sample": [
+      "<a href=\"http://digi.bib.uni-mannheim.de/seitenansicht_suche/dlf/1306/232/?cHash=fb383eb6b3bf8833a316c10204434a86\"><img src=\"https://camo.githubusercontent.com/b74975848fdd3a101e88a1b6bcb0b76234a326fb/68747470733a2f2f63646e2e7261776769742e636f6d2f55422d4d616e6e6865696d2f75626d612d73637265656e73686f74732f6d61737465722f6f63722d636861726163746572732f6c696761747572652d73742e706e67\" alt=\"ligature-st\" data-canonical-src=\"https://cdn.rawgit.com/UB-Mannheim/ubma-screenshots/master/ocr-characters/ligature-st.png\"></a>"
+    ]
+  },
+  "ligature-ff": {
+    "recognition": "ff",
+    "baseLetter": [
+      "ff",
+      "f",
+      "ﬀ"
+    ],
+    "name": {
+      "de": "ff-Ligatur",
+      "en": "ff-ligatur"
+    },
+    "sample": [
+      "<a href=\"http://digi.bib.uni-mannheim.de/fileadmin/digi/434664219/max/434664219_0042.jpg\"><img src=\"https://camo.githubusercontent.com/baa54ed52de75f096b36b6a38f765e6defaed9c8/68747470733a2f2f63646e2e7261776769742e636f6d2f55422d4d616e6e6865696d2f75626d612d73637265656e73686f74732f6d61737465722f6f63722d636861726163746572732f6c6967617475722d66662e706e67\" alt=\"ligature-ff\" data-canonical-src=\"https://cdn.rawgit.com/UB-Mannheim/ubma-screenshots/master/ocr-characters/ligatur-ff.png\"></a>"
+    ]
+  },
+  "ligatur-ss": {
+    "recognition": "ss",
+    "baseLetter": [
+      "ss",
+      "ff",
+      "s",
+      "ſſ"
+    ],
+    "name": {
+      "de": "ss-Ligatur mit langem s",
+      "en": "ss-litagur with sharp s"
+    },
+    "sample": [
+      "<a href=\"http://digi.bib.uni-mannheim.de/fileadmin/digi/434664219/max/434664219_0042.jpg\"><img src=\"https://camo.githubusercontent.com/dce1d05d5f7a5aa5007e8d9ed8551930f9d67647/68747470733a2f2f63646e2e7261776769742e636f6d2f55422d4d616e6e6865696d2f75626d612d73637265656e73686f74732f6d61737465722f6f63722d636861726163746572732f6c6967617475722d73732e706e67\" alt=\"ligatur-ss\" data-canonical-src=\"https://cdn.rawgit.com/UB-Mannheim/ubma-screenshots/master/ocr-characters/ligatur-ss.png\"></a>"
+    ]
+  },
+  "ligatur-fi": {
+    "recognition": "fi",
+    "baseLetter": [
+      "fi",
+      "ﬁ"
+    ],
+    "name": {
+      "de": "fi-Ligatur",
+      "en": "fi-litagur"
+    },
+    "sample": [
+      "<a href=\"http://digi.bib.uni-mannheim.de/fileadmin/digi/425459462/max/425459462_0882.jpg\"><img src=\"https://camo.githubusercontent.com/ecf456eea19397e4d72681989ba042515fdd31d2/68747470733a2f2f63646e2e7261776769742e636f6d2f55422d4d616e6e6865696d2f75626d612d73637265656e73686f74732f6d61737465722f6f63722d636861726163746572732f6c6967617475722d66692e706e67\" alt=\"ligatur-fi\" data-canonical-src=\"https://cdn.rawgit.com/UB-Mannheim/ubma-screenshots/master/ocr-characters/ligatur-fi.png\"></a>"
+    ]
+  },
+  "ligatur-si": {
+    "recognition": "si",
+    "baseLetter": [
+      "si",
+      "ſi"
+    ],
+    "name": {
+      "de": "si-Ligatur mit langem s",
+      "en": "si-litagur with sharp s"
+    },
+    "sample": [
+      "<a href=\"http://digi.bib.uni-mannheim.de/fileadmin/digi/434664219/max/434664219_0042.jpg\"><img src=\"https://camo.githubusercontent.com/3f987b077699f24700ddfcc9609e2dd06bede399/68747470733a2f2f63646e2e7261776769742e636f6d2f55422d4d616e6e6865696d2f75626d612d73637265656e73686f74732f6d61737465722f6f63722d636861726163746572732f6c6967617475722d73692e706e67\" alt=\"ligatur-si\" data-canonical-src=\"https://cdn.rawgit.com/UB-Mannheim/ubma-screenshots/master/ocr-characters/ligatur-si.png\"></a>"
+    ]
+  },
+  "ligatur-ssi": {
+    "recognition": "ssi",
+    "baseLetter": [
+      "ssi",
+      "ſſi"
+    ],
+    "name": {
+      "de": "ssi-Ligatur mit langem s",
+      "en": "ssi-litagur with sharp s"
+    },
+    "sample": [
+      "<a href=\"http://digi.bib.uni-mannheim.de/fileadmin/digi/434664219/max/434664219_0042.jpg\"><img src=\"https://camo.githubusercontent.com/ca722a184343367b184d26fa040b10c70d70db50/68747470733a2f2f63646e2e7261776769742e636f6d2f55422d4d616e6e6865696d2f75626d612d73637265656e73686f74732f6d61737465722f6f63722d636861726163746572732f6c6967617475722d7373692e706e67\" alt=\"ligatur-ssi\" data-canonical-src=\"https://cdn.rawgit.com/UB-Mannheim/ubma-screenshots/master/ocr-characters/ligatur-ssi.png\"></a>"
+    ]
+  },
+  "superscripted-9": {
+    "recognition": "ꝰ",
+    "baseLetter": [
+      "9",
+      "'"
+    ],
+    "name": {
+      "de": "Hochgestellte 9 als Vorläufer des Apostrophs",
+      "en": "Superscripted 9 as precedant of the apostrophe"
+    },
+    "sample": [
+      "<a href=\"http://digi.bib.uni-mannheim.de/fileadmin/digi/445481072/max/445481072_0024.jpg\"><img src=\"https://camo.githubusercontent.com/ac3498c79639f5bd11b5b670ff7f0839eb23e0bd/68747470733a2f2f63646e2e7261776769742e636f6d2f55422d4d616e6e6865696d2f75626d612d73637265656e73686f74732f6d61737465722f6f63722d636861726163746572732f737570657273637269707465642d392e706e67\" alt=\"superscripted-9\" data-canonical-src=\"https://cdn.rawgit.com/UB-Mannheim/ubma-screenshots/master/ocr-characters/superscripted-9.png\"></a>"
+    ],
+    "notes": {
+      "de": "Steht für <code>os</code>, <code>us</code>, <code>is</code> oder <code>s</code> (Genitiv, Wortendung), vgl. <a href=\"https://en.wikipedia.org/wiki/Scribal_abbreviation#Marks_with_independent_meaning\">https://en.wikipedia.org/wiki/Scribal_abbreviation#Marks_with_independent_meaning</a>"
+    }
+  },
+  "ligature-et": {
+    "recognition": "&amp;",
+    "baseLetter": [
+      "e",
+      "t",
+      "&amp",
+      ""
+    ],
+    "name": {
+      "de": "Alte lateinische et-Ligatur oder Kaufmanns-Und",
+      "en": "Old latin et-ligature or ampersand"
+    },
+    "sample": [
+      "<a href=\"http://digi.bib.uni-mannheim.de/seitenansicht_suche/dlf/1286/152/?cHash=2f0d3f5bc71aaf06437af38409e80d4d\"><img src=\"https://camo.githubusercontent.com/b2a4c58677f49958d4823f4f4c3d25ec06905819/68747470733a2f2f63646e2e7261776769742e636f6d2f55422d4d616e6e6865696d2f75626d612d73637265656e73686f74732f6d61737465722f6f63722d636861726163746572732f65742d7369676e2e706e67\" alt=\"et-sign\" data-canonical-src=\"https://cdn.rawgit.com/UB-Mannheim/ubma-screenshots/master/ocr-characters/et-sign.png\"></a>",
+      "<img src=\"https://camo.githubusercontent.com/498e438b493b68cccbc5f267efd2476d3d72a04c/68747470733a2f2f63646e2e7261776769742e636f6d2f55422d4d616e6e6865696d2f75626d612d73637265656e73686f74732f6d61737465722f6f63722d636861726163746572732f65742d7369676e2d322e706e67\" alt=\"et-sign-2\" data-canonical-src=\"https://cdn.rawgit.com/UB-Mannheim/ubma-screenshots/master/ocr-characters/et-sign-2.png\">",
+      "<a href=\"http://digi.bib.uni-mannheim.de/seitenansicht_suche/dlf/1303/66/?cHash=1075957cbe060e0ce750939e7700b7eb\"><img src=\"https://camo.githubusercontent.com/b3f8ddb3b61067169cb48a0465fa708aa11f25a4/68747470733a2f2f63646e2e7261776769742e636f6d2f55422d4d616e6e6865696d2f75626d612d73637265656e73686f74732f6d61737465722f6f63722d636861726163746572732f65742e706e67\" alt=\"et\" data-canonical-src=\"https://cdn.rawgit.com/UB-Mannheim/ubma-screenshots/master/ocr-characters/et.png\"></a>",
+      "<a href=\"http://digi.bib.uni-mannheim.de/seitenansicht_suche/dlf/1286/152/?cHash=2f0d3f5bc71aaf06437af38409e80d4d\"><img src=\"https://camo.githubusercontent.com/1386fafbb7fd26455defc329e9e65e28747de4f1/68747470733a2f2f7261776769742e636f6d2f55422d4d616e6e6865696d2f75626d612d73637265656e73686f74732f6d61737465722f6f63722d636861726163746572732f616d70657273616e642e706e67\" alt=\"ampersand\" data-canonical-src=\"https://rawgit.com/UB-Mannheim/ubma-screenshots/master/ocr-characters/ampersand.png\"></a>"
+    ]
+  },
+  "ligature-ae": {
+    "recognition": "æ",
+    "baseLetter": [
+      "a",
+      "e",
+      "ae"
+    ],
+    "name": {
+      "de": "Kleine ae-Ligatur",
+      "en": "Lowercase ae-ligature"
+    },
+    "sample": [
+      "<a href=\"http://digi.bib.uni-mannheim.de/seitenansicht_suche/dlf/1830/62/?cHash=81766a0e68169fc319c9604ff782f57c\"><img src=\"https://camo.githubusercontent.com/33f4c8b497d05f3d9056232cd1bc5bd6622a3799/68747470733a2f2f63646e2e7261776769742e636f6d2f55422d4d616e6e6865696d2f75626d612d73637265656e73686f74732f6d61737465722f6f63722d636861726163746572732f6c696761747572652d61652e706e67\" alt=\"ligature-ae\" data-canonical-src=\"https://cdn.rawgit.com/UB-Mannheim/ubma-screenshots/master/ocr-characters/ligature-ae.png\"></a>",
+      "<a href=\"http://digi.bib.uni-mannheim.de/seitenansicht_suche/dlf/1323/71/?cHash=03cf1f2adb4cf1a37e9a86f9f24547bf\"><img src=\"https://camo.githubusercontent.com/7ff390c4782c147eb5996e079155159351873a17/68747470733a2f2f63646e2e7261776769742e636f6d2f55422d4d616e6e6865696d2f75626d612d73637265656e73686f74732f6d61737465722f6f63722d636861726163746572732f6c696761747572652d61652d322e706e67\" alt=\"ligature-ae-2\" data-canonical-src=\"https://cdn.rawgit.com/UB-Mannheim/ubma-screenshots/master/ocr-characters/ligature-ae-2.png\"></a>",
+      "<a href=\"http://digi.bib.uni-mannheim.de/seitenansicht_suche/dlf/1290/24/?cHash=c74ceb872ebb117e5b802cb252b94c73\"><img src=\"https://camo.githubusercontent.com/7f91d20ad13d5c57a91b7f41860edf6f955a7ff2/68747470733a2f2f7261776769742e636f6d2f55422d4d616e6e6865696d2f75626d612d73637265656e73686f74732f6d61737465722f6f63722d636861726163746572732f6c696761747572652d61652d332e706e67\" alt=\"ligature-ae-3\" data-canonical-src=\"https://rawgit.com/UB-Mannheim/ubma-screenshots/master/ocr-characters/ligature-ae-3.png\"></a>"
+    ]
+  },
+  "ligature-oe": {
+    "recognition": "œ",
+    "baseLetter": [
+      "o",
+      "e",
+      "oe"
+    ],
+    "name": {
+      "de": "Kleine oe-Ligatur",
+      "en": "Lowercase oe-ligature"
+    },
+    "sample": [
+      "<img src=\"https://camo.githubusercontent.com/05118f3184d1c8cd1329b97b37ed71bcde03df8f/68747470733a2f2f63646e2e7261776769742e636f6d2f55422d4d616e6e6865696d2f75626d612d73637265656e73686f74732f6d61737465722f6f63722d636861726163746572732f6c696761747572652d6f652e706e67\" alt=\"ligature-oe\" data-canonical-src=\"https://cdn.rawgit.com/UB-Mannheim/ubma-screenshots/master/ocr-characters/ligature-oe.png\">",
+      "<a href=\"http://digi.bib.uni-mannheim.de/seitenansicht_suche/dlf/1323/76/?cHash=6b64adf203a7f3962d23e246f54fa8cc\"><img src=\"https://camo.githubusercontent.com/b462265dac26b8536baabc6b561e155e6b0138dc/68747470733a2f2f63646e2e7261776769742e636f6d2f55422d4d616e6e6865696d2f75626d612d73637265656e73686f74732f6d61737465722f6f63722d636861726163746572732f6c696761747572652d6f652d322e706e67\" alt=\"ligature-oe-2\" data-canonical-src=\"https://cdn.rawgit.com/UB-Mannheim/ubma-screenshots/master/ocr-characters/ligature-oe-2.png\"></a>"
+    ]
+  },
+  "ligature-ij": {
+    "recognition": "ij",
+    "baseLetter": [
+      "i",
+      "j",
+      "ij"
+    ],
+    "name": {
+      "de": "Kleine ij-Ligatur",
+      "en": "Lowercase ij-ligature"
+    },
+    "sample": [
+      "<img src=\"https://camo.githubusercontent.com/2dcf2c1767a3bc64d9e18d94f060ae3655c7b6f1/68747470733a2f2f63646e2e7261776769742e636f6d2f55422d4d616e6e6865696d2f75626d612d73637265656e73686f74732f6d61737465722f6f63722d636861726163746572732f6c696761747572652d696a2e706e67\" alt=\"ligature-ij\" data-canonical-src=\"https://cdn.rawgit.com/UB-Mannheim/ubma-screenshots/master/ocr-characters/ligature-ij.png\">"
+    ]
+  }
+}

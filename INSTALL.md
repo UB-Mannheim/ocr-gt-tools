@@ -1,26 +1,36 @@
-# Install.md
+# Installation Instructions
 
-## Repository-local server
-
-Install dependencies
+## Install dependencies
 
 ```
 make deps
 ```
 
-Copy configuration template:
+This will install debian packages (`make apt-get`) and current Git revisions of hocr-tools and ocropus (`make vendor`).
+
+To skip installing the Debian packages, skip the `apt-get` goal:
+
+```
+make vendor
+```
+
+## Copy configuration template and edit as needed
 
 ```
 cp conf/ocr-gt-tools.ini_tmpl conf/ocr-gt-tools.ini
 ```
 
-Start server
+## Deploy on a server
+
+### Bundled standalone server
 
 ```
 make dev-server
 ```
 
-Navigate to [http://localhost:9090/index.html](http://localhost:9090/index.html).
+### 
+
+Navigate to [http://localhost:9090/dist/index.html](http://localhost:9090/index.html).
 
 Drop a file, such as [this thumbnail](http://digi.bib.uni-mannheim.de/fileadmin/digi/445442158/thumbs/445442158_0126.jpg) onto the document.
 
@@ -28,7 +38,93 @@ Do some transliterating and commenting.
 
 Click "Speichern".
 
-Checkout the contents of [./htdocs/ocr-corrections/](./htdocs/ocr-corrections/).
+Checkout the contents of [./example/ocr-corrections/](./example/ocr-corrections/).
+
+### On Apache
+
+* Enable CGI on Apache
+
+```sh
+sudo a2enmod cgi
+```
+
+* Make sure scripts ending in `.cgi` are executable in the directory with `ocr-gt-tools.cgi`
+
+```
+sudo $EDITOR /etc/apache2/sites-available/000-default.conf
+#    <Directory "/var/www/html/ocr-gt-tools">
+#        Options +ExecCGI
+#        AddHandler cgi-script .cgi
+#    </Directory>
+```
+
+* Clone the repository as the user who owns the Apache document root, usually **`www-data`**
+
+```
+cd ~www-data
+sudo -u www-data git clone https://github.com/UB-Mannheim/ocr-gt-tools
+```
+
+* Clone the dependent tools (will pull ocropy and hocr-tools and create the log files)
+
+```
+cd ~www-data/ocr-gt-tools
+make vendor
+```
+
+* Copy the configuration
+
+```
+sudo -u www-data cp conf/ocr-gt-tools.ini_tmpl conf/ocr-gt-tools.ini
+# sudo $EDIT as needed!
+```
+
+* Symlink (or copy) the 'dist' folder below the document root
+
+```
+cd /var/www/html
+ln -s ~www-data/ocr-gt-tools/dist ocr-gt-tools
+# or
+# cp -r ~www-data/ocr-gt-tools/dist ocr-gt-tools
+```
+
+* Restart/reload apache 
+
+```
+sudo systemctl restart apache2
+```
+<!--
+# Generate the log files
+sudo -u www-data ./ocr-gt-tools.cgi
+-->
+
+## Developing the frontend
+
+Install the development dependencies: The `npm` package (which pulls in nodejs) and some nodejs-based tools:
+
+```
+make dev-deps
+```
+
+If the apt-get command fails because of `npm`, you can try skipping the Debian package installation:
+
+```
+make APT_GET dev-deps
+```
+
+After changing CSS/Javascript, make sure to regenerate the `dist` folder:
+
+```
+make dist
+```
+
+This will 
+
+* Download web fonts to `./dist/fonts/` and generate a matching CSS file in `./dist/css/`
+* copy all CSS stylesheets to `./dist/css/` and minify them to `./dist/style.css`
+* copy all JS scripts to `./dist/js/` and minify them, in the right order, to `./dist/script.js` with source map
+
+Javascript/CSS project dependencies are managed by bower, see `bower.json`
 
 ## After download:
 
