@@ -192,7 +192,7 @@ function saveGtEditLocation() {
     window.ocrGtLocation.lineComments = $("li.line-comment div").map(function() {
         return encodeForServer($(this).html());
     }).get();
-    window.ocrGtLocation.pageComment = encodeForServer($(".page-comment div").html());
+    window.ocrGtLocation.pageComment = encodeForServer($("#page-comment div").html());
     // console.log(window.ocrGtLocation.pageComment);
     // console.log(window.ocrGtLocation.transliterations);
     // console.log(window.ocrGtLocation.lineComments);
@@ -267,7 +267,7 @@ function addCommentFields() {
         });
         $("#file-correction").append($line);
     });
-    $("#page-info").html(window.templates.page(window.ocrGtLocation));
+    $("#right-sidebar").html(window.templates.rightSidebar(window.ocrGtLocation));
     $("#wait-load").removeClass("hidden");
     $(".show-line-comment").on('click', toggleLineComment);
     $(".hide-line-comment").on('click', toggleLineComment);
@@ -535,7 +535,7 @@ $(function onPageLoaded() {
 
     // Notice changed input and make save button available
     $("#file-correction").on('input', markChanged);
-    $("#page-info").on('input', markChanged);
+    $("#right-sidebar").on('input', markChanged);
 
     // Open history modal
     $('button[data-target="#history-modal"]').on('click', function() {

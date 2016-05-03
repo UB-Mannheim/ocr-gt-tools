@@ -121,7 +121,7 @@ div[contenteditable] {
   height: auto;
 }
 .line-comment,
-.page-comment {
+#page-comment {
   background-color: #ffffe0;
   font-family: 'EB Garamond', serif;
   font-size: 20px;
