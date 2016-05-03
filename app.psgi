@@ -8,7 +8,7 @@ use Config::IniFiles qw( :all);
 use Plack::App::WrapCGI;
 use Plack::Builder;
 
-my $CGI_SCRIPT = sprintf "%s/ocr-gt-tools.cgi", dirname(abs_path($0));
+my $CGI_SCRIPT = "dist/ocr-gt-tools.cgi";
 print $CGI_SCRIPT;
 print "\n";
 my $app = Plack::App::WrapCGI->new(

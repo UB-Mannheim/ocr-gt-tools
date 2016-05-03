@@ -1,8 +1,7 @@
 *~
-/log
-/conf/ocr-gt-tools.ini
-/vendor
-/www-*
+/dist/log
+/dist/ocr-gt-tools.ini
+/dist/vendor
 /bower_components
 /node_modules
 npm-debug.log

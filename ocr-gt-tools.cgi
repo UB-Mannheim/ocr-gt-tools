@@ -25,31 +25,8 @@ BEGIN {
     use File::Basename qw(dirname);
     use Cwd qw(abs_path);
 
-    # These are the paths we search for the 'conf' and 'log' directories
-    # Can be overridden with an, order of preference:
-    # - environment variable 'OCR_GT_BASEDIR'
-    # - directory containing the CGI script
-    # - parent directory of the CGI script
-    # - $HOME/ocr-gt-tools
-    # - parent directory of the readlink'd path of the CGI script
-    my @POSSIBLE_OCR_GT_BASEDIRS;
-    push @POSSIBLE_OCR_GT_BASEDIRS, $ENV{OCR_GT_BASEDIR};
-    push @POSSIBLE_OCR_GT_BASEDIRS, dirname(abs_path($0));
-    push @POSSIBLE_OCR_GT_BASEDIRS, dirname(dirname(abs_path($0)));
-    push @POSSIBLE_OCR_GT_BASEDIRS, $ENV{HOME} . '/ocr-gt-tools';
-    if (readlink(abs_path($0))) {
-        push @POSSIBLE_OCR_GT_BASEDIRS, dirname(readlink(abs_path($0)));
-    }
-    for (@POSSIBLE_OCR_GT_BASEDIRS) {
-        if ($_ && -d "$_/conf") {
-            $OCR_GT_BASEDIR = $_;
-            last;
-        }
-    }
-    if (!$OCR_GT_BASEDIR) {
-        printf "*ERROR* Could not find a base path. Tried: [\n%s]" . join("\n", @POSSIBLE_OCR_GT_BASEDIRS);
-        die 1;
-    }
+    # Directory containing the CGI script
+    $OCR_GT_BASEDIR = dirname(abs_path($0));
     $REQUESTLOG_FILENAME = "$OCR_GT_BASEDIR/log/request.log";
 
     #-----------------------------------------------
@@ -129,7 +106,12 @@ Load the configuration from the ini file
 
 sub loadConfig
 {
-    my $iniFile = "$OCR_GT_BASEDIR/conf/ocr-gt-tools.ini";
+    my $iniFile = "$OCR_GT_BASEDIR/ocr-gt-tools.ini";
+
+    # load development config if it exists instead
+    if (-e "$OCR_GT_BASEDIR/ocr-gt-tools.dev.ini") {
+        $iniFile = "$OCR_GT_BASEDIR/ocr-gt-tools.dev.ini";
+    }
     my $cfg = new Config::IniFiles( -file => $iniFile );
     #
     # All PATH properties can be either relative (to OCR_GT_BASEDIR, the base of this repository) or absolute.

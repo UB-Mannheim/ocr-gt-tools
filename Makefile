@@ -1,5 +1,8 @@
 # Port of the dev server
 PORT = 9090
+APACHE_USER = www-data
+APACHE_DIR = /var/www/html
+APACHE_BASEURL = ocr-gt-tools
 
 # Add node_modules/.bin to $PATH so the CLI tools 
 # installed locally by npm can be used
@@ -97,7 +100,8 @@ WATCH_FILES = Makefile ocr-gt-tools.* ${JADE_FILES} *.json
         clean \
         deps apt-get \
         dev-deps dev-apt-get \
-        dev-server dist-watch
+        dev-server dist-watch \
+        deploy
 
 #
 # Debugging
@@ -122,14 +126,14 @@ deps: apt-get vendor
 apt-get:
 	$(APT_GET) install $(DEBIAN_PACKAGES)
 
-vendor: vendor/hocr-tools vendor/ocropy log/ocr-gt-tools.log log/request.log
+vendor: dist/vendor/hocr-tools dist/vendor/ocropy
 
-vendor/hocr-tools:
-	$(MKDIR) vendor
+dist/vendor/hocr-tools:
+	$(MKDIR) dist/vendor
 	$(GIT_CLONE) https://github.com/UB-Mannheim/hocr-tools $@
 
-vendor/ocropy:
-	$(MKDIR) vendor
+dist/vendor/ocropy:
+	$(MKDIR) dist/vendor
 	$(GIT_CLONE) https://github.com/tmbdev/ocropy $@
 
 log/ocr-gt-tools.log:
@@ -173,7 +177,9 @@ dev-browser:
 # Set up dist folder
 #
 
-dist: bower_components \
+dist: \
+	vendor \
+	dist/log\
 	dist/vendor.css\
 	dist/vendor.js\
 	dist/fonts\
@@ -181,6 +187,9 @@ dist: bower_components \
 	dist/ocr-gt-tools.js\
 	dist/ocr-gt-tools.css\
 	dist/ocr-gt-tools.cgi
+
+dist/log:
+	$(MKDIR) $@
 
 dist/ocr-gt-tools.cgi: ocr-gt-tools.cgi
 	$(CP) $< $@
@@ -225,6 +234,20 @@ dist/index.html: ${JADE_FILES}
 dist-watch:
 	$(CHOKIDAR) $(WATCH_FILES) -c 'time $(MAKE) --no-print-directory dist'
 
+#
+# Deploy on apache
+#
+
+deploy: dist
+	sudo -u $(APACHE_USER) $(MKDIR) $(APACHE_DIR)/$(APACHE_BASEURL)
+	sudo -u $(APACHE_USER) $(CP) dist/* dist/.htaccess $(APACHE_DIR)/$(APACHE_BASEURL)
+	sudo -u $(APACHE_USER) chmod u+w -R $(APACHE_DIR)/$(APACHE_BASEURL)/*
+	sudo -u $(APACHE_USER) $(RM) $(APACHE_DIR)/$(APACHE_BASEURL)/ocr-gt-tools.dev.ini
+
+
+#
+# Docker related
+#
 docker:
 	docker build -t 'ocr-gt-tools' .
 
