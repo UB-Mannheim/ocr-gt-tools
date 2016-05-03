@@ -1,5 +1,7 @@
 # ocr-gt-tools
 
+[![Build Status](https://travis-ci.org/kba/ocr-gt-tools.svg?branch=travis)](https://travis-ci.org/kba/ocr-gt-tools)
+
 A web interface for creating ground truth for improving OCR 
 
 <img src="./screenshot.png" height="300"/>

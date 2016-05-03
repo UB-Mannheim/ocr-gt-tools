@@ -393,6 +393,7 @@ sub ensureCorrection
     # Seiten in Bildzeilen und Textzeilen aufteilen
     chdir $location->{correctionDir};
     my $cmd_extract = join(' '
+        , 'python'
         , $config->{hocrExtractImagesBinary}
         , ' -b'
         , $location->{imageDir}
@@ -412,6 +413,7 @@ sub ensureCorrection
 
     # Korrigierwebseite erstellen
     open my $GTEDIT, "-|", join(' '
+            , 'python'
             , $config->{ocropusGteditBinary}
             , 'html'
             , '-x xxx'
