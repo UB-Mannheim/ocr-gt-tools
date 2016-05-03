@@ -224,10 +224,18 @@ sub getPageDirs {
     my $DIR;
     opendir($DIR, $location->{correctionDirGt});
     my @pages = grep { /^(\d{4,4})/ && -d "$location->{correctionDirGt}/$_" } readdir ($DIR);
-    #loop through the array printing out the filenames
+    $location->{pages} = [];
+
+    # pepare base for url of each page
+    my $aktBaseUrl = $location->{imageUrl};
+    my $cFile = $location->{cFile};
+    $aktBaseUrl =~ m/^(.*?)\/$cFile\.jpg$/;
+    $aktBaseUrl = $1;
+    my $aktPageBase = $aktBaseUrl . '/' . $location->{pathId} . '_';
+
+    #loop through array, push to @{$location->{pages} page and url
     foreach my $subdir (sort {$a cmp $b} (@pages)) {
-        #print $ERRORLOG "$subdir\n";
-        $location->{pages} .= $subdir . '|';
+        push( @{$location->{pages}}, { page => $subdir, url => $aktPageBase . $subdir . '.jpg' } );
     }
     closedir($DIR);
     return $location;

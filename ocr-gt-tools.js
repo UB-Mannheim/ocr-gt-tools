@@ -156,6 +156,10 @@ function loadGtEditLocation(url) {
                             // show new document
                             $("#file-correction").removeClass("hidden");
                             $("ul.navbar-nav li").removeClass("disabled");
+                            // append list of pages
+                            $.each(window.ocrGtLocation.pages, function( index, pageObj ) {
+                                $('#page-index').append( '<li><a href="#' + pageObj.url + '">' + pageObj.page + '</a></li>');
+                            });
                             onScroll();
                         }
                     });
