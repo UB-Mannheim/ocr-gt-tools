@@ -2,13 +2,13 @@
 
 ## Install dependencies
 
+Install Debian packagess (for other distros, YMMV).
+
 ```
-make deps
+make apt-get
 ```
 
-This will install debian packages (`make apt-get`) and current Git revisions of hocr-tools and ocropus (`make vendor`).
-
-To skip installing the Debian packages, skip the `apt-get` goal:
+Install current Git revisions of hocr-tools and ocropus (`make vendor`).
 
 ```
 make vendor
@@ -17,7 +17,7 @@ make vendor
 ## Copy configuration template and edit as needed
 
 ```
-cp conf/ocr-gt-tools.ini_tmpl conf/ocr-gt-tools.ini
+cp dist/ocr-gt-tools.dev.ini dist/ocr-gt-tools.ini
 ```
 
 ## Deploy on a server
@@ -48,7 +48,24 @@ Checkout the contents of [./example/ocr-corrections/](./example/ocr-corrections/
 sudo a2enmod cgi
 ```
 
-* Make sure scripts ending in `.cgi` are executable in the directory with `ocr-gt-tools.cgi`
+* Deploy to Apache document folder:
+
+```
+make deploy
+```
+
+This will recreate out-of-date files in `./dist`, create a folder
+`$APACHE_BASEURL` in `$APACHE_DIR` and copy all the files from `./dist` to
+`$APACHE_DIR/$APACHE_BASEURL` using `sudo` with user `$APACHE_USER`.
+
+Deployment can be customized with three environment variables, the default is:
+
+```
+make APACHE_USER=www-default APACHE_DIR=/var/www/html APACHE_BASEURL=ocr-gt-tools deploy
+```
+
+* Make sure scripts ending in `.cgi` are executable in the
+  `$APACHE_DIR/$APACHE_BASEURL` folder:
 
 ```
 sudo $EDITOR /etc/apache2/sites-available/000-default.conf
@@ -58,34 +75,11 @@ sudo $EDITOR /etc/apache2/sites-available/000-default.conf
 #    </Directory>
 ```
 
-* Clone the repository as the user who owns the Apache document root, usually **`www-data`**
+* Copy the configuration:
 
 ```
-cd ~www-data
-sudo -u www-data git clone https://github.com/UB-Mannheim/ocr-gt-tools
-```
-
-* Clone the dependent tools (will pull ocropy and hocr-tools and create the log files)
-
-```
-cd ~www-data/ocr-gt-tools
-make vendor
-```
-
-* Copy the configuration
-
-```
-sudo -u www-data cp conf/ocr-gt-tools.ini_tmpl conf/ocr-gt-tools.ini
-# sudo $EDIT as needed!
-```
-
-* Symlink (or copy) the 'dist' folder below the document root
-
-```
-cd /var/www/html
-ln -s ~www-data/ocr-gt-tools/dist ocr-gt-tools
-# or
-# cp -r ~www-data/ocr-gt-tools/dist ocr-gt-tools
+sudo -u www-data cp dist/ocr-gt-tools.dev.ini $APACHE_DIR/$APACHE_BASEURL/ocr-gt-tools.ini
+# sudo $EDIT as needed
 ```
 
 * Restart/reload apache 
@@ -93,10 +87,6 @@ ln -s ~www-data/ocr-gt-tools/dist ocr-gt-tools
 ```
 sudo systemctl restart apache2
 ```
-<!--
-# Generate the log files
-sudo -u www-data ./ocr-gt-tools.cgi
--->
 
 ## Developing the frontend
 
