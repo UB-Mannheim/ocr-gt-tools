@@ -204,14 +204,21 @@ Get page dirs
 
 =cut
 sub getPageDirs {
-    my ($cgi, $location) = @_;
+    my ($cgi, $config, $location) = @_;
     my $DIR;
     opendir($DIR, $location->{correctionDirGt});
     my @pages = grep { /^(\d{4,4})/ && -d "$location->{correctionDirGt}/$_" } readdir ($DIR);
+    $location->{pages} = [];
     #loop through the array printing out the filenames
     foreach my $subdir (sort {$a cmp $b} (@pages)) {
         #print $ERRORLOG "$subdir\n";
-        $location->{pages} .= $subdir . '|';
+        my $url = $location->{imageUrl};
+        my $curPage = $location->{pathPage};
+        $url =~ s/$curPage/$subdir/;
+        push @{ $location->{pages} }, {
+            url => $url,
+            page => $subdir
+        };
     }
     closedir($DIR);
     return $location;
@@ -489,7 +496,7 @@ Start processing CGI request
 sub processRequest
 {
     my ($cgi, $config) = @_;
-    my $action = $cgi->param('action');
+    my $action = $cgi->url_param('action');
     if (! $action) {
         http400($cgi, "URL parameter 'action' missing.");
     }
@@ -521,7 +528,7 @@ sub processCreateRequest
     }
     # Create file object
     my $location = mapUrltoFile($cgi, $config, $url);
-    getPageDirs($cgi, $location);
+    getPageDirs($cgi, $config,  $location);
     # Make sure the correctionDir exists
     ensureCorrectionDir($cgi, $config, $location);
     # Make sure the correction HTML exists
