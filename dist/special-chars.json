@@ -1,3 +1,4 @@
+
 {
   "a-with-circumflex": {
     "recognition": "â",
@@ -306,7 +307,7 @@
     },
     "sample": [
       "<a href=\"http://digi.bib.uni-mannheim.de/seitenansicht_suche/dlf/1286/152/?cHash=2f0d3f5bc71aaf06437af38409e80d4d\"><img src=\"https://camo.githubusercontent.com/b2a4c58677f49958d4823f4f4c3d25ec06905819/68747470733a2f2f63646e2e7261776769742e636f6d2f55422d4d616e6e6865696d2f75626d612d73637265656e73686f74732f6d61737465722f6f63722d636861726163746572732f65742d7369676e2e706e67\" alt=\"et-sign\" data-canonical-src=\"https://cdn.rawgit.com/UB-Mannheim/ubma-screenshots/master/ocr-characters/et-sign.png\"></a>",
-      "<img src=\"https://camo.githubusercontent.com/498e438b493b68cccbc5f267efd2476d3d72a04c/68747470733a2f2f63646e2e7261776769742e636f6d2f55422d4d616e6e6865696d2f75626d612d73637265656e73686f74732f6d61737465722f6f63722d636861726163746572732f65742d7369676e2d322e706e67\" alt=\"et-sign-2\" data-canonical-src=\"https://cdn.rawgit.com/UB-Mannheim/ubma-screenshots/master/ocr-characters/et-sign-2.png\">",
+      "<a href=\"http://digi.bib.uni-mannheim.de/seitenansicht_suche/dlf/1323/128/?cHash=7c23ded2575dbba798aac603336aa5fc\"><img src=\"https://camo.githubusercontent.com/498e438b493b68cccbc5f267efd2476d3d72a04c/68747470733a2f2f63646e2e7261776769742e636f6d2f55422d4d616e6e6865696d2f75626d612d73637265656e73686f74732f6d61737465722f6f63722d636861726163746572732f65742d7369676e2d322e706e67\" alt=\"et-sign-2\" data-canonical-src=\"https://cdn.rawgit.com/UB-Mannheim/ubma-screenshots/master/ocr-characters/et-sign-2.png\"></a>",
       "<a href=\"http://digi.bib.uni-mannheim.de/seitenansicht_suche/dlf/1303/66/?cHash=1075957cbe060e0ce750939e7700b7eb\"><img src=\"https://camo.githubusercontent.com/b3f8ddb3b61067169cb48a0465fa708aa11f25a4/68747470733a2f2f63646e2e7261776769742e636f6d2f55422d4d616e6e6865696d2f75626d612d73637265656e73686f74732f6d61737465722f6f63722d636861726163746572732f65742e706e67\" alt=\"et\" data-canonical-src=\"https://cdn.rawgit.com/UB-Mannheim/ubma-screenshots/master/ocr-characters/et.png\"></a>",
       "<a href=\"http://digi.bib.uni-mannheim.de/seitenansicht_suche/dlf/1286/152/?cHash=2f0d3f5bc71aaf06437af38409e80d4d\"><img src=\"https://camo.githubusercontent.com/1386fafbb7fd26455defc329e9e65e28747de4f1/68747470733a2f2f7261776769742e636f6d2f55422d4d616e6e6865696d2f75626d612d73637265656e73686f74732f6d61737465722f6f63722d636861726163746572732f616d70657273616e642e706e67\" alt=\"ampersand\" data-canonical-src=\"https://rawgit.com/UB-Mannheim/ubma-screenshots/master/ocr-characters/ampersand.png\"></a>"
     ]
@@ -340,7 +341,7 @@
       "en": "Lowercase oe-ligature"
     },
     "sample": [
-      "<img src=\"https://camo.githubusercontent.com/05118f3184d1c8cd1329b97b37ed71bcde03df8f/68747470733a2f2f63646e2e7261776769742e636f6d2f55422d4d616e6e6865696d2f75626d612d73637265656e73686f74732f6d61737465722f6f63722d636861726163746572732f6c696761747572652d6f652e706e67\" alt=\"ligature-oe\" data-canonical-src=\"https://cdn.rawgit.com/UB-Mannheim/ubma-screenshots/master/ocr-characters/ligature-oe.png\">",
+      "<a href=\"http://digi.bib.uni-mannheim.de/seitenansicht_suche/dlf/1290/658/?cHash=5c425b86dd4c7f8d3dd3530ed9e417c4\"><img src=\"https://camo.githubusercontent.com/05118f3184d1c8cd1329b97b37ed71bcde03df8f/68747470733a2f2f63646e2e7261776769742e636f6d2f55422d4d616e6e6865696d2f75626d612d73637265656e73686f74732f6d61737465722f6f63722d636861726163746572732f6c696761747572652d6f652e706e67\" alt=\"ligature-oe\" data-canonical-src=\"https://cdn.rawgit.com/UB-Mannheim/ubma-screenshots/master/ocr-characters/ligature-oe.png\"></a>",
       "<a href=\"http://digi.bib.uni-mannheim.de/seitenansicht_suche/dlf/1323/76/?cHash=6b64adf203a7f3962d23e246f54fa8cc\"><img src=\"https://camo.githubusercontent.com/b462265dac26b8536baabc6b561e155e6b0138dc/68747470733a2f2f63646e2e7261776769742e636f6d2f55422d4d616e6e6865696d2f75626d612d73637265656e73686f74732f6d61737465722f6f63722d636861726163746572732f6c696761747572652d6f652d322e706e67\" alt=\"ligature-oe-2\" data-canonical-src=\"https://cdn.rawgit.com/UB-Mannheim/ubma-screenshots/master/ocr-characters/ligature-oe-2.png\"></a>"
     ]
   },
@@ -356,7 +357,47 @@
       "en": "Lowercase ij-ligature"
     },
     "sample": [
-      "<img src=\"https://camo.githubusercontent.com/2dcf2c1767a3bc64d9e18d94f060ae3655c7b6f1/68747470733a2f2f63646e2e7261776769742e636f6d2f55422d4d616e6e6865696d2f75626d612d73637265656e73686f74732f6d61737465722f6f63722d636861726163746572732f6c696761747572652d696a2e706e67\" alt=\"ligature-ij\" data-canonical-src=\"https://cdn.rawgit.com/UB-Mannheim/ubma-screenshots/master/ocr-characters/ligature-ij.png\">"
+      "<a href=\"http://digi.bib.uni-mannheim.de/seitenansicht_suche/dlf/1323/71/?cHash=03cf1f2adb4cf1a37e9a86f9f24547bf\"><img src=\"https://camo.githubusercontent.com/2dcf2c1767a3bc64d9e18d94f060ae3655c7b6f1/68747470733a2f2f63646e2e7261776769742e636f6d2f55422d4d616e6e6865696d2f75626d612d73637265656e73686f74732f6d61737465722f6f63722d636861726163746572732f6c696761747572652d696a2e706e67\" alt=\"ligature-ij\" data-canonical-src=\"https://cdn.rawgit.com/UB-Mannheim/ubma-screenshots/master/ocr-characters/ligature-ij.png\"></a>"
+    ]
+  },
+  "ligature-que": {
+    "recognition": "que",
+    "baseLetter": [
+      "q, u, e, que"
+    ],
+    "name": {
+      "de": "Lateinische \"-que\"-Ligatur",
+      "en": "Latin \"-que\"-ligature"
+    },
+    "sample": [
+      "<a href=\"http://digi.bib.uni-mannheim.de/seitenansicht_suche/dlf/1323/128/?cHash=7c23ded2575dbba798aac603336aa5fc\"><img src=\"https://camo.githubusercontent.com/4090cdc2c27b3960a2d998f8247ca3cde77bc0b0/68747470733a2f2f63646e2e7261776769742e636f6d2f55422d4d616e6e6865696d2f75626d612d73637265656e73686f74732f6d61737465722f6f63722d636861726163746572732f6c696761747572652d7175652e706e67\" alt=\"ligature-que\" data-canonical-src=\"https://cdn.rawgit.com/UB-Mannheim/ubma-screenshots/master/ocr-characters/ligature-que.png\"></a>",
+      "<a href=\"http://digi.bib.uni-mannheim.de/seitenansicht_suche/dlf/1830/83/?cHash=23aaee411780453f9fae8b8b75796a9e\"><img src=\"https://camo.githubusercontent.com/74c6e8587e868b130a491718e9e0522d1ce7353a/68747470733a2f2f63646e2e7261776769742e636f6d2f55422d4d616e6e6865696d2f75626d612d73637265656e73686f74732f6d61737465722f6f63722d636861726163746572732f6c696761747572652d7175652d322e706e67\" alt=\"ligature-que-2\" data-canonical-src=\"https://cdn.rawgit.com/UB-Mannheim/ubma-screenshots/master/ocr-characters/ligature-que-2.png\"></a>"
+    ]
+  },
+  "section-mark": {
+    "recognition": "§",
+    "baseLetter": [
+      "§, S, s"
+    ],
+    "name": {
+      "de": "Paragraphenzeichen",
+      "en": "Section mark"
+    },
+    "sample": [
+      "<a href=\"http://digi.bib.uni-mannheim.de/seitenansicht_suche/dlf/1830/122/?cHash=6229215088a8797b004cf1c1a4e4c598\"><img src=\"https://camo.githubusercontent.com/38784b8198f183ed883f1bd7fb2dc1cad6e09be6/68747470733a2f2f63646e2e7261776769742e636f6d2f55422d4d616e6e6865696d2f75626d612d73637265656e73686f74732f6d61737465722f6f63722d636861726163746572732f73656374696f6e2d6d61726b2e706e67\" alt=\"section-mark\" data-canonical-src=\"https://cdn.rawgit.com/UB-Mannheim/ubma-screenshots/master/ocr-characters/section-mark.png\"></a>"
+    ]
+  },
+  "greek-zeta": {
+    "recognition": "ζ",
+    "baseLetter": [
+      "z"
+    ],
+    "name": {
+      "de": "Kleines griechisches zeta",
+      "en": "Lowercase greek zeta"
+    },
+    "sample": [
+      "<a href=\"http://digi.bib.uni-mannheim.de/seitenansicht_suche/dlf/1293/294/?cHash=4e4a311d6ad8460a8e10ad98a81a9a2f\"><img src=\"https://camo.githubusercontent.com/222fc4ac363b2db109512ea83aa319d7dca0219d/68747470733a2f2f63646e2e7261776769742e636f6d2f55422d4d616e6e6865696d2f75626d612d73637265656e73686f74732f6d61737465722f6f63722d636861726163746572732f677265656b2d7a6574612e706e67\" alt=\"greek-zeta\" data-canonical-src=\"https://cdn.rawgit.com/UB-Mannheim/ubma-screenshots/master/ocr-characters/greek-zeta.png\"></a>"
     ]
   }
 }
