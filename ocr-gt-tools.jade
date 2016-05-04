@@ -16,6 +16,7 @@ html(lang='de')
 				.panel-heading.clearfix
 					h4.panel-title Seiten-Info
 				.list-group
+					ul#page-index
 					a.list-group-item(target="_blank", href="{{ hiresUrl }}")
 						img(src="{{ imageUrl }}")
 					a#download-comments.list-group-item(target="_blank", href="{{ commentsUrl }}")
@@ -38,7 +39,7 @@ html(lang='de')
 		//*
 		script#tpl-cheatsheetEntry(type='text/x-handlebars-template')
 			tr
-				td 
+				td
 					a(target="_blank", href="https://github.com/UB-Mannheim/ocr-gt-tools/wiki/Special-Characters\#{{ id }}")
 						| {{ name.de }}
 				td {{{ sample }}}
