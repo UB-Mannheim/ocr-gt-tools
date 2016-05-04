@@ -1,0 +1,139 @@
+{
+  "wrong-image-section": {
+    "name": {
+      "en": "Incorrectly captured image section which contains no straight line of text but empty spaces or page margins etc.",
+      "de": "Falsch erfasste Bildausschnitte, die keine Textzeile enthalten, sondern leere Seitenbereiche oder Seitenränder usw."
+    },
+    "total": 443,
+    "frequencyAvg": 5.7
+  },
+  "text-blocked": {
+    "name": {
+      "en": "Blocked text with visible blanks between the letters",
+      "de": "Gesperrter Text mit sichtbaren Leerzeichen zwischen den Buchstaben"
+    },
+    "total": 51,
+    "frequencyAvg": 0.7
+  },
+  "text-italic": {
+    "name": {
+      "en": "Line completely or in parts in italics",
+      "de": "Zeile vollständig oder teilweise in kursiver Schrift"
+    },
+    "total": 156,
+    "frequencyAvg": 2
+  },
+  "initial": {
+    "name": {
+      "en": "initial character",
+      "de": "Initiale"
+    },
+    "comment": {
+      "en": "This most likely causes <a href=\"##%20wrong-image-section\">wrong-image-section</a>"
+    },
+    "total": 10,
+    "frequencyAvg": 0.1
+  },
+  "letter-faded": {
+    "name": {
+      "en": "Partially or completely faded letters",
+      "de": "Teilweise oder vollständig ausgebleichte Buchstaben"
+    },
+    "total": 6,
+    "frequencyAvg": 0.1
+  },
+  "notes-within-line": {
+    "name": {
+      "en": "Notes on page margin captured within a text line",
+      "de": "Anmerkungen am Seitenrand mit Textzeile erfasst"
+    },
+    "total": 93,
+    "frequencyAvg": 1.2
+  },
+  "notes-separate": {
+    "name": {
+      "en": "Notes on page margin captured as separate lines",
+      "de": "Anmerkungen am Seitenrand als separate Zeilen erfasst"
+    },
+    "total": 95,
+    "frequencyAvg": 1.2
+  },
+  "letter-handling-unclear": {
+    "name": {
+      "en": "Characters whose treatment is not yet clear",
+      "de": "Buchstaben deren Behandlung noch nicht klar ist"
+    },
+    "comment": {
+      "de": "Zum Beispiel q mit Akut, que-Ligatur"
+    },
+    "total": 17,
+    "frequencyAvg": 0.2
+  },
+  "line-incomplete": {
+    "name": {
+      "en": "line not captured completely",
+      "de": "Zeile nicht vollständig erfasst"
+    },
+    "comment": {
+      "de": "Zeile wurde zwar korrekt erfasst, aber Buchtsaben links oder rechts in der Zeile fehlen",
+      "en": "Line was captured correctly, but letters in the left or right of the line are missing"
+    },
+    "total": 33,
+    "frequencyAvg": 0.4
+  },
+  "line-incorrect": {
+    "name": {
+      "en": "line not captured correctly",
+      "de": "Zeile nicht richtig erfasst"
+    },
+    "comment": {
+      "en": "more than just one line inside the image; line lies at an angle in image",
+      "de": "Mehrere Zeilen im Bild erfasst; Zeile liegt schräg im Bild"
+    },
+    "total": 57,
+    "frequencyAvg": 0.7
+  },
+  "line-captured-twice": {
+    "name": {
+      "en": "line partially or completely captured tice",
+      "de": "Zeile teilweise oder vollständig doppelt erfasst"
+    },
+    "total": 33,
+    "frequencyAvg": 0.4
+  },
+  "text-greek": {
+    "name": {
+      "en": "Greek text",
+      "de": "Griechischer Text"
+    },
+    "total": 3,
+    "frequencyAvg": 0
+  },
+  "letter-unidentified": {
+    "name": {
+      "en": "Letter not jet identified",
+      "de": "Noch nicht genau identifizierter Buchstabe"
+    },
+    "comment": {
+      "en": "May be similar with <a href=\"##%20letter-handling-unclear\">letter-handling-unclear</a>"
+    },
+    "total": 12,
+    "frequencyAvg": 0.2
+  },
+  "letter-unreadable": {
+    "name": {
+      "en": "letter not faded but still unreadable",
+      "de": "Buchstabe nicht ausgebleicht aber trotzdem unleserlich"
+    },
+    "total": 2,
+    "frequencyAvg": 0
+  },
+  "line-not-in-order": {
+    "name": {
+      "en": "line  not captured in correct order",
+      "de": "Zeile nicht in richtiger Reihenfolge erfasst"
+    },
+    "total": 4,
+    "frequencyAvg": 0.1
+  }
+}

@@ -178,7 +178,9 @@ dev-browser:
 #
 
 dist: \
-	vendor \
+	dist/special-chars.json\
+	dist/error-tags.json\
+	dist/vendor\
 	dist/log\
 	dist/vendor.css\
 	dist/vendor.js\
@@ -187,6 +189,10 @@ dist: \
 	dist/ocr-gt-tools.js\
 	dist/ocr-gt-tools.css\
 	dist/ocr-gt-tools.cgi
+
+
+dist/%.json: doc/%.json
+	$(CP) $< $@
 
 dist/log:
 	$(MKDIR) $@
