@@ -7,6 +7,7 @@
 // @require     https://code.jquery.com/jquery-2.2.3.min.js
 // @require     https://cdnjs.cloudflare.com/ajax/libs/z-schema/3.17.0/ZSchema-browser.js
 // @grant       GM_addStyle
+// @grant       GM_setClipboard
 // ==/UserScript==
 /*globals GM_addStyle */
 /*globals ZSchema */
@@ -46,7 +47,7 @@ var SCHEMA = {
     'required': ['sample', 'recognition', 'baseLetter'],
 };
 
-function scrapeSpecialGlyphs() {
+window.scrapeSpecialGlyphs = function scrapeSpecialGlyphs() {
     var glyphJson = {};
     var validator = new ZSchema();
     var h2s = $(".markdown-body h2").get();
@@ -205,9 +206,11 @@ $(function() {
         showProposals($input, from, to);
     });
     $("#glyph-schema").on('click', function() {
-        window.prompt("Ctrl-C to copy schema", JSON.stringify(SCHEMA, null, 2));
+        GM_setClipboard(JSON.stringify(SCHEMA, null, 2));
+        window.alert("Copied JSON schema to clipboard");
     });
     $("#glyph-json").on('click', function() {
-        window.prompt("Ctrl-C to copy JSON data", JSON.stringify(SCHEMA, null, 2));
+        GM_setClipboard(JSON.stringify(window.glyphJson, null, 2));
+        window.alert("Copied JSON schema to clipboard");
     });
 });
