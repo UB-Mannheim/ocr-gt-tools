@@ -2,7 +2,7 @@
 
 A web interface for creating ground truth for improving OCR 
 
-<img src="./screenshot.png" height="300"/>
+<img src="./doc/screenshots/screenshot.png" height="300"/>
 
 ## Table of Contents
 
