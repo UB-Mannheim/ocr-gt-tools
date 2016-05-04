@@ -1,4 +1,5 @@
 selectedColor = red
+paperColor = #b9af96
 
 @media (min-width: 768px)
 	body
@@ -125,7 +126,7 @@ div[contenteditable]
 		h4
 			padding-top 7.5px
 
-#page-info
+#right-sidebar
 	position fixed
 	right 0
 	.list-group-item
@@ -151,11 +152,16 @@ div[contenteditable]
 	user-select: none;
 	img
 		height: 64px
-	.code
-		font-family: monospace
-		font-size: 64px
 	th
 		font-weight: bold
+	td
+		vertical-align: middle
+		font-size: 120%
+		button.code
+			font-family: monospace
+			font-size: 48px
+			height: 64px
+			width: 100%
 
 .select-col
 	padding-left: 20px

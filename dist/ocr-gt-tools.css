@@ -136,11 +136,11 @@ div[contenteditable] {
 #file-correction .panel-heading h4 {
   padding-top: 7.5px;
 }
-#page-info {
+#right-sidebar {
   position: fixed;
   right: 0;
 }
-#page-info .list-group-item i {
+#right-sidebar .list-group-item i {
   padding-right: 5px;
 }
 #select-bar {
@@ -163,12 +163,18 @@ div[contenteditable] {
 #cheatsheet-modal img {
   height: 64px;
 }
-#cheatsheet-modal .code {
-  font-family: monospace;
-  font-size: 64px;
-}
 #cheatsheet-modal th {
   font-weight: bold;
+}
+#cheatsheet-modal td {
+  vertical-align: middle;
+  font-size: 120%;
+}
+#cheatsheet-modal td button.code {
+  font-family: monospace;
+  font-size: 48px;
+  height: 64px;
+  width: 100%;
 }
 .select-col {
   padding-left: 20px;
