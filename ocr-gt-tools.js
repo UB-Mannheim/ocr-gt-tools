@@ -170,13 +170,11 @@ function loadGtEditLocation(url) {
                         url: Utils.uncachedURL(window.ocrGtLocation.commentsUrl),
                         error: function(x, e) {
                             console.log(arguments);
-                            window.alert(x.status + " FEHLER aufgetreten: \n" + e);
+                            notie.alert(3, "HTTP Fehler " + x.status + ":\n" + x.responseText);
                         },
                         success: function(response, status, xhr) {
                             Utils.parseLineComments(response, window.ocrGtLocation);
                             addCommentFields();
-                            // hide waiting spinner
-                            // $("#wait-load").addClass("hidden");
                             // show new document
                             $("#file-correction").removeClass("hidden");
                             $("ul.navbar-nav li").removeClass("disabled");
@@ -197,7 +195,7 @@ function loadGtEditLocation(url) {
             // activate button if #file-correction is changed
         },
         error: function(x, e) {
-            window.alert(x.status + " FEHLER aufgetreten: \n" + e);
+            notie.alert(3, "HTTP Fehler " + x.status + ":\n" + x.responseText);
             stopWaitingAnimation();
         }
     });
@@ -233,7 +231,7 @@ function saveGtEditLocation() {
         data: window.ocrGtLocation,
         success: markSaved,
         error: function(x, e) {
-            window.alert(x.status + " FEHLER aufgetreten");
+            notie.alert(3, "HTTP Fehler " + x.status + ":\n" + x.responseText);
         }
     });
 }
@@ -263,6 +261,7 @@ function markSaved() {
     $(".line div[contenteditable]").each(function() {
         $(this).html(encodeForBrowser(encodeForServer($(this).html())));
     });
+    notie.alert(1, "Gespeichert", 1);
 }
 
 /**
@@ -298,7 +297,6 @@ function addCommentFields() {
         $("#file-correction").append($line);
     });
     $("#right-sidebar").html(window.templates.rightSidebar(window.ocrGtLocation));
-    $("#wait-load").removeClass("hidden");
     $(".show-line-comment").on('click', toggleLineComment);
     $(".hide-line-comment").on('click', toggleLineComment);
     $(".add-comment").on('click', addComment);
@@ -450,7 +448,7 @@ function reduceViewToSelectors(selectors) {
 function confirmExit(e) {
     if (window.ocrGtLocation && window.ocrGtLocation.changed) {
         // if (e) e.preventDefault();
-        window.alert("Ungesicherte Inhalte vorhanden, bitte zuerst speichern!");
+        notie.alert(2, "Ungesicherte Inhalte vorhanden, bitte zuerst speichern!", 5);
         return "Ungesicherte Inhalte vorhanden, bitte zuerst speichern!";
     }
 }
@@ -529,13 +527,13 @@ function setupDragAndDrop() {
             e.preventDefault();
 
             if (window.ocrGtLocation && window.ocrGtLocation.changed) {
-                window.alert("Ungesicherte Inhalte vorhanden, bitte zuerst speichern!");
+                notie.alert(2, "Ungesicherte Inhalte vorhanden, bitte zuerst speichern!", 2);
             } else {
                 var url = getUrlFromDragEvent(e);
                 if (url) {
                     loadGtEditLocation(url);
                 } else {
-                    window.alert("Konnte keine URL erkennen.");
+                    notie.alert(3, "Konnte keine URL erkennen.");
                 }
             }
         });
@@ -578,7 +576,7 @@ $(function onPageLoaded() {
                 }
             },
             error: function(x, e) {
-                window.alert(x.status + " FEHLER aufgetreten");
+                notie.alert(3, "HTTP Fehler " + x.status + ":\n" + x.responseText);
             }
         });
     });
@@ -600,8 +598,7 @@ $(function onPageLoaded() {
                 }
             },
             error: function(x, e) {
-                console.log(arguments);
-                window.alert(x.status + " FEHLER aufgetreten");
+                notie.alert(3, "HTTP Fehler " + x.status + ":\n" + x.responseText);
             }
         });
     });
@@ -626,7 +623,15 @@ $(function onPageLoaded() {
     $(".select-toggle").on('click', function() { changeSelection('toggle'); });
 
     new Clipboard('.code');
-    // Trigger hash change
+    // // Trigger hash change
+    // $.ajax({
+    //     type: 'GET',
+    //     url: 'special-chars.json',
+    //     dataType: "json",
+    //     success: function(data) {
+    //         window['special-chars'] = data;
+    //     },
+    // });
     onHashChange();
 });
 
