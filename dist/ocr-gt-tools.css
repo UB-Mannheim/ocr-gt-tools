@@ -220,4 +220,8 @@ div[contenteditable] {
 .button-col .btn i {
   padding: 5px;
 }
+#work-info {
+  overflow-y: scroll;
+  max-height: 200px;
+}
 
