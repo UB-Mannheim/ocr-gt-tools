@@ -28,7 +28,7 @@ html(lang='de')
 							i.fa.fa-download
 							| Werk in Digitaler Bibliothek
 						| {{#each pages}}
-						a.list-group-item(href='{{ this.url }}')
+						a.list-group-item(href='\#{{ this.url }}')
 							i.fa.fa-history
 							| Seite {{this.page}}
 						| {{/each}}

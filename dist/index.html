@@ -23,7 +23,7 @@
           <h4 class="panel-title"><a data-toggle="collapse" href="#work-info">Werk-Info</a></h4>
         </div>
         <div id="work-info" class="panel-collapse collapse">
-          <div class="list-group"><a target="_blank" href="http://digi.bib.uni-mannheim.de/en/suchergebnis/?tx_dlf[query]={{ pathId }}" class="list-group-item"><i class="fa fa-download"></i>Werk in Digitaler Bibliothek</a>{{#each pages}}<a href="{{ this.url }}" class="list-group-item"><i class="fa fa-history"></i>Seite {{this.page}}</a>{{/each}}</div>
+          <div class="list-group"><a target="_blank" href="http://digi.bib.uni-mannheim.de/en/suchergebnis/?tx_dlf[query]={{ pathId }}" class="list-group-item"><i class="fa fa-download"></i>Werk in Digitaler Bibliothek</a>{{#each pages}}<a href="#{{ this.url }}" class="list-group-item"><i class="fa fa-history"></i>Seite {{this.page}}</a>{{/each}}</div>
         </div>
       </div>
       <div class="panel panel-info">
