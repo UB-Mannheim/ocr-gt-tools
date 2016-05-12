@@ -1,5 +1,15 @@
 # Installation Instructions
 
+* [Install dependencies](#install-dependencies)
+* [Create configuration](#create-configuration)
+* [Deploy on a server](#deploy-on-a-server)
+	* [On Apache](#on-apache)
+	* [Bundled standalone server](#bundled-standalone-server)
+	* [Testing the server](#testing-the-server)
+* [Developing the frontend](#developing-the-frontend)
+	* [Perl](#perl)
+	* [Log-Files / Error-Log-Files](#log-files--error-log-files)
+
 ## Install dependencies
 
 Install Debian packagess (for other distros, YMMV).
@@ -8,37 +18,21 @@ Install Debian packagess (for other distros, YMMV).
 make apt-get
 ```
 
-Install current Git revisions of hocr-tools and ocropus (`make vendor`).
+Install current Git revisions of hocr-tools and ocropus:
 
 ```
 make vendor
 ```
 
-## Copy configuration template and edit as needed
+## Create configuration
+
+Copy the configuration template and edit as needed:
 
 ```
 cp dist/ocr-gt-tools.dev.ini dist/ocr-gt-tools.ini
 ```
 
 ## Deploy on a server
-
-### Bundled standalone server
-
-```
-make dev-server
-```
-
-### 
-
-Navigate to [http://localhost:9090/dist/index.html](http://localhost:9090/index.html).
-
-Drop a file, such as [this thumbnail](http://digi.bib.uni-mannheim.de/fileadmin/digi/445442158/thumbs/445442158_0126.jpg) onto the document.
-
-Do some transliterating and commenting.
-
-Click "Speichern".
-
-Checkout the contents of [./example/ocr-corrections/](./example/ocr-corrections/).
 
 ### On Apache
 
@@ -79,27 +73,57 @@ sudo $EDITOR /etc/apache2/sites-available/000-default.conf
 
 ```
 sudo -u www-data cp dist/ocr-gt-tools.dev.ini $APACHE_DIR/$APACHE_BASEURL/ocr-gt-tools.ini
-# sudo $EDIT as needed
+# "sudo $EDITOR $APACHE_DIR/$APACHE_BASEURL/ocr-gt-tools.ini" as needed
 ```
 
-* Restart/reload apache 
+* Restart apache 
 
 ```
 sudo systemctl restart apache2
 ```
+
+The web application will be available under [http://localhost/ocr-gt-tools](http://localhost/ocr-gt-tools).
+
+### Bundled standalone server
+
+For development and quick experimentation, we ship a standalone server,
+wrapping the CGI in a Plack app:
+
+```
+make dev-server
+```
+
+### Testing the server
+
+Navigate to [http://localhost:9090/dist/index.html](http://localhost:9090/index.html).
+
+Drop a file, such as [this thumbnail](http://digi.bib.uni-mannheim.de/fileadmin/digi/445442158/thumbs/445442158_0126.jpg) onto the document.
+
+Do some transliterating and commenting.
+
+Click "Speichern".
+
+Checkout the contents of [./example/ocr-corrections/](./example/ocr-corrections/).
+
 
 ## Developing the frontend
 
 Install the development dependencies: The `npm` package (which pulls in nodejs) and some nodejs-based tools:
 
 ```
-make dev-deps
+make dev-apt-get
 ```
 
-If the apt-get command fails because of `npm`, you can try skipping the Debian package installation:
+Then npm to bootstrap the tools for building HTML from Jade, CSS from LESS etc.:
 
 ```
-make APT_GET dev-deps
+npm install
+```
+
+And finally bower to install the frontend assets:
+
+```
+bower install
 ```
 
 After changing CSS/Javascript, make sure to regenerate the `dist` folder:
@@ -116,38 +140,16 @@ This will
 
 Javascript/CSS project dependencies are managed by bower, see `bower.json`
 
-## After download:
-
-- Rename **conf/ocr-gt-tools.ini_tmpl** to **conf/ocr-gt-tools.ini**
-  and adapt the configuration to your needs.
-  See [conf/README](conf/README) for details.
-
 ### Perl
 
-For local tests in Windows I use http://strawberryperl.com/
+For local tests in Windows I use [Strawberry Perl](http://strawberryperl.com/).
 
 The scripts used the following perl modules. You can download them from cpan.
 
 - CGI
 - CGI::Carp
 - JSON
-- File::Path
 - Config::IniFiles
-- Data::Dumper;
-- File::Path
-- Time::HiRes
-- POSIX
 
-#### Log-Files / Error-Log-Files
+### Log-Files / Error-Log-Files
 Infos from perlscript ocr-gt-tools.cgi are stored in log/ocr-gt-tools.log
-
-### Apache
-- Add directory in your configuration
-```
-    <Directory "/path-to-htdocs/ocr-gt-tools">                        
-        Options +ExecCGI
-        AddHandler cgi-script .cgi
-    </Directory>
-```
-
-

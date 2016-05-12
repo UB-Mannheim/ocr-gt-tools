@@ -1,19 +1,20 @@
-# ocr-gt-tools
+ocr-gt-tools
+============
 
-A web interface for creating ground truth for improving OCR 
+A web interface for creating ground truth for evaluating and training OCR.
 
 <img src="./doc/screenshots/screenshot.png" height="300"/>
 
 ## Table of Contents
 
 * [Summary](#summary)
-  * [Features](#features)
-  * [Installation](#installation)
-  * [About the code](#about-the-code)
+	* [Features](#features)
+	* [Installation](#installation)
+	* [About the code](#about-the-code)
 * [Usage](#usage)
-* [Contributing](#contributions)
-  * [Pull requests](#pull-requests)
-  * [Bug reports](#bug-reports)
+* [Contributing](#contributing)
+	* [Pull Requests](#pull-requests)
+	* [Bug reports](#bug-reports)
 * [Acknowledgments](#acknowledgments)
 
 ## Summary
