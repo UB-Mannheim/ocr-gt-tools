@@ -112,6 +112,7 @@ function encodeForServer(str) {
 }
 
 function startWaitingAnimation() {
+    $("#dropzone").addClass('hidden');
     $("#waiting-animation").removeClass('hidden');
     var keys = Object.keys(UISettings['special-chars']);
     window.waitingAnimation = setInterval(function() {
@@ -544,7 +545,7 @@ function toggleSelectMode() {
     $("#select-bar").toggleClass('hidden');
 }
 
-$(function onPageLoaded() {
+function onPageLoaded() {
     compileTemplates();
     window.onhashchange = onHashChange;
     window.onbeforeunload = confirmExit;
@@ -585,9 +586,8 @@ $(function onPageLoaded() {
         $("#cheatsheet-modal .cheatsheet").empty();
         for (var i = 0; i < keys.length; i++) {
             var key = keys[i];
-            data[key].id = key;
             $("#cheatsheet-modal .cheatsheet").append(
-                window.templates.cheatsheetEntry(data[key])
+                window.templates.cheatsheetEntry(UISettings['special-chars'][key])
             );
         }
     });
@@ -613,6 +613,10 @@ $(function onPageLoaded() {
 
     new Clipboard('.code');
     // Trigger hash change
+    onHashChange();
+}
+
+$(function() {
     $.ajax({
         type: 'GET',
         url: 'special-chars.json',
@@ -620,8 +624,7 @@ $(function onPageLoaded() {
         error: function() {
             notie.alert(3, "HTTP Fehler " + x.status + ":\n" + x.responseText);
         },
-        success: function(data) {
-            UISettings['special-chars'] = data;
+        success: function(specialChars) {
             $.ajax({
                 type: 'GET',
                 url: 'error-tags.json',
@@ -629,9 +632,10 @@ $(function onPageLoaded() {
                 error: function() {
                     notie.alert(3, "HTTP Fehler " + x.status + ":\n" + x.responseText);
                 },
-                success: function(data) {
-                    UISettings['error-tags'] = data;
-                    onHashChange();
+                success: function(errorTags) {
+                    UISettings['special-chars'] = specialChars;
+                    UISettings['error-tags'] = errorTags;
+                    onPageLoaded();
                 },
             });
         },

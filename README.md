@@ -58,6 +58,11 @@ The frontend is written in HTML and Javascript.
 
 ## Contributing
 
+### Expand the wiki
+
+We are using the wiki to collect [transcription hints for unusual
+glyphs](wiki/Special-Characters) and [frequent errors](wiki/Error-Tags). 
+
 ### Pull Requests
 
 Bug fixes, new functions, suggestions for new features and other user feedback
