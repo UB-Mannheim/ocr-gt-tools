@@ -301,5 +301,14 @@ html(lang='de')
 							span.input-group-btn
 								button.btn.btn-default.btn-lg(type="button") Los!
 					#file-correction
+					#waiting-animation.hidden
+						table
+							tbody
+								- var y = 0
+								while y++ < 40
+									tr
+										- var x = 0
+											while x++ < 40
+												td &nbsp;
 				#right-sidebar.col-sm-3.panel-group
 // vim: sw=2 ts=2 noet ft=jade :

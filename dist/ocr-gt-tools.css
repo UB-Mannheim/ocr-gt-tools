@@ -95,6 +95,13 @@
   border-width: 10px;
   border-color: #00f;
 }
+#waiting-animation {
+  position: fixed;
+  height: 80vh;
+  margin: 5vh;
+  font-size: 150%;
+  text-align: center;
+}
 .hidden {
   display: none;
 }

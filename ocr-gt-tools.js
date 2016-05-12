@@ -6,6 +6,12 @@ var UISettings = {
     cgiUrl: 'ocr-gt-tools.cgi',
     defaultViews: ['.transcription','img']
 };
+RANDOM_GLYPHS = "ᴀ Ɐ ɐ Ɑ ɑ Ɒ ɒ ʙ ᴃ ᴄ Ↄ ↄ Ð ð Ꝺ ꝺ ᴅ ᴆ ꝱ ẟ ᴇ Ǝ ǝ ⱻ Ə ə Ɛ ɛ ɘ ɜ ɞ " +
+"ʚ ɤ Ꝼ ꝼ ꜰ Ⅎ ⅎ ꟻ Ᵹ ᵹ ɡ ɢ ᵷ Ꝿ ꝿ Ɣ ɣ Ƣ ƣ ʜ Ƕ ƕ Ⱶ ⱶ Ꜧ ꜧ ı ɪ ꟾ ꟷ ᴉ ᵻ Ɩ ɩ ᴊ ᴋ ʞ ʟ Ꝇ ꝇ " +
+"ᴌ ꝲ Ꞁ ꞁ ʎ ᴍ ꟽ ꟿ ꝳ ɴ ᴎ ꝴ Ŋ ŋ ᴏ ᴑ Ɔ ɔ ᴐ ᴒ ᴖ ᴗ ɷ Ȣ ȣ ᴕ ᴘ ꟼ ɸ ⱷ ĸ Ꞃ ꞃ Ʀ ʀ Ꝛ ꝛ ᴙ ɹ ᴚ " +
+"ʁ ꝵ ꝶ Ꝝ ꝝ ſ Ꞅ ꞅ Ƨ ƨ ꜱ Ʃ ʃ ƪ ʅ Ꞇ ꞇ ᴛ ꝷ ʇ ᴜ ᴝ ᴞ ɥ Ɯ ɯ ꟺ ᴟ Ʊ ʊ ᴠ Ỽ ỽ Ʌ ʌ ᴡ ʍ ʏ ƍ ᴢ " +
+"Ꝣ ꝣ Ʒ ʒ ᴣ Ƹ ƹ Ȝ ȝ Þ þ Ƿ ƿ Ꝩ ꝩ Ꝫ ꝫ Ꝭ ꝭ Ꝯ ꝯ ꝰ ꝸ Ꜫ ꜫ Ꜭ ꜭ Ꜯ ꜯ Ƽ ƽ Ƅ ƅ Ɂ ɂ Ꜣ ꜣ Ꞌ ꞌ ꞏ " +
+"ʕ ᴤ ᴥ Ꜥ ꜥ ʖ ǀ ǁ ǃ ǂ ʗ ʘ ʬ ʭ".split(' ');
 
 var Utils = {};
 
@@ -111,6 +117,23 @@ function encodeForServer(str) {
         .replace(/<br[^>]*>/g, "\n");
 }
 
+function startWaitingAnimation() {
+    $("#waiting-animation").removeClass('hidden');
+    window.waitingAnimation = setInterval(function() {
+        perRound = 100;
+        while (perRound-- > 0) {
+            var $el = $("#waiting-animation" +
+                " tr:nth-child(" + parseInt(Math.random() * 40) + ")" +
+                " td:nth-child(" + parseInt(Math.random() * 40) + ")");
+            $el.html(RANDOM_GLYPHS[parseInt(Math.random() * RANDOM_GLYPHS.length)]);
+        }
+    }, 250);
+}
+function stopWaitingAnimation() {
+    $("#waiting-animation").addClass('hidden');
+    clearInterval(window.waitingAnimation);
+}
+
 /*******************************/
 /* Client-Server communication */
 /*******************************/
@@ -132,6 +155,7 @@ function loadGtEditLocation(url) {
         beforeSend: function(xhr) {
             // to instantly see when a new document has been retrieved
             $("#file-correction").addClass("hidden");
+            startWaitingAnimation();
         },
         success: function(res) {
             // file correction will be loaded
@@ -157,10 +181,11 @@ function loadGtEditLocation(url) {
                             $("#file-correction").removeClass("hidden");
                             $("ul.navbar-nav li").removeClass("disabled");
                             // append list of pages
-                            $.each(window.ocrGtLocation.pages, function( index, pageObj ) {
-                                $('#page-index').append( '<li><a href="#' + pageObj.url + '">' + pageObj.page + '</a></li>');
+                            $.each(window.ocrGtLocation.pages, function(index, pageObj) {
+                                $('#page-index').append('<li><a href="#' + pageObj.url + '">' + pageObj.page + '</a></li>');
                             });
                             onScroll();
+                            stopWaitingAnimation();
                         }
                     });
                 }
@@ -173,6 +198,7 @@ function loadGtEditLocation(url) {
         },
         error: function(x, e) {
             window.alert(x.status + " FEHLER aufgetreten: \n" + e);
+            stopWaitingAnimation();
         }
     });
 }
