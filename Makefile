@@ -79,13 +79,15 @@ CSS_URLS = https://getbootstrap.com/examples/dashboard/dashboard.css
 # NOTE: Our CSS should not be bundled here
 CSS_FILES   = bower_components/reset-css/reset.css \
               bower_components/bootstrap/dist/css/bootstrap.css \
+			  bower_components/notie/dist/notie.css \
               bower_components/font-awesome/css/font-awesome.css
 # JS scripts to bundle into one minified `dist/vendor.js`
 # NOTE: Javascript developed by us should not be bundled here
 JS_FILES    = bower_components/jquery/dist/jquery.js \
               bower_components/bootstrap/dist/js/bootstrap.js \
               bower_components/handlebars/handlebars.min.js \
-			  bower_components/clipboard/dist/clipboard.min.js
+			  bower_components/clipboard/dist/clipboard.js \
+              bower_components/notie/dist/notie.js
 # The HTML files, described in the Jade shorthand / templating language
 JADE_FILES  = ocr-gt-tools.jade
 # The files to watch for changes for to trigger a rebuild
