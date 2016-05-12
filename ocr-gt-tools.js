@@ -112,6 +112,7 @@ function encodeForServer(str) {
 }
 
 function startWaitingAnimation() {
+    $("#dropzone").addClass('hidden');
     $("#waiting-animation").removeClass('hidden');
     var keys = Object.keys(UISettings['special-chars']);
     window.waitingAnimation = setInterval(function() {
