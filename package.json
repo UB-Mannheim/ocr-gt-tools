@@ -8,6 +8,7 @@
   },
   "dependencies": {},
   "devDependencies": {
+    "bower": "^1.7.9",
     "chokidar-cli": "^1.2.0",
     "clean-css": "^3.4.12",
     "jade": "^1.11.0",

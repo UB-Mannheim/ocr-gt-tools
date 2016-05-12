@@ -2,7 +2,7 @@
 PORT = 9090
 APACHE_USER = www-data
 APACHE_DIR = /var/www/html
-APACHE_BASEURL = ocr-gt-tools
+APACHE_BASEURL = ocr-gt
 
 # Add node_modules/.bin to $PATH so the CLI tools 
 # installed locally by npm can be used
@@ -244,10 +244,10 @@ dist-watch:
 # Deploy on apache
 #
 
-deploy: dist
+deploy:
 	sudo -u $(APACHE_USER) $(MKDIR) $(APACHE_DIR)/$(APACHE_BASEURL)
 	sudo -u $(APACHE_USER) $(CP) dist/* dist/.htaccess $(APACHE_DIR)/$(APACHE_BASEURL)
-	sudo -u $(APACHE_USER) chmod u+w -R $(APACHE_DIR)/$(APACHE_BASEURL)/*
+	sudo -u $(APACHE_USER) find $(APACHE_DIR)/$(APACHE_BASEURL) -exec chmod u+w -R {} \;
 	sudo -u $(APACHE_USER) $(RM) $(APACHE_DIR)/$(APACHE_BASEURL)/ocr-gt-tools.dev.ini
 
 
