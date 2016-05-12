@@ -586,9 +586,8 @@ function onPageLoaded() {
         $("#cheatsheet-modal .cheatsheet").empty();
         for (var i = 0; i < keys.length; i++) {
             var key = keys[i];
-            data[key].id = key;
             $("#cheatsheet-modal .cheatsheet").append(
-                window.templates.cheatsheetEntry(data[key])
+                window.templates.cheatsheetEntry(UISettings['special-chars'][key])
             );
         }
     });
