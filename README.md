@@ -1,36 +1,52 @@
-# ocr-gt-tools
+ocr-gt-tools
+============
 
-A web interface for creating ground truth for improving OCR 
+A web interface for creating ground truth for evaluating and training OCR.
 
-<img src="./screenshot.png" height="300"/>
+<img src="./doc/screenshots/screenshot.png" height="300"/>
 
 ## Table of Contents
 
-  * [Summary](#summary)
-    * [About the code](#about-the-code)
-  * [Installation](#installation)
+* [Summary](#summary)
+	* [Features](#features)
+	* [Installation](#installation)
+	* [About the code](#about-the-code)
+* [Usage](#usage)
+* [Contributing](#contributing)
+	* [Pull Requests](#pull-requests)
+	* [Bug reports](#bug-reports)
+* [Acknowledgments](#acknowledgments)
 
 ## Summary
 
 ocr-gt-tools allows editing
-[hOCR](https://github.com/kba/hocr-spec/blob/master/hocr-spec.md) hOCR files,
+[hOCR](https://github.com/kba/hocr-spec/blob/master/hocr-spec.md) files,
 such as those produced by the
 [tesseract](https://github.com/tesseract-ocr/tesseract) or
 [ocropy](https://github.com/tmbdev/ocropy) OCR frameworks.
+
+### Features
+
+* Editing transcriptions of lines
+* Commenting on line and page level
+* Use [standardized comment tags](https://github.com/UB-Mannheim/ocr-gt-tools/wiki/Error-Tags) to mark common problems
+* [Cheatsheet](./doc/screenshots/cheatsheet-2016-05-04.png)
+* Zoom in / Zoom out
+* Filter visible elements
+* Select multiple lines and apply tags.
+
+### Installation
+
+See [INSTALL.md](./INSTALL.md).
 
 ### About the code
 
 The server-side code is written in Perl.
 
-The frontend is made up of HTML and Javascript.
-
-### Installation
-
-See [INSTALL.md](INSTALL.md) for details.
+The frontend is written in HTML and Javascript.
 
 ## Usage
 
-- you must previously have created the hOCR file, for example with [Tesseract](https://github.com/tesseract-ocr/tesseract)
 - Open 'ocr-gt-tools/index.html' with a browser
 - open in a second Window 'Page Previews' from Goobi
 - Search the book from which you created the hOCR file
@@ -38,46 +54,43 @@ See [INSTALL.md](INSTALL.md) for details.
 - The perl script ocr-gt-tools.cgi will create in the background all files, which takes a few seconds
 - with ajax a json objects will be returned to index.html
 - index.html will load with ajax the created 'correction.html' and 'anmerkungen.txt' inline
-- in a tool-bar on top you get some buttons
-  - Alle einklappen
-  - Alle ausklappen
-  - Zoom -
-  - Zoom =
-  - Zoom +
-  - Speichern
 - 'Speichern' will get active if you have written a comment or a text line
-- when a new image is dropped and it is unsaved content available a warning is issued, same as if the hash is changed in the url
-
-
-
-## Bug reports
-
-Please send your bug reports to https://github.com/UB-Mannheim/ocr-gt-tools/issues.
-Make sure that you are using the latest version of the software
-before sending a report.
-
 
 ## Contributing
 
-Bug fixes, new functions, suggestions for new features and
-other user feedback are appreciated.
+### Expand the wiki
+
+We are using the wiki to collect [transcription hints for unusual
+glyphs](wiki/Special-Characters) and [frequent errors](wiki/Error-Tags). 
+
+### Pull Requests
+
+Bug fixes, new functions, suggestions for new features and other user feedback
+are appreciated.
 
 The source code is available from https://github.com/UB-Mannheim/ocr-gt-tools.
 Please prepare your code contributions also on Github.
 
+### Bug reports
+
+Please feel free to [open
+issues](https://github.com/UB-Mannheim/ocr-gt-tools/issues) for any bug you
+encounter and features you'd like to have.
+
 
 ## Acknowledgments
 
-Copyright (C) 2016 Universitätsbibliothek Mannheim
+This is free software. You may use it under the terms of the GNU General Public
+License Version 3 (GPLv3). See [LICENSE](LICENSE) for details.
 
-Authors: Bernd Fallert (UB Mannheim)
+This project bundles other free software:
 
-This is free software. You may use it under the terms of the
-GNU General Public License (GPL). See [LICENSE](LICENSE) for details.
-
-This project uses other free software:
-
-* [Font Awesome by Dave Gandy](http://fontawesome.io/) (SIL OFL 1.1, MIT License)
-* [jQuery](http://jquery.com/) (MIT License)
-* [hocr-extract-images](https://github.com/tmbdev/hocr-tools) (Apache License)
-* [ocropus-gtedit](https://github.com/tmbdev/ocropy) (Apache License)
+* [EB Garamond Font](https://www.google.com/fonts/specimen/EB+Garamond) (SIL Open Font License)
+* [Font Awesome by Dave Gandy](http://fontawesome.io/) (SIL OFL 1.1, MIT)
+* [bootstrap](http://getbootstrap.com/) (MIT)
+* [clipboard.js](https://github.com/zenorocha/clipboard.js) (MIT)
+* [handlebars.js](https://github.com/wycats/handlebars.js) (MIT)
+* [hocr-extract-images](https://github.com/tmbdev/hocr-tools) (Apache)
+* [jQuery](http://jquery.com/) (MIT)
+* [ocropus-gtedit](https://github.com/tmbdev/ocropy) (Apache)
+* [reset-css](https://github.com/shannonmoeller/reset-css) (Public Domain)

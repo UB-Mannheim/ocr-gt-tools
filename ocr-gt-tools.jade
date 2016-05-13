@@ -1,53 +1,66 @@
-// vim: sw=2 ts=2 noet ft=jade :
 doctype html
 html(lang='de')
 	head
-		script(src='vendor.js')
 		link(href='vendor.css', rel='stylesheet')
-		script(src='ocr-gt-tools.js')
+		link(rel='shortcut icon', type='image/x-icon', href='favicon.ico')
 		link(href='ocr-gt-tools.css', rel='stylesheet')
 	body
 
-		//
+		//*
 		// Page info on the right
-		//
-		script#tpl-page(type='text/x-handlebars-template')
-			.panel.panel-info
-				.panel-heading.clearfix
-					h4.panel-title Seiten-Info
-				.list-group
-					a.list-group-item(target="_blank", href="{{ hiresUrl }}")
-						img(src="{{ imageUrl }}")
-					a#download-comments.list-group-item(target="_blank", href="{{ commentsUrl }}")
-						i.fa.fa-download
-						| Anmerkungen
-					a#open-work.list-group-item(target="_blank", href="http://digi.bib.uni-mannheim.de/en/suchergebnis/?tx_dlf[query]={{ pathId }}")
-						i.fa.fa-download
-						| Werk in Digitaler Bibliothek
-					a#download-correction.list-group-item(target="_blank", href="{{ correctionUrl }}")
-						i.fa.fa-download
-						| Korrektur
-			.panel.panel-default
-				.panel-heading.clearfix
-					h4.panel-title Seiten-Kommentar
-				.page-comment
+		//*
+		script#tpl-rightSidebar(type='text/x-handlebars-template')
+			.panel.panel-success
+				.panel-heading
+					h4.panel-title
+						a(data-toggle='collapse', href='#page-comment') Seiten-Kommentar
+				#page-comment.panel-collapse.collapse.in
+					a.list-group-item(target='_blank', href='{{ hiresUrl }}')
+						img(src='{{ imageUrl }}')
 					div(contenteditable) {{ pageComment }}
+			.panel.panel-info
+				.panel-heading
+					h4.panel-title
+						a(data-toggle='collapse', href='#work-info') Werk-Info
+				#work-info.panel-collapse.collapse
+					.list-group
+						a.list-group-item(target='_blank', href='http://digi.bib.uni-mannheim.de/en/suchergebnis/?tx_dlf[query]={{ pathId }}')
+							i.fa.fa-download
+							| Werk in Digitaler Bibliothek
+						| {{#each pages}}
+						a.list-group-item(href='\#{{ this.url }}')
+							i.fa.fa-history
+							| Seite {{this.page}}
+						| {{/each}}
+			.panel.panel-info
+				.panel-heading
+					h4.panel-title
+						a(data-toggle='collapse', href='#page-info') Seiten-Info
+				#page-info.panel-collapse.collapse.in(aria-expanded='true')
+					.list-group
+						a#download-comments.list-group-item(target='_blank', href='{{ commentsUrl }}')
+							i.fa.fa-download
+							| Anmerkungen
+						a#download-correction.list-group-item(target='_blank', href='{{ correctionUrl }}')
+							i.fa.fa-download
+							| Korrektur
 
-		//
+		//*
 		// A cheatsheet entry
-		//
+		//*
 		script#tpl-cheatsheetEntry(type='text/x-handlebars-template')
 			tr
-				td 
+				td
 					a(target="_blank", href="https://github.com/UB-Mannheim/ocr-gt-tools/wiki/Special-Characters\#{{ id }}")
 						| {{ name.de }}
 				td {{{ sample }}}
 				td
-					code {{ recognition }}
+					button.code(data-clipboard-text="{{ recognition }}")
+						| {{ recognition }}
 
-		//
+		//*
 		// A line of page
-		//
+		//*
 		script#tpl-line(type='text/x-handlebars-template')
 			.row.line(id="line-{{ id }}")
 
@@ -59,7 +72,7 @@ html(lang='de')
 							a.btn.btn-default.hide-line-comment.hidden(data-target="#line-comment-{{ id }}")
 								i.fa.fa-map-o
 						.btn-group(role='group')
-							button.btn.btn-default.dropdown-toggle(data-toggle="dropdown", type='button', aria-haspopup="true", aria-expanded="false")
+							button.btn.btn-default.dropdown-toggle(data-toggle="dropdown", type='button', aria-haspopup="true", aria-expanded="false", tabindex="-1")
 								i.fa.fa-exclamation
 								span.caret
 							ul.dropdown-menu
@@ -82,12 +95,12 @@ html(lang='de')
 								img(src="{{ imgSrc }}", height="30")
 							li.list-group-item.transcription
 								div(contenteditable) {{ transcription }}
-							li.list-group-item.line-comment.hidden(id="line-comment-{{ id }}")
+							li.list-group-item.line-comment(id="line-comment-{{ id }}")
 								div(contenteditable) {{ comment }}
 
-		//
+		//*
 		// A row of history
-		//
+		//*
 		script#tpl-historyItem(type='text/x-handlebars-template')
 			tr
 				td {{ date }}
@@ -96,9 +109,9 @@ html(lang='de')
 				td {{ action }}
 				td {{ ip }}
 
-		//
+		//*
 		// Modal popup containing the history
-		//
+		//*
 		#history-modal.modal.fade(tabindex="-1")
 			.modal-admin
 				.modal-content
@@ -116,9 +129,9 @@ html(lang='de')
 									th IP
 							tbody
 
-		//
+		//*
 		// Help modal
-		//
+		//*
 		#cheatsheet-modal.modal.fade(tabindex"-1")
 			.modal-admin
 				.modal-content
@@ -130,14 +143,14 @@ html(lang='de')
 						table.table.table-condensed
 							tbody.cheatsheet
 
-		//
+		//*
 		// Will contain the raw HTML
-		//
+		//*
 		#raw-html.hidden
 
-		//
+		//*
 		// Will contain the toolbar for the multi select mode
-		//
+		//*
 		#select-bar.hidden
 			.panel-heading.clearfix
 				.btn-group.pull-right
@@ -157,9 +170,9 @@ html(lang='de')
 						i.fa.btn-sm.fa-exclamation-circle
 						| Fehler in Vorlage
 
-		//
+		//*
 		// The navbar on the left side
-		//
+		//*
 		nav.navbar.navbar-default(role='navigation')
 
 			// Brand and toggle get grouped for better mobile display
@@ -184,9 +197,10 @@ html(lang='de')
 						ul.dropdown-menu.navbar-default
 							li
 								.btn-group.btn-group-vertical
-									a.btn.btn-default(target="_blank", href="https://github.com/UB-Mannheim/ocr-gt-tools/wiki/Error-Tags")
+									button.btn.btn-default
 										i.fa.fa-exclamation
-										| Fehler-Kategorien
+										a(target="_blank", href="https://github.com/UB-Mannheim/ocr-gt-tools/wiki/Error-Tags")
+											| Fehler-Kategorien
 									button.btn.btn-default(data-toggle="modal",data-target="#cheatsheet-modal",data-keyboard="true")
 										i.fa.fa-question
 										| Spickzettel
@@ -221,15 +235,6 @@ html(lang='de')
 									button.set-view.btn.btn-default(type='button', data-target='*')
 										i.fa.fa-arrows-alt
 										| Vollansicht
-									button.set-view.btn.btn-default(type='button', data-target='img')
-										i.fa.fa-picture-o
-										| Bild
-									button.set-view.btn.btn-default(type='button', data-target='.transcription')
-										i.fa.fa-align-left
-										| Text
-									button.set-view.btn.btn-default(type='button', data-target='.line-comment')
-										i.fa.fa-commenting-o
-										| Kommentar
 									button.set-view.btn.btn-default(type='button', data-target='.transcription,img')
 										i.fa.fa-picture-o
 										i.fa.fa-align-left
@@ -242,20 +247,15 @@ html(lang='de')
 										i.fa.fa-align-left
 										i.fa.fa-commenting-o
 										| Text + Kommentar
-
-					//- Show/hide comments
-					li.dropdown.disabled
-						a.btn.dropdown-toggle(data-toggle='dropdown')
-							i.fa.fa-4x.fa-plus-square-o
-						ul.dropdown-menu.navbar-default
-							li
-								.btn-group.btn-group-vertical
-									button#collapse_all_comments.btn.btn-default(type='button')
-										i.fa.fa-minus-square-o
-										| Alle einklappen
-									button#expand_all_comments.btn.btn-default(type='button')
-										i.fa.fa-plus-square-o
-										| Alle ausklappen
+									button.set-view.btn.btn-default(type='button', data-target='img')
+										i.fa.fa-picture-o
+										| Bild
+									button.set-view.btn.btn-default(type='button', data-target='.transcription')
+										i.fa.fa-align-left
+										| Text
+									button.set-view.btn.btn-default(type='button', data-target='.line-comment')
+										i.fa.fa-commenting-o
+										| Kommentar
 
 					//- Filter
 					li.dropdown.disabled
@@ -280,9 +280,9 @@ html(lang='de')
 										i.fa.fa-sort
 										| Nach Breite sortieren (ab)
 
-		//
+		//*
 		//- Here be dragons
-		//
+		//*
 		.container-fluid
 			.row
 				.col-sm-9#root
@@ -300,4 +300,17 @@ html(lang='de')
 							span.input-group-btn
 								button.btn.btn-default.btn-lg(type="button") Los!
 					#file-correction
-				.col-sm-3#page-info
+					#waiting-animation.hidden
+						table
+							tbody
+								- var y = 0
+								while y++ < 40
+									tr
+										- var x = 0
+											while x++ < 40
+												td &nbsp;
+				#right-sidebar.col-sm-3.panel-group
+
+		script(src='vendor.js')
+		script(src='ocr-gt-tools.js')
+// vim: sw=2 ts=2 noet ft=jade :

@@ -1,40 +1,99 @@
 # Installation Instructions
 
-## Docker
-
-    docker run -t -p kbai/ocr-gt-tools
-
-The server is available on port 9090.
+* [Install dependencies](#install-dependencies)
+* [Create configuration](#create-configuration)
+* [Deploy on a server](#deploy-on-a-server)
+	* [On Apache](#on-apache)
+	* [Bundled standalone server](#bundled-standalone-server)
+	* [Testing the server](#testing-the-server)
+* [Developing the frontend](#developing-the-frontend)
+	* [Perl](#perl)
+	* [Log-Files / Error-Log-Files](#log-files--error-log-files)
 
 ## Install dependencies
 
+Install Debian packagess (for other distros, YMMV).
+
 ```
-make deps
+make apt-get
 ```
 
-This will install debian packages (`make apt-get`) and current Git revisions of hocr-tools and ocropus (`make vendor`).
-
-To skip installing the Debian packages, skip the `apt-get` goal:
+Install current Git revisions of hocr-tools and ocropus:
 
 ```
 make vendor
 ```
 
-## Copy configuration template and edit as needed
+## Create configuration
+
+Copy the configuration template and edit as needed:
 
 ```
-cp conf/ocr-gt-tools.ini_tmpl conf/ocr-gt-tools.ini
+cp dist/ocr-gt-tools.dev.ini dist/ocr-gt-tools.ini
 ```
 
 ## Deploy on a server
 
+### On Apache
+
+* Enable CGI on Apache
+
+```sh
+sudo a2enmod cgi
+```
+
+* Deploy to Apache document folder:
+
+```
+make deploy
+```
+
+This will recreate out-of-date files in `./dist`, create a folder
+`$APACHE_BASEURL` in `$APACHE_DIR` and copy all the files from `./dist` to
+`$APACHE_DIR/$APACHE_BASEURL` using `sudo` with user `$APACHE_USER`.
+
+Deployment can be customized with three environment variables, the default is:
+
+```
+make APACHE_USER=www-default APACHE_DIR=/var/www/html APACHE_BASEURL=ocr-gt-tools deploy
+```
+
+* Make sure scripts ending in `.cgi` are executable in the
+  `$APACHE_DIR/$APACHE_BASEURL` folder:
+
+```
+sudo $EDITOR /etc/apache2/sites-available/000-default.conf
+#    <Directory "/var/www/html/ocr-gt-tools">
+#        Options +ExecCGI
+#        AddHandler cgi-script .cgi
+#    </Directory>
+```
+
+* Copy the configuration:
+
+```
+sudo -u www-data cp dist/ocr-gt-tools.dev.ini $APACHE_DIR/$APACHE_BASEURL/ocr-gt-tools.ini
+# "sudo $EDITOR $APACHE_DIR/$APACHE_BASEURL/ocr-gt-tools.ini" as needed
+```
+
+* Restart apache 
+
+```
+sudo systemctl restart apache2
+```
+
+The web application will be available under [http://localhost/ocr-gt-tools](http://localhost/ocr-gt-tools).
+
 ### Bundled standalone server
+
+For development and quick experimentation, we ship a standalone server,
+wrapping the CGI in a Plack app:
 
 ```
 make dev-server
 ```
 
-### 
+### Testing the server
 
 Navigate to [http://localhost:9090/dist/index.html](http://localhost:9090/index.html).
 
@@ -46,43 +105,25 @@ Click "Speichern".
 
 Checkout the contents of [./example/ocr-corrections/](./example/ocr-corrections/).
 
-### On Apache
-
-```sh
-cd /var/www/html
-# Enable CGI in Apache
-sudo a2enmod cgi
-# sudo $EDITOR /etc/apache2/sites-available/000-default.conf
-# Make sure scripts ending in `.cgi` are executable in the directory with `ocr-gt-tools.cgi`
-#    <Directory "/path-to-htdocs/ocr-gt-tools">
-#        Options +ExecCGI
-#        AddHandler cgi-script .cgi
-#    </Directory>
-# Clone the software
-sudo -u www-data git clone https://github.com/UB-Mannheim/ocr-gt-tools
-# Clone the related tools
-make vendor
-# Generate the log files
-sudo -u www-data ./ocr-gt-tools.cgi
-# Copy the configuration
-sudo -u www-data cp conf/ocr-gt-tools.ini_tmpl conf/ocr-gt-tools.ini
-# sudo $EDIT as needed!
-# Restart/Reload apache
-sudo systemctl restart apache2
-```
 
 ## Developing the frontend
 
 Install the development dependencies: The `npm` package (which pulls in nodejs) and some nodejs-based tools:
 
 ```
-make dev-deps
+make dev-apt-get
 ```
 
-If the apt-get command fails because of `npm`, you can try skipping the Debian package installation:
+Then npm to bootstrap the tools for building HTML from Jade, CSS from LESS etc.:
 
 ```
-make APT_GET dev-deps
+npm install
+```
+
+And finally bower to install the frontend assets:
+
+```
+bower install
 ```
 
 After changing CSS/Javascript, make sure to regenerate the `dist` folder:
@@ -99,38 +140,16 @@ This will
 
 Javascript/CSS project dependencies are managed by bower, see `bower.json`
 
-## After download:
-
-- Rename **conf/ocr-gt-tools.ini_tmpl** to **conf/ocr-gt-tools.ini**
-  and adapt the configuration to your needs.
-  See [conf/README](conf/README) for details.
-
 ### Perl
 
-For local tests in Windows I use http://strawberryperl.com/
+For local tests in Windows I use [Strawberry Perl](http://strawberryperl.com/).
 
 The scripts used the following perl modules. You can download them from cpan.
 
 - CGI
 - CGI::Carp
 - JSON
-- File::Path
 - Config::IniFiles
-- Data::Dumper;
-- File::Path
-- Time::HiRes
-- POSIX
 
-#### Log-Files / Error-Log-Files
+### Log-Files / Error-Log-Files
 Infos from perlscript ocr-gt-tools.cgi are stored in log/ocr-gt-tools.log
-
-### Apache
-- Add directory in your configuration
-```
-    <Directory "/path-to-htdocs/ocr-gt-tools">                        
-        Options +ExecCGI
-        AddHandler cgi-script .cgi
-    </Directory>
-```
-
-

@@ -95,6 +95,30 @@
   border-width: 10px;
   border-color: #00f;
 }
+#waiting-animation {
+  position: fixed;
+  height: 50vh;
+  width: 70vh;
+  left: 25vw;
+  font-size: 150%;
+  text-align: center;
+}
+#waiting-animation tr {
+  height: 34px;
+}
+#waiting-animation td {
+  height: 32px;
+  width: 32px;
+}
+#waiting-animation td a img {
+  height: 0;
+  display: none;
+}
+#waiting-animation td a:nth-child(1) img {
+  height: 32px !important;
+  max-width: 32px !important;
+  display: block !important;
+}
 .hidden {
   display: none;
 }
@@ -121,7 +145,7 @@ div[contenteditable] {
   height: auto;
 }
 .line-comment,
-.page-comment {
+#page-comment {
   background-color: #ffffe0;
   font-family: 'EB Garamond', serif;
   font-size: 20px;
@@ -136,11 +160,11 @@ div[contenteditable] {
 #file-correction .panel-heading h4 {
   padding-top: 7.5px;
 }
-#page-info {
+#right-sidebar {
   position: fixed;
   right: 0;
 }
-#page-info .list-group-item i {
+#right-sidebar .list-group-item i {
   padding-right: 5px;
 }
 #select-bar {
@@ -152,14 +176,29 @@ div[contenteditable] {
   height: 48px;
   z-index: 1001;
 }
+#cheatsheet-modal {
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  -khtml-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+}
 #cheatsheet-modal img {
   height: 64px;
 }
-#cheatsheet-modal code {
-  font-size: 64px;
-}
 #cheatsheet-modal th {
   font-weight: bold;
+}
+#cheatsheet-modal td {
+  vertical-align: middle;
+  font-size: 120%;
+}
+#cheatsheet-modal td button.code {
+  font-family: monospace;
+  font-size: 48px;
+  height: 64px;
+  width: 100%;
 }
 .select-col {
   padding-left: 20px;
@@ -180,5 +219,9 @@ div[contenteditable] {
 }
 .button-col .btn i {
   padding: 5px;
+}
+#work-info {
+  overflow-y: scroll;
+  max-height: 200px;
 }
 

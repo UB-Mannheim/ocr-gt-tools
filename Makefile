@@ -1,5 +1,11 @@
 # Port of the dev server
 PORT = 9090
+APACHE_USER = www-data
+APACHE_DIR = /var/www/html
+APACHE_BASEURL = ocr-gt
+
+SUDO = sudo
+SUDO_APACHE = sudo -u $(APACHE_USER)
 
 # Add node_modules/.bin to $PATH so the CLI tools 
 # installed locally by npm can be used
@@ -19,7 +25,7 @@ CURL          = curl -s
 GIT_CLONE     = git clone --depth 1
 # Install debian packages, non-interactively
 APT_GET_OPTS  = -y
-APT_GET       = sudo apt-get $(APT_GET_OPTS)
+APT_GET       = $(SUDO) apt-get $(APT_GET_OPTS)
 # NPM is NodeJS' package manager
 NPM_OPTS      =
 NPM           = npm $(NPM_OPTS)
@@ -62,6 +68,7 @@ DEBIAN_PACKAGES = \
 # Debian packages required for running the dev-server and rebuild the frontend
 DEV_DEBIAN_PACKAGES = \
 	npm \
+	nodejs-legacy \
 	libplack-perl \
 	curl
 # URLs of Web Fonts to embed
@@ -75,12 +82,15 @@ CSS_URLS = https://getbootstrap.com/examples/dashboard/dashboard.css
 # NOTE: Our CSS should not be bundled here
 CSS_FILES   = bower_components/reset-css/reset.css \
               bower_components/bootstrap/dist/css/bootstrap.css \
+			  bower_components/notie/dist/notie.css \
               bower_components/font-awesome/css/font-awesome.css
 # JS scripts to bundle into one minified `dist/vendor.js`
 # NOTE: Javascript developed by us should not be bundled here
 JS_FILES    = bower_components/jquery/dist/jquery.js \
               bower_components/bootstrap/dist/js/bootstrap.js \
-              bower_components/handlebars/handlebars.min.js
+              bower_components/handlebars/handlebars.min.js \
+			  bower_components/clipboard/dist/clipboard.js \
+              bower_components/notie/dist/notie.js
 # The HTML files, described in the Jade shorthand / templating language
 JADE_FILES  = ocr-gt-tools.jade
 # The files to watch for changes for to trigger a rebuild
@@ -95,7 +105,8 @@ WATCH_FILES = Makefile ocr-gt-tools.* ${JADE_FILES} *.json
         clean \
         deps apt-get \
         dev-deps dev-apt-get \
-        dev-server dist-watch
+        dev-server dist-watch \
+        deploy
 
 #
 # Debugging
@@ -120,14 +131,14 @@ deps: apt-get vendor
 apt-get:
 	$(APT_GET) install $(DEBIAN_PACKAGES)
 
-vendor: vendor/hocr-tools vendor/ocropy log/ocr-gt-tools.log log/request.log
+vendor: dist/vendor/hocr-tools dist/vendor/ocropy
 
-vendor/hocr-tools:
-	$(MKDIR) vendor
+dist/vendor/hocr-tools:
+	$(MKDIR) dist/vendor
 	$(GIT_CLONE) https://github.com/UB-Mannheim/hocr-tools $@
 
-vendor/ocropy:
-	$(MKDIR) vendor
+dist/vendor/ocropy:
+	$(MKDIR) dist/vendor
 	$(GIT_CLONE) https://github.com/tmbdev/ocropy $@
 
 log/ocr-gt-tools.log:
@@ -170,7 +181,29 @@ dev-browser:
 # Set up dist folder
 #
 
-dist: dist/vendor.css dist/vendor.js dist/fonts dist/index.html dist/ocr-gt-tools.js dist/ocr-gt-tools.css
+dist: \
+	dist/special-chars.json\
+	dist/error-tags.json\
+	dist/vendor\
+	dist/log\
+	dist/vendor.css\
+	dist/vendor.js\
+	dist/fonts\
+	dist/index.html\
+	dist/ocr-gt-tools.js\
+	dist/ocr-gt-tools.css\
+	dist/ocr-gt-tools.cgi
+
+
+dist/%.json: doc/%.json
+	$(CP) $< $@
+
+dist/log:
+	$(MKDIR) $@
+
+dist/ocr-gt-tools.cgi: ocr-gt-tools.cgi
+	$(CP) $< $@
+	chmod a+x $@
 
 dist/ocr-gt-tools.js: ocr-gt-tools.js
 	$(UGLIFYJS) --source-map --compress --output $@ $<
@@ -212,6 +245,23 @@ dist-watch:
 	$(CHOKIDAR) $(WATCH_FILES) -c 'time $(MAKE) --no-print-directory dist'
 
 #
+# Deploy on apache
+#
+
+deploy:
+	$(SUDO_APACHE) $(MKDIR) $(APACHE_DIR)/$(APACHE_BASEURL)
+	$(SUDO_APACHE) $(CP) dist/* dist/.htaccess $(APACHE_DIR)/$(APACHE_BASEURL)
+	$(SUDO_APACHE) find $(APACHE_DIR)/$(APACHE_BASEURL) -exec chmod u+w -R {} \;
+	$(SUDO_APACHE) $(RM) $(APACHE_DIR)/$(APACHE_BASEURL)/ocr-gt-tools.dev.ini
+
+
+#
+# Docker related
+#
+docker:
+	docker build -t 'ocr-gt-tools' .
+
+#
 # Clean up, delete files
 #
 
@@ -226,3 +276,6 @@ clean: clean-js clean-css clean-fonts clean-html
 realclean:
 	$(RM) bower_components node_modules
 	$(RM) dist
+
+test:
+	bash ./test.sh
