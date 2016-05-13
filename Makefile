@@ -4,6 +4,9 @@ APACHE_USER = www-data
 APACHE_DIR = /var/www/html
 APACHE_BASEURL = ocr-gt
 
+SUDO = sudo
+SUDO_APACHE = sudo -u $(APACHE_USER)
+
 # Add node_modules/.bin to $PATH so the CLI tools 
 # installed locally by npm can be used
 export PATH := $(PWD)/node_modules/.bin:$(PATH)
@@ -22,7 +25,7 @@ CURL          = curl -s
 GIT_CLONE     = git clone --depth 1
 # Install debian packages, non-interactively
 APT_GET_OPTS  = -y
-APT_GET       = sudo apt-get $(APT_GET_OPTS)
+APT_GET       = $(SUDO) apt-get $(APT_GET_OPTS)
 # NPM is NodeJS' package manager
 NPM_OPTS      =
 NPM           = npm $(NPM_OPTS)
@@ -174,7 +177,6 @@ dev-server:
 dev-browser:
 	xdg-open http://localhost:9090/dist/index.html
 
-
 #
 # Set up dist folder
 #
@@ -247,10 +249,10 @@ dist-watch:
 #
 
 deploy:
-	sudo -u $(APACHE_USER) $(MKDIR) $(APACHE_DIR)/$(APACHE_BASEURL)
-	sudo -u $(APACHE_USER) $(CP) dist/* dist/.htaccess $(APACHE_DIR)/$(APACHE_BASEURL)
-	sudo -u $(APACHE_USER) find $(APACHE_DIR)/$(APACHE_BASEURL) -exec chmod u+w -R {} \;
-	sudo -u $(APACHE_USER) $(RM) $(APACHE_DIR)/$(APACHE_BASEURL)/ocr-gt-tools.dev.ini
+	$(SUDO_APACHE) $(MKDIR) $(APACHE_DIR)/$(APACHE_BASEURL)
+	$(SUDO_APACHE) $(CP) dist/* dist/.htaccess $(APACHE_DIR)/$(APACHE_BASEURL)
+	$(SUDO_APACHE) find $(APACHE_DIR)/$(APACHE_BASEURL) -exec chmod u+w -R {} \;
+	$(SUDO_APACHE) $(RM) $(APACHE_DIR)/$(APACHE_BASEURL)/ocr-gt-tools.dev.ini
 
 
 #
