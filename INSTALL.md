@@ -1,5 +1,6 @@
 # Installation Instructions
 
+* [Docker Quickstart](#docker-quickstart)
 * [Install dependencies](#install-dependencies)
 * [Create configuration](#create-configuration)
 * [Deploy on a server](#deploy-on-a-server)
@@ -9,6 +10,22 @@
 * [Developing the frontend](#developing-the-frontend)
 	* [Perl](#perl)
 	* [Log-Files / Error-Log-Files](#log-files--error-log-files)
+
+## Docker Quickstart
+
+To get the tool up and running in a docker container:
+
+```
+git clone https://github.com/UB-Mannheim/ocr-gt-tools
+cd ocr-gt-tools
+./run-docker.sh <path-to-images> <path-to-corrections>
+```
+
+The first time you run this, it will download the [docker
+image](http://dockerhub.com/kbai/ocr-gt-tools) and run an Apache server in the
+container with all the configuration taken care of.
+
+Navigate to http://localhost:8888/ocr-gt to use it.
 
 ## Install dependencies
 
