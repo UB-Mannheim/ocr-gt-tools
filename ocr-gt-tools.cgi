@@ -1,7 +1,6 @@
 #!/usr/bin/perl
 use strict;
 use warnings;
-my $ERRORLOG;
 my $REQUESTLOG;
 my $DATE_FORMAT = "%Y-%m-%d";
 my $TIME_FORMAT = "%H:%M:%S";
@@ -16,45 +15,22 @@ use Cwd qw(abs_path);
 use Config::IniFiles qw( :all);                 # wg. Ini-Files
 use Time::HiRes qw(time);
 use POSIX qw(strftime);
-use CGI::Carp qw(carpout);
 
 my $jsonEncoderPretty = JSON->new->utf8->pretty(1);
 my $jsonEncoder = JSON->new->utf8->pretty(0);
 
-
 # Directory containing the CGI script
 my $OCR_GT_BASEDIR = dirname(abs_path($0));
-my $REQUESTLOG_FILENAME = "$OCR_GT_BASEDIR/log/request.log";
 
 #-----------------------------------------------
 # Setup logging
 #-----------------------------------------------
-
+my $REQUESTLOG_FILENAME = "$OCR_GT_BASEDIR/log/request.log";
 if (! -d "$OCR_GT_BASEDIR/log") {
     make_path "$OCR_GT_BASEDIR/log", {mode => oct(777)};
 }
-open( $ERRORLOG, ">>", "$OCR_GT_BASEDIR/log/ocr-gt-tools.log" )
-  or die "Cannot write to log file '$OCR_GT_BASEDIR/log/ocr-gt-tools.log': $!\n";
-carpout(*$ERRORLOG);
 open( $REQUESTLOG, ">>", $REQUESTLOG_FILENAME )
-  or die "Cannot write to log file '$OCR_GT_BASEDIR/log/request.log': $!\n";
-
-=head1 METHODS
-
-=head2 debug
-
-Log a message to the log file.
-
-=cut
-
-sub debug
-{
-    my $msg = sprintf(shift(), @_);
-    my $t = time;
-    my $timestamp = strftime $TIME_FORMAT, localtime $t;
-    $timestamp .= sprintf ".%03d", ($t-int($t))*1000; # without rounding
-    printf $ERRORLOG "%s: %s\n", $timestamp, $msg;
-}
+  or die "Cannot write to log file '$REQUESTLOG_FILENAME': $!\n";
 
 =head2 logRequest
 
@@ -67,7 +43,7 @@ sub logRequest
     my $cgi = shift;
     my $url = $cgi->param('imageUrl');
     if (!$url) {
-        debug("No URL to log for this request");
+        warn sprintf("No URL to log for this request");
         return;
     }
     my $action = $cgi->url_param('action');
@@ -92,9 +68,7 @@ sub debugStandout
 {
     my $msg = sprintf(shift(), @_);
     my $asterisks = '*' x 20;
-    debug("");
-    debug("%s %s %s", $asterisks, $msg, $asterisks);
-    debug("");
+    warn("%s %s %s", $asterisks, $msg, $asterisks);
 }
 
 =head2 loadConfig
@@ -140,7 +114,7 @@ sub loadConfig
     );
 
 
-    # debug "Config loaded: %s", Dumper(\%config);
+    # warn sprintf "Config loaded: %s", Dumper(\%config);
 
     return \%config;
 }
@@ -191,7 +165,7 @@ sub httpJSON
 {
     my ($cgi, $location, $compact) =  @_;
     my $json = $jsonEncoder->pretty(1)->encode($location);
-    # debug( __LINE__ . " " . "\$json", \$json );
+    # warn sprintf( __LINE__ . " " . "\$json", \$json );
 
     print $cgi->header( -type => 'application/json', -charset => 'utf-8');
     print $json;
@@ -205,12 +179,14 @@ Get page dirs
 sub getPageDirs {
     my ($cgi, $config, $location) = @_;
     my $DIR;
-    opendir($DIR, $location->{correctionDirGt});
-    my @pages = grep { /^(\d{4,4})/ && -d "$location->{correctionDirGt}/$_" } readdir ($DIR);
     $location->{pages} = [];
+    if (! -e $location->{correctionDirGt}) {
+        return;
+    }
+    opendir($DIR, $location->{correctionDirGt}) or warn "$DIR, $!";
+    my @pages = grep { /^(\d{4,4})/ && -d "$location->{correctionDirGt}/$_" } readdir ($DIR);
     #loop through the array printing out the filenames
     foreach my $subdir (sort {$a cmp $b} (@pages)) {
-        #print $ERRORLOG "$subdir\n";
         my $url = $location->{imageUrl};
         my $curPage = $location->{pathPage};
         $url =~ s/$curPage/$subdir/;
@@ -333,7 +309,7 @@ sub mapUrltoFile
         , 'hocr'
         , $location{cFile} . '.hocr';
 
-    debug( "Location object: %s", Dumper(\%location));
+    warn sprintf( "Location object: %s", Dumper(\%location));
 
     return \%location;
 }
@@ -350,7 +326,7 @@ sub ensureCorrectionDir
     if (-e $location->{correctionDir}) {
         return;
     }
-    debug("%s: about to create %s", __LINE__, $location->{correctionDir});
+    warn sprintf("%s: about to create %s", __LINE__, $location->{correctionDir});
     my $mkdirSpec =  {
         mode => oct(777),
         verbose => 0,
@@ -363,7 +339,7 @@ sub ensureCorrectionDir
     }
     my @okFile = make_path($location->{correctionDir}, $mkdirSpec);
     if (-e $location->{correctionDir}) {
-        debug("Created directory '$location->{correctionDir}'");
+        warn sprintf("Created directory '$location->{correctionDir}'");
     }
 }
 
@@ -386,10 +362,9 @@ sub ensureCorrection
         , ' -b'
         , $location->{imageDir}
         , $location->{hocr_file}
-        , '>/dev/null'
-        , '2>/dev/null'
+        , '>&2'
     );
-    debug("About to execute '%s' in '%s' for '%s'", $cmd_extract, $location->{correctionDir}, $location->{pathPage});
+    warn sprintf("About to execute '%s' in '%s' for '%s'", $cmd_extract, $location->{correctionDir}, $location->{pathPage});
     system $cmd_extract;
     if($?) {
         http500($cgi, "hocr-extract-images returned non-zero exit code $?\n\n");
@@ -408,13 +383,13 @@ sub ensureCorrection
             , $location->{pathPage} . '/line*.png'
             , '-o'
             , $location->{pathPage} . '/' . $config->{correctionHtml_basename}
-            , '>/dev/null'
-            , '2>/dev/null');
+            , '>&2'
+        );
     if($?) {
         http500($cgi, "ocropus-gtedit returned non-zero exit code $?\n\n");
     }
 
-    # debug("%s: %s/%s", $location->{correctionDir},  $correctionHtml_withRemarks_basename);
+    # warn sprintf("%s: %s/%s", $location->{correctionDir},  $correctionHtml_withRemarks_basename);
 }
 
 =head2
@@ -433,7 +408,7 @@ sub ensureCommentsTxt
         $location->{numberOfLines} += 1;
     }
     close $dh;
-    # debug("%s has %d lines", $location->{pathPage}, $location->{numberOfLines});
+    # warn sprintf("%s has %d lines", $location->{pathPage}, $location->{numberOfLines});
     if (! -e $location->{commentsTxt}) {
         my @comments;
         for (0 .. $location->{numberOfLines}) {
@@ -499,9 +474,12 @@ sub processRequest
     if (! $action) {
         http400($cgi, "URL parameter 'action' missing.");
     }
-    debug "CGI Params: %s", Dumper($cgi->{param});
+    warn sprintf "CGI Params: %s", Dumper($cgi->{param});
     if ($action eq 'create') {
         processCreateRequest($cgi, $config);
+    } elsif ($action eq 'log') {
+        print $cgi->header( -type => 'text/plain', -charset => 'utf-8');
+        print qx(cat ./log/*);
     } elsif ($action eq 'save') {
         processSaveRequest($cgi, $config);
     } elsif ($action eq 'history') {

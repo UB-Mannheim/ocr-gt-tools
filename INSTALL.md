@@ -84,6 +84,13 @@ sudo systemctl restart apache2
 
 The web application will be available under [http://localhost/ocr-gt-tools](http://localhost/ocr-gt-tools).
 
+### Docker
+
+    docker run -t -p kbai/ocr-gt-tools
+
+The server is available on port 9090.
+
+
 ### Bundled standalone server
 
 For development and quick experimentation, we ship a standalone server,

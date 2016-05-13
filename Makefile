@@ -1,11 +1,10 @@
 # Port of the dev server
 PORT = 9090
 APACHE_USER = www-data
-APACHE_DIR = /var/www/html
-APACHE_BASEURL = ocr-gt
+APACHE_GROUP = www-data
+APACHE_DIR = /var/www/html/ocr-gt
 
 SUDO = sudo
-SUDO_APACHE = sudo -u $(APACHE_USER)
 
 # Add node_modules/.bin to $PATH so the CLI tools 
 # installed locally by npm can be used
@@ -62,6 +61,7 @@ DEBIAN_PACKAGES = \
 	git \
 	libjson-perl \
 	libconfig-inifiles-perl \
+	python-lxml \
 	python-numpy \
 	python-scipy \
 	python-matplotlib
@@ -249,10 +249,11 @@ dist-watch:
 #
 
 deploy:
-	$(SUDO_APACHE) $(MKDIR) $(APACHE_DIR)/$(APACHE_BASEURL)
-	$(SUDO_APACHE) $(CP) dist/* dist/.htaccess $(APACHE_DIR)/$(APACHE_BASEURL)
-	$(SUDO_APACHE) find $(APACHE_DIR)/$(APACHE_BASEURL) -exec chmod u+w -R {} \;
-	$(SUDO_APACHE) $(RM) $(APACHE_DIR)/$(APACHE_BASEURL)/ocr-gt-tools.dev.ini
+	$(SUDO) $(MKDIR) $(APACHE_DIR)
+	$(SUDO) $(CP) -t $(APACHE_DIR) dist/* dist/.htaccess
+	$(SUDO) chown -R $(APACHE_USER):$(APACHE_GROUP) $(APACHE_DIR)
+	$(SUDO) find $(APACHE_DIR) -exec chmod u+w -R {} \;
+	$(SUDO) $(RM) $(APACHE_DIR)/ocr-gt-tools.dev.ini
 
 
 #
