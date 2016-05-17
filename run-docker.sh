@@ -7,6 +7,6 @@ CORRECTIONS_PATH=$2
 CORRECTIONS_PATH=${CORRECTIONS_PATH:-$PWD/example/ocr-corrections}
 
 docker run -p 8888:80 -it --rm --name gt-ocr-tools \
-    --volume="$IMAGE_PATH:/work/fileadmin" \
-    --volume="$CORRECTIONS_PATH:/work/ocr-corrections" \
-    kbai/ocr-gt-tools bash
+    --volume="$IMAGE_PATH:/data/fileadmin" \
+    --volume="$CORRECTIONS_PATH:/data/ocr-corrections" \
+    kbai/ocr-gt-tools:docker

@@ -4,7 +4,7 @@ FROM httpd:2.4
 ADD Makefile Makefile
 RUN apt-get update && apt-get install make && make SUDO="" apt-get
 # Set up a data volume
-RUN mkdir /data && chown daemon:www-data /data && ln -s /data/fileadmin /data/ocf-corrections /usr/local/apache2/htdocs/
+RUN mkdir /data && chown daemon:www-data /data && ln -s /data/fileadmin /data/ocr-corrections /usr/local/apache2/htdocs/
 VOLUME ["/data"]
 # Enable CGI in Apache
 RUN sed -i 's/#LoadModule cgid_module/LoadModule cgid_module/' /usr/local/apache2/conf/httpd.conf
