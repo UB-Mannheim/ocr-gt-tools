@@ -462,7 +462,7 @@ sub saveTransliteration
         if (m/(spellcheck='true'>).*?<\/td/) {
             my $transliteration = $transliterations->[ $i++ ];
             my $leftOfClosingTag = $1;
-            s/$&/$leftOfClosingTag$transliteration<\/td/;
+            s/\Q$&\E/$leftOfClosingTag$transliteration<\/td/;
         }
         print $CORR_OUT $_;
     }
