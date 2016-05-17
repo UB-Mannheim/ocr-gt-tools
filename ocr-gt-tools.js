@@ -6,12 +6,6 @@ var UISettings = {
     cgiUrl: 'ocr-gt-tools.cgi',
     defaultViews: ['.transcription','img']
 };
-RANDOM_GLYPHS = "ᴀ Ɐ ɐ Ɑ ɑ Ɒ ɒ ʙ ᴃ ᴄ Ↄ ↄ Ð ð Ꝺ ꝺ ᴅ ᴆ ꝱ ẟ ᴇ Ǝ ǝ ⱻ Ə ə Ɛ ɛ ɘ ɜ ɞ " +
-"ʚ ɤ Ꝼ ꝼ ꜰ Ⅎ ⅎ ꟻ Ᵹ ᵹ ɡ ɢ ᵷ Ꝿ ꝿ Ɣ ɣ Ƣ ƣ ʜ Ƕ ƕ Ⱶ ⱶ Ꜧ ꜧ ı ɪ ꟾ ꟷ ᴉ ᵻ Ɩ ɩ ᴊ ᴋ ʞ ʟ Ꝇ ꝇ " +
-"ᴌ ꝲ Ꞁ ꞁ ʎ ᴍ ꟽ ꟿ ꝳ ɴ ᴎ ꝴ Ŋ ŋ ᴏ ᴑ Ɔ ɔ ᴐ ᴒ ᴖ ᴗ ɷ Ȣ ȣ ᴕ ᴘ ꟼ ɸ ⱷ ĸ Ꞃ ꞃ Ʀ ʀ Ꝛ ꝛ ᴙ ɹ ᴚ " +
-"ʁ ꝵ ꝶ Ꝝ ꝝ ſ Ꞅ ꞅ Ƨ ƨ ꜱ Ʃ ʃ ƪ ʅ Ꞇ ꞇ ᴛ ꝷ ʇ ᴜ ᴝ ᴞ ɥ Ɯ ɯ ꟺ ᴟ Ʊ ʊ ᴠ Ỽ ỽ Ʌ ʌ ᴡ ʍ ʏ ƍ ᴢ " +
-"Ꝣ ꝣ Ʒ ʒ ᴣ Ƹ ƹ Ȝ ȝ Þ þ Ƿ ƿ Ꝩ ꝩ Ꝫ ꝫ Ꝭ ꝭ Ꝯ ꝯ ꝰ ꝸ Ꜫ ꜫ Ꜭ ꜭ Ꜯ ꜯ Ƽ ƽ Ƅ ƅ Ɂ ɂ Ꜣ ꜣ Ꞌ ꞌ ꞏ " +
-"ʕ ᴤ ᴥ Ꜥ ꜥ ʖ ǀ ǁ ǃ ǂ ʗ ʘ ʬ ʭ".split(' ');
 
 var Utils = {};
 
@@ -118,16 +112,19 @@ function encodeForServer(str) {
 }
 
 function startWaitingAnimation() {
+    $("#dropzone").addClass('hidden');
     $("#waiting-animation").removeClass('hidden');
+    var keys = Object.keys(UISettings['special-chars']);
     window.waitingAnimation = setInterval(function() {
-        perRound = 100;
+        perRound = 50;
         while (perRound-- > 0) {
+            var randGlyph = UISettings['special-chars'][keys[parseInt(Math.random() * keys.length)]];
             var $el = $("#waiting-animation" +
-                " tr:nth-child(" + parseInt(Math.random() * 40) + ")" +
-                " td:nth-child(" + parseInt(Math.random() * 40) + ")");
-            $el.html(RANDOM_GLYPHS[parseInt(Math.random() * RANDOM_GLYPHS.length)]);
+                " tr:nth-child(" + parseInt(Math.random() * 20) + ")" +
+                " td:nth-child(" + parseInt(Math.random() * 20) + ")"
+            ).html(randGlyph.sample);
         }
-    }, 250);
+    }, 100);
 }
 function stopWaitingAnimation() {
     $("#waiting-animation").addClass('hidden');
@@ -162,32 +159,34 @@ function loadGtEditLocation(url) {
             $("#dropzone").addClass('hidden');
             window.ocrGtLocation = res;
             window.location.hash = window.ocrGtLocation.imageUrl;
-            $("#raw-html").load(
-                Utils.uncachedURL(window.ocrGtLocation.correctionUrl),
-                function handleCorrectionAjax(response, status, xhr) {
-                    $.ajax({
-                        type: 'GET',
-                        url: Utils.uncachedURL(window.ocrGtLocation.commentsUrl),
-                        error: function(x, e) {
-                            console.log(arguments);
-                            notie.alert(3, "HTTP Fehler " + x.status + ":\n" + x.responseText);
-                        },
-                        success: function(response, status, xhr) {
-                            Utils.parseLineComments(response, window.ocrGtLocation);
-                            addCommentFields();
-                            // show new document
-                            $("#file-correction").removeClass("hidden");
-                            $("ul.navbar-nav li").removeClass("disabled");
-                            // append list of pages
-                            $.each(window.ocrGtLocation.pages, function(index, pageObj) {
-                                $('#page-index').append('<li><a href="#' + pageObj.url + '">' + pageObj.page + '</a></li>');
-                            });
-                            onScroll();
-                            stopWaitingAnimation();
-                        }
-                    });
-                }
-            );
+            window.setTimeout(function() {
+                $("#raw-html").load(
+                    Utils.uncachedURL(window.ocrGtLocation.correctionUrl),
+                    function handleCorrectionAjax(response, status, xhr) {
+                        $.ajax({
+                            type: 'GET',
+                            url: Utils.uncachedURL(window.ocrGtLocation.commentsUrl),
+                            error: function(x, e) {
+                                console.log(arguments);
+                                notie.alert(3, "HTTP Fehler " + x.status + ":\n" + x.responseText);
+                            },
+                            success: function(response, status, xhr) {
+                                Utils.parseLineComments(response, window.ocrGtLocation);
+                                addCommentFields();
+                                // show new document
+                                $("#file-correction").removeClass("hidden");
+                                $("ul.navbar-nav li").removeClass("disabled");
+                                // append list of pages
+                                $.each(window.ocrGtLocation.pages, function(index, pageObj) {
+                                    $('#page-index').append('<li><a href="#' + pageObj.url + '">' + pageObj.page + '</a></li>');
+                                });
+                                onScroll();
+                                stopWaitingAnimation();
+                            }
+                        });
+                    }
+                );
+            }, 1);
             // Zoom buttons only for non-IE
             $("#zoom-in").removeClass("hidden");
             $("#zoom-out").removeClass("hidden");
@@ -546,7 +545,7 @@ function toggleSelectMode() {
     $("#select-bar").toggleClass('hidden');
 }
 
-$(function onPageLoaded() {
+function onPageLoaded() {
     compileTemplates();
     window.onhashchange = onHashChange;
     window.onbeforeunload = confirmExit;
@@ -583,24 +582,14 @@ $(function onPageLoaded() {
 
     // Open cheatsheet modal
     $('button[data-target="#cheatsheet-modal"]').on('click', function() {
-        $.ajax({
-            url: 'special-chars.json',
-            dataType: "json",
-            success: function(data) {
-                var keys = Object.keys(data);
-                $("#cheatsheet-modal .cheatsheet").empty();
-                for (var i = 0; i < keys.length; i++) {
-                    var key = keys[i];
-                    data[key].id = key;
-                    $("#cheatsheet-modal .cheatsheet").append(
-                        window.templates.cheatsheetEntry(data[key])
-                    );
-                }
-            },
-            error: function(x, e) {
-                notie.alert(3, "HTTP Fehler " + x.status + ":\n" + x.responseText);
-            }
-        });
+        var keys = Object.keys(UISettings['special-chars']);
+        $("#cheatsheet-modal .cheatsheet").empty();
+        for (var i = 0; i < keys.length; i++) {
+            var key = keys[i];
+            $("#cheatsheet-modal .cheatsheet").append(
+                window.templates.cheatsheetEntry(UISettings['special-chars'][key])
+            );
+        }
     });
 
     // Select Mode
@@ -623,16 +612,34 @@ $(function onPageLoaded() {
     $(".select-toggle").on('click', function() { changeSelection('toggle'); });
 
     new Clipboard('.code');
-    // // Trigger hash change
-    // $.ajax({
-    //     type: 'GET',
-    //     url: 'special-chars.json',
-    //     dataType: "json",
-    //     success: function(data) {
-    //         window['special-chars'] = data;
-    //     },
-    // });
+    // Trigger hash change
     onHashChange();
+}
+
+$(function() {
+    $.ajax({
+        type: 'GET',
+        url: 'special-chars.json',
+        dataType: "json",
+        error: function() {
+            notie.alert(3, "HTTP Fehler " + x.status + ":\n" + x.responseText);
+        },
+        success: function(specialChars) {
+            $.ajax({
+                type: 'GET',
+                url: 'error-tags.json',
+                dataType: "json",
+                error: function() {
+                    notie.alert(3, "HTTP Fehler " + x.status + ":\n" + x.responseText);
+                },
+                success: function(errorTags) {
+                    UISettings['special-chars'] = specialChars;
+                    UISettings['error-tags'] = errorTags;
+                    onPageLoaded();
+                },
+            });
+        },
+    });
 });
 
 // vim: sw=4 ts=4 fmr={,} :

@@ -97,10 +97,27 @@
 }
 #waiting-animation {
   position: fixed;
-  height: 80vh;
-  margin: 5vh;
+  height: 50vh;
+  width: 70vh;
+  left: 25vw;
   font-size: 150%;
   text-align: center;
+}
+#waiting-animation tr {
+  height: 34px;
+}
+#waiting-animation td {
+  height: 32px;
+  width: 32px;
+}
+#waiting-animation td a img {
+  height: 0;
+  display: none;
+}
+#waiting-animation td a:nth-child(1) img {
+  height: 32px !important;
+  max-width: 32px !important;
+  display: block !important;
 }
 .hidden {
   display: none;
@@ -202,5 +219,9 @@ div[contenteditable] {
 }
 .button-col .btn i {
   padding: 5px;
+}
+#work-info {
+  overflow-y: scroll;
+  max-height: 200px;
 }
 

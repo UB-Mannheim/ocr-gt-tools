@@ -88,11 +88,26 @@ paperColor = #b9af96
 		border-color blue
 
 #waiting-animation
-	position fixed
-	height 80vh
-	margin 5vh
+	position: fixed
+	height: 50vh
+	width: 70vh
+	left: 25vw
 	font-size 150%
 	text-align center
+	tr
+		height: 34px
+	td
+		height: 32px
+		width: 32px
+		a
+			img
+				height: 0
+				display: none
+		a:nth-child(1)
+			img
+				height: 32px !important
+				max-width: 32px !important
+				display: block !important
 
 .hidden
 	display none
@@ -188,5 +203,9 @@ div[contenteditable]
 		text-align left
 		i
 			padding: 5px;
+
+#work-info
+	overflow-y: scroll
+	max-height: 200px;
 
 // vim: sw=4 ts=4 noet :
