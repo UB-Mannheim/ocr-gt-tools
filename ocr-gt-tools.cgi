@@ -17,7 +17,6 @@ use YAML::XS qw(LoadFile);
 use Time::HiRes qw(time);
 use POSIX qw(strftime);
 
-my $jsonEncoderPretty = JSON->new->utf8->pretty(1);
 my $jsonEncoder = JSON->new->utf8->pretty(0);
 
 BEGIN {
