@@ -126,6 +126,8 @@ And finally bower to install the frontend assets:
 bower install
 ```
 
+*Note:* If you are running bower as `root`, add the `--allow-root` option: `bower --allow-root install`.
+
 After changing CSS/Javascript, make sure to regenerate the `dist` folder:
 
 ```
