@@ -1,44 +1,47 @@
 #!/usr/bin/perl
 use strict;
 use warnings;
-my $ERRORLOG;
+my $DEBUGLOG;
 my $REQUESTLOG;
 my $DATE_FORMAT = "%Y-%m-%d";
 my $TIME_FORMAT = "%H:%M:%S";
 
-use Data::Dumper;
-$Data::Dumper::Terse = 1;
-use JSON;
 use CGI;
-use File::Path qw(make_path);
-use YAML::XS qw(LoadFile);
-use File::Basename qw(dirname);
-use Cwd qw(abs_path);
-use Time::HiRes qw(time);
-use POSIX qw(strftime);
 use CGI::Carp qw(carpout);
-
-my $jsonEncoder = JSON->new->utf8->pretty(0);
-
+use Cwd qw(abs_path);
+use File::Basename qw(dirname);
+use File::Path qw(make_path);
+use JSON;
+use POSIX qw(strftime);
+use Time::HiRes qw(time);
+use YAML::XS qw(LoadFile Dump);
 
 # Directory containing the CGI script
 my $OCR_GT_BASEDIR = dirname(abs_path($0));
 my $REQUESTLOG_FILENAME = "$OCR_GT_BASEDIR/log/request.log";
-
-#-----------------------------------------------
-# Setup logging
-#-----------------------------------------------
-
-if (! -d "$OCR_GT_BASEDIR/log") {
-    make_path "$OCR_GT_BASEDIR/log", {mode => oct(777)};
-}
-open( $ERRORLOG, ">>", "$OCR_GT_BASEDIR/log/ocr-gt-tools.log" )
-  or die "Cannot write to log file '$OCR_GT_BASEDIR/log/ocr-gt-tools.log': $!\n";
-carpout(*$ERRORLOG);
-open( $REQUESTLOG, ">>", $REQUESTLOG_FILENAME )
-  or die "Cannot write to log file '$OCR_GT_BASEDIR/log/request.log': $!\n";
+my $cgi = CGI->new;
+my $config = loadConfig();
 
 =head1 METHODS
+
+=head2 setupLogging
+
+Setup logging
+
+=cut
+
+sub setupLogging
+{
+
+    if (! -d "$OCR_GT_BASEDIR/log") {
+        make_path "$OCR_GT_BASEDIR/log", {mode => oct(777)};
+    }
+    open( $DEBUGLOG, ">>", "$OCR_GT_BASEDIR/log/ocr-gt-tools.log" )
+        or die "Cannot write to log file '$OCR_GT_BASEDIR/log/ocr-gt-tools.log': $!\n";
+    carpout(*$DEBUGLOG);
+    open( $REQUESTLOG, ">>", $REQUESTLOG_FILENAME )
+        or die "Cannot write to log file '$OCR_GT_BASEDIR/log/request.log': $!\n";
+}
 
 =head2 debug
 
@@ -52,34 +55,9 @@ sub debug
     my $t = time;
     my $timestamp = strftime $TIME_FORMAT, localtime $t;
     $timestamp .= sprintf ".%03d", ($t-int($t))*1000; # without rounding
-    printf $ERRORLOG "%s: %s\n", $timestamp, $msg;
+    printf $DEBUGLOG "%s: %s\n", $timestamp, $msg;
 }
 
-=head2 logRequest
-
-Log the IP and scan URL to request.log
-
-=cut
-
-sub logRequest
-{
-    my $cgi = shift;
-    my $url = $cgi->param('imageUrl');
-    if (!$url) {
-        debug("No URL to log for this request");
-        return;
-    }
-    my $action = $cgi->url_param('action');
-    my $t = time;
-    my $timestamp = strftime sprintf("%sT%sZ", $DATE_FORMAT, $TIME_FORMAT), localtime $t;
-    my $json = $jsonEncoder->pretty(0)->encode({
-        date => $timestamp,
-        action => $action,
-        url => $url,
-        ip => $ENV{REMOTE_ADDR}
-    });
-    print $REQUESTLOG $json . "\n";
-}
 
 =head2 debugStandout
 
@@ -91,10 +69,92 @@ sub debugStandout
 {
     my $msg = sprintf(shift(), @_);
     my $asterisks = '*' x 20;
-    debug("");
     debug("%s %s %s", $asterisks, $msg, $asterisks);
-    debug("");
 }
+
+
+=head2 logRequest
+
+Log the IP and scan URL to request.log
+
+=cut
+
+sub logRequest
+{
+    my $url = $cgi->param('imageUrl');
+    if (!$url) {
+        debug("No URL to log for this request");
+        return;
+    }
+    my $action = $cgi->url_param('action');
+    my $t = time;
+    my $timestamp = strftime sprintf("%sT%sZ", $DATE_FORMAT, $TIME_FORMAT), localtime $t;
+    my $json = JSON->new->utf8->pretty(0)->encode({
+        date => $timestamp,
+        action => $action,
+        url => $url,
+        ip => $ENV{REMOTE_ADDR}
+    });
+    print $REQUESTLOG $json . "\n";
+}
+
+
+=head2 httpError
+
+Send an HTTP error message
+
+=cut
+
+sub httpError
+{
+    my $status = shift;
+    print $cgi->header(
+        -type   => 'text/plain',
+        -status => $status
+    );
+    printf @_;
+    debugStandout("REQUEST ERROR $status");
+    exit 1;
+}
+
+=head2 http500
+
+Send a server error message
+
+=cut
+
+sub http500
+{
+    httpError(shift(), '500 Internal Server Error', @_);
+}
+
+=head2 http400
+
+Send a client error message
+
+=cut
+
+sub http400
+{
+    httpError(shift(), '400 Method Not Allowed', @_);
+}
+
+=head2 httpJSON
+
+convert data to JSON and send it
+
+=cut
+
+sub httpJSON
+{
+    my ($location, $compact) =  @_;
+    my $json = JSON->new->utf8->pretty(1)->encode($location);
+    # debug( __LINE__ . " " . "\$json", \$json );
+
+    print $cgi->header( -type => 'application/json', -charset => 'utf-8');
+    print $json;
+}
+
 
 =head2 loadConfig
 
@@ -110,110 +170,92 @@ sub loadConfig
     if (-e "$OCR_GT_BASEDIR/ocr-gt-tools.dev.yml") {
         $ymlFile = "$OCR_GT_BASEDIR/ocr-gt-tools.dev.yml";
     }
-    my $cfg = LoadFile($ymlFile);
-    #
-    # All path properties can be either relative (to OCR_GT_BASEDIR, the base of this repository) or absolute.
-    #
-    for my $pathProperty ('doc-root', 'hocr-extract-imagesPath', 'ocropus-gteditPath') {
-        my $val = $cfg->{$pathProperty};
-        unless ($val && $val =~ m,^/,mx) {
-            $cfg->{$pathProperty} = "$OCR_GT_BASEDIR/$val";
+    my $config = LoadFile($ymlFile);
+
+    # All path properties can be either relative (to OCR_GT_BASEDIR, the
+    # directory containing this CGI) or absolute.
+    for my $pathHash ($config->{'paths'}, $config->{'template'}->{'paths'}) {
+        while (my ($pathType, $path) = each %{$pathHash}) {
+            if ($path !~ m,^/,) {
+                $pathHash->{$pathType} = "$OCR_GT_BASEDIR/$path";
+            }
         }
     }
 
-    my %config = (
-        #'/var/www/html
-        docRoot                 => $cfg->{'doc-root'},
-        #<docRoot>/fileadmin
-        scansRoot               => $cfg->{'scans-root'},
-        #<docRoot>/ocr-corrections
-        correctionsRoot         => $cfg->{'corrections-root'},
-        hocrExtractImagesBinary => $cfg->{'hocr-extract-imagesPath'} . '/hocr-extract-images',
-        ocropusGteditBinary     => $cfg->{'ocropus-gteditPath'}. '/ocropus-gtedit',
-        baseUrl                 => $cfg->{'baseUrl'},
-        correctionDir_owner     => $cfg->{'correctionDir-owner'},
-        correctionDir_group     => $cfg->{'correctionDir-group'},
-        commentsFilename        => $cfg->{'comments-filename'},
-        correctionHtml_basename => $cfg->{'correction-filename'} #,
-        #correctionHtml_withRemarks_basename => $cfg->val('TEMPLATE', 'correction-with-comments-filename'),
-    );
+    # Compile all 'url-pattern' as regexes
+    while (my ($patName, $pat) = each %{$config->{'url-pattern'}}) {
+        $config->{'url-pattern'}->{$patName} = qr/$pat/smx;
+    }
 
-
-    # debug "Config loaded: %s", Dumper(\%config);
-
-    return \%config;
+    return $config;
 }
 
-=head2 httpError
 
-Send an HTTP error message
+=head2 parseUrl
+
+Map a URL to local file paths.
 
 =cut
-sub httpError
+
+sub parseUrl
 {
-    my ($cgi, $status) = (shift(), shift());
-    print $cgi->header(
-        -type   => 'text/plain',
-        -status => $status
-    );
-    printf @_;
-    debugStandout("REQUEST ERROR $status");
-    exit 1;
+    my ($url) = @_;
+    my %location = ( imageUrl => $url );
+
+    # Try to match all the 'url-pattern' 
+    while (my ($patName, $pat) = each %{$config->{'url-pattern'}}) {
+        if ($url =~ $pat) {
+            debug("URL Pattern '$patName' matched '$url'");
+            $location{ids} = {%+};
+            last;
+        }
+    }
+    # TODO handle non-match
+
+    # Copy templates from the configuration and fill them with the ids parsed
+    for my $category (keys %{ $config->{'template'} }) {
+        $location{$category} = {};
+        while (my ($tplName, $tpl) = each %{$config->{'template'}->{$category}}) {
+            $location{$category}->{$tplName} = $tpl;
+
+            # First replace the tokens from the URL pattern
+            while (my ($key, $value) = each %{$location{'ids'}}) {
+                $location{$category}->{$tplName} =~ s/<$key>/$value/g;
+            }
+
+            # Second replace the tokens from the 'defaults' config option
+            while (my ($key, $value) = each %{$config->{'defaults'}}) {
+                $location{$category}->{$tplName} =~ s/<$key>/$value/g;
+            }
+        }
+    }
+
+    debug( "Location object: %s", Dump(\%location));
+
+    return \%location;
 }
 
-=head2 http500
 
-Send a server error message
-
-=cut
-sub http500
-{
-    httpError(shift(), '500 Internal Server Error', @_);
-}
-
-=head2 http400
-
-Send a client error message
-
-=cut
-sub http400
-{
-    httpError(shift(), '400 Method Not Allowed', @_);
-}
-
-=head2 httpJSON
-
-convert data to JSON and send it
-
-=cut
-sub httpJSON
-{
-    my ($cgi, $location, $compact) =  @_;
-    my $json = $jsonEncoder->pretty(1)->encode($location);
-    # debug( __LINE__ . " " . "\$json", \$json );
-
-    print $cgi->header( -type => 'application/json', -charset => 'utf-8');
-    print $json;
-}
-
+# TODO
 =head2
 
 Get page dirs
 
 =cut
+
 sub getPageDirs {
-    my ($cgi, $config, $location) = @_;
+    my ($location) = @_;
     my $DIR;
-    opendir($DIR, $location->{correctionDirGt});
-    my @pages = grep { /^(\d{4,4})/ && -d "$location->{correctionDirGt}/$_" } readdir ($DIR);
-    $location->{pages} = [];
+    opendir($DIR, $location->{'paths'}->{'correction-parent-dir'});
+    my @pages = grep { /^(\d{4,4})/ && -d join('/', $location->{'paths'}->{'correction-parent-dir'}, $_)} readdir ($DIR);
+    $location->{'pages'} = [];
     #loop through the array printing out the filenames
     foreach my $subdir (sort {$a cmp $b} (@pages)) {
-        #print $ERRORLOG "$subdir\n";
-        my $url = $location->{imageUrl};
-        my $curPage = $location->{pathPage};
+        #print $DEBUGLOG "$subdir\n";
+        my $url = $location->{'imageUrl'};
+        my $curPage = $location->{'ids'}->{'page'};
         $url =~ s/$curPage/$subdir/;
-        push @{ $location->{pages} }, {
+        push @{ $location->{'pages'} }, {
             url => $url,
             page => $subdir
         };
@@ -223,198 +265,72 @@ sub getPageDirs {
 }
 
 
-=head2
-
-Map a URL to local file paths
-
-=cut
-
-sub mapUrltoFile
-{
-    my ($cgi, $config, $url) = @_;
-    # bilde lokalen Dateinamen
-    # http://digi.bib.uni-mannheim.de/fileadmin/digi/445442158/thumbs/445442158_0126.jpg
-    #                    servername        bereich
-    #                     $1                $2         $3                  $4
-    my %location = (
-        imageUrl => $url
-    );
-    @location{'pathServer', 'pathSection', 'pathId', 'cFile'} = $url =~ m,
-        https?://
-        (.*?)               # pathServer
-        /
-        fileadmin           # '/fileadmin/'
-        /
-        ([^/]*?)            # pathSection (e.g. 'digi')
-        /
-        ([^/]*?)            # pathId (e.g. '445442158')
-        /
-        thumbs              # 'thumbs'
-        /
-        ([^\.]*?)           # cFile (e.g. '445442158_0126') -> '0126'
-        \.jpg
-        ,mx;
-    unless ($location{pathServer} && $location{pathSection} && $location{pathId} && $location{cFile}) {
-        http400($cgi, "Cannot map URL to filesystem: $url");
-    }
-    $location{hiresUrl} = $url;
-    $location{hiresUrl} =~ s/thumbs/max/smx;
-    $location{cFile} =~ m/.*?\_([0-9]{4})/;
-    $location{pathPage} = $1;
-    unless ($location{pathPage}) {
-        http400($cgi, "Cannot map URL to filesystem: $url");
-    }
-
-    #-------------------------------------------------------------------------------
-    # path to created files and working directory base
-    # should be readable for apache!
-    #-------------------------------------------------------------------------------
-
-    # ex: '/home/user/ocr-gt-tools/htdocs/ocr-corrections/digi/445442158/gt/0126/
-    $location{correctionDir} = join '/'
-        , $config->{docRoot}
-        , $config->{correctionsRoot}
-        , $location{pathSection}
-        , $location{pathId}
-        , 'gt'
-        , $location{pathPage};
-
-    # ex: '/home/user/ocr-gt-tools/htdocs/ocr-corrections/digi/445442158/gt
-    $location{correctionDirGt} = join '/'
-        , $config->{docRoot}
-        , $config->{correctionsRoot}
-        , $location{pathSection}
-        , $location{pathId}
-        , 'gt';
-
-    # ex: '/home/user/ocr-gt-tools/htdocs/ocr-corrections/digi/445442158/gt/0126/correction.html
-    $location{correctionHtml} = join '/'
-        , $location{correctionDir}
-        , $config->{correctionHtml_basename};
-
-    # ex: 'ocr-corrections/digi/445442158/gt/0126/correction.html
-    $location{correctionUrl} = $config->{baseUrl} .  join '/'
-        , $config->{correctionsRoot}
-        , $location{pathSection}
-        , $location{pathId}
-        , 'gt'
-        , $location{pathPage},
-        , $config->{correctionHtml_basename};
-
-    # ex: '/home/user/ocr-gt-tools/htdocs/ocr-corrections/digi/445442158/gt/0126/anmerkungen.txt
-    $location{commentsTxt} = join '/'
-        , $location{correctionDir}
-        , $config->{commentsFilename};
-
-    # ex: 'ocr-corrections/digi/445442158/gt/0126/anmerkungen.txt
-    $location{commentsUrl} = $config->{baseUrl} .  join '/'
-        , $config->{correctionsRoot}
-        , $location{pathSection}
-        , $location{pathId}
-        , 'gt'
-        , $location{pathPage},
-        , $config->{commentsFilename};
-
-    # ex: '/home/user/ocr-gt-tools/htdocs/ocr-corrections/digi/445442158/max
-    $location{imageDir} = join '/'
-        , $config->{docRoot}
-        , $config->{scansRoot}
-        , $location{pathSection}
-        , $location{pathId}
-        , 'max';
-
-    # ex: '/home/user/ocr-gt-tools/htdocs/ocr-corrections/digi/445442158/hocr/445442158_0126.jpg
-    $location{hocr_file} = join '/'
-        , $config->{docRoot}
-        , $config->{scansRoot}
-         , $location{pathSection}
-        , $location{pathId}
-        , 'hocr'
-        , $location{cFile} . '.hocr';
-
-    debug( "Location object: %s", Dumper(\%location));
-
-    return \%location;
-}
-
 =head2 ensureCorrectionDir
 
-Create 'correctionDir' unless it exists.
+Create 'correction-dir' unless it exists.
 
 =cut
 
 sub ensureCorrectionDir
 {
-    my ($cgi, $config, $location) = @_;
-    if (-e $location->{correctionDir}) {
+    my ($location) = @_;
+    if (-e $location->{'paths'}->{'correction-dir'}) {
         return;
     }
-    debug("%s: about to create %s", __LINE__, $location->{correctionDir});
-    my $mkdirSpec =  {
-        mode => oct(777),
-        verbose => 0,
-    };
-    if ($config->{correctionDir_owner}) {
-        $mkdirSpec->{owner} = $config->{correctionDir_owner};
-    }
-    if ($config->{correctionDir_group}) {
-        $mkdirSpec->{group} = $config->{correctionDir_group};
-    }
-    my @okFile = make_path($location->{correctionDir}, $mkdirSpec);
-    if (-e $location->{correctionDir}) {
-        debug("Created directory '$location->{correctionDir}'");
+    debug("mkdir '%s'", $location->{'paths'}->{'correction-dir'});
+    my @okFile = make_path($location->{'paths'}->{'correction-dir'});
+    if (-d $location->{'paths'}->{'correction-dir'}) {
+        debug("Created directory %s", $location->{'paths'}->{'correction-dir'});
     }
 }
 
 =head2 ensureCorrection
 
 =cut
+
 sub ensureCorrection
 {
-    my ($cgi, $config, $location) = @_;
+    my ($location) = @_;
 
-    if (-e $location->{correctionHtml} ) {
-        $location->{reload} = 1;
+    if (-e $location->{'paths'}->{'correction-file'} ) {
         return;
     }
 
     # Seiten in Bildzeilen und Textzeilen aufteilen
-    chdir $location->{correctionDir};
+    chdir $location->{'paths'}->{'correction-dir'};
     my $cmd_extract = join(' '
-        , $config->{hocrExtractImagesBinary}
+        , $config->{'paths'}->{'hocr-extract-images'}
         , ' -b'
-        , $location->{imageDir}
-        , $location->{hocr_file}
+        , $location->{'hires-dir'}
+        , $location->{'hocr-file'}
         , '>/dev/null'
         , '2>/dev/null'
     );
-    debug("About to execute \n'%s'\n in '%s' for '%s'", $cmd_extract, $location->{correctionDir}, $location->{pathPage});
+    debug("About to execute \n'%s'\n in '%s' for '%s'", $cmd_extract, $location->{'paths'}->{'correction-dir'}, $location->{'ids'}->{'page'});
     system $cmd_extract;
     if($?) {
         warn $?;
-        http500($cgi, "hocr-extract-images returned non-zero exit code $?\n\n");
+        http500("hocr-extract-images returned non-zero exit code $?\n\n");
     }
 
     # ocropusGtedit sollte vom übergeordneten Verzeichnis aufgerufen werden,
     # sonst haben nachgeordnete Scripte probleme weil Verzeichnisname in correction.html
     # nicht enthalten ist Vergleiche Issue #22
-    chdir $location->{correctionDirGt};
+    chdir $location->{'paths'}->{'correction-parent-dir'};
 
     # Korrigierwebseite erstellen
     system join(' '
-            , $config->{ocropusGteditBinary}
+            , $config->{'paths'}->{'ocropus-gtedit'}
             , 'html'
             , '-x xxx'
-            , $location->{pathPage} . '/line*.png'
+            , join('/', $location->{'ids'}->{'page'}, 'line*.png')
             , '-o'
-            , $location->{pathPage} . '/' . $config->{correctionHtml_basename}
+            , join('/', $location->{'ids'}->{'page'},  $config->{'defaults'}->{'correction-filename'})
             , '>/dev/null'
             , '2>/dev/null');
     if($?) {
-        http500($cgi, "ocropus-gtedit returned non-zero exit code $?\n\n");
+        http500("ocropus-gtedit returned non-zero exit code $?\n\n");
     }
-
-    # debug("%s: %s/%s", $location->{correctionDir},  $correctionHtml_withRemarks_basename);
 }
 
 =head2
@@ -425,21 +341,23 @@ Create a file that contains all the line comments for a page unless that file ex
 
 sub ensureCommentsTxt
 {
-    my ($cgi, $config, $location) = @_;
-    opendir my $dh, $location->{correctionDir} or http500($cgi, "opendir '%s': %s", $location->{correctionDir}, $!);
-    $location->{numberOfLines} = 0;
+    my ($location) = @_;
+    opendir my $dh, $location->{'paths'}->{'correction-dir'} or
+        die http500("opendir '%s': %s", $location->{'paths'}->{'correction-dir'}, $!);
+    my $numberOfLines = 0;
+    # TODO handle deletion
     while (readdir $dh) {
         next unless m/line-\d{3}\.txt/;
-        $location->{numberOfLines} += 1;
+        $numberOfLines += 1;
     }
     close $dh;
-    # debug("%s has %d lines", $location->{pathPage}, $location->{numberOfLines});
-    if (! -e $location->{commentsTxt}) {
+    if (! -e $location->{'paths'}->{'comment-file'}) {
+        debug("%s has %d lines", $location->{'ids'}->{'page'}, $numberOfLines);
         my @comments;
-        for (0 .. $location->{numberOfLines}) {
+        for (0 .. $numberOfLines) {
             push @comments, ' ';
         }
-        saveComments($cgi, $config, $location->{commentsTxt}, ' ', \@comments);
+        saveComments($location->{'paths'}->{'comment-file'}, ' ', \@comments);
     }
 }
 
@@ -448,14 +366,13 @@ sub ensureCommentsTxt
 Save transliterations.
 
 =cut
+
 sub saveTransliteration
 {
-    my($cgi, $config, $correctionHtml, $transliterations) = @_;
+    my($correctionHtml, $transliterations) = @_;
     my $temp = "$correctionHtml.new.html";
-    open my $CORR_IN, "<", $correctionHtml or http500($cgi,
-        sprintf( "Could not read from '%s': %s\n", $correctionHtml, $!));
-    open my $CORR_OUT, ">", $temp or http500($cgi,
-        sprintf( "Could not writeTo '%s': %s\n", $temp, $!));
+    open my $CORR_IN, "<", $correctionHtml or http500("Could not read from '%s': %s\n", $correctionHtml, $!);
+    open my $CORR_OUT, ">", $temp or http500("Could not writeTo '%s': %s\n", $temp, $!);
     my $i = 0;
     while (<$CORR_IN>) {
         if (m/(spellcheck='true'>).*?<\/td/) {
@@ -473,11 +390,11 @@ sub saveTransliteration
 Save comments.
 
 =cut
+
 sub saveComments
 {
-    my($cgi, $config, $commentsTxt, $pageComment, $lineComments) = @_;
-    open my $COMMENTS, ">", $commentsTxt or http500($cgi,
-        sprintf( "Could not write to '%s': %s\n", $commentsTxt, $!));
+    my($commentsTxt, $pageComment, $lineComments) = @_;
+    open my $COMMENTS, ">", $commentsTxt or http500("Could not write to '%s': %s\n", $commentsTxt, $!);
     printf $COMMENTS "000:%s\n", $pageComment;
     my $i = 0;
     for (@{$lineComments}) {
@@ -487,84 +404,62 @@ sub saveComments
 }
 
 
-=head2 processRequest
-
-Start processing CGI request
-
-=cut
-sub processRequest
-{
-    my ($cgi, $config) = @_;
-    my $action = $cgi->url_param('action');
-    if (! $action) {
-        http400($cgi, "URL parameter 'action' missing.");
-    }
-    debug "CGI Params: %s", Dumper($cgi->{param});
-    if ($action eq 'create') {
-        processCreateRequest($cgi, $config);
-    } elsif ($action eq 'save') {
-        processSaveRequest($cgi, $config);
-    } elsif ($action eq 'history') {
-        processHistoryRequest($cgi, $config);
-    } else {
-        http400($cgi, "URL parameter 'action' must be 'create' or 'save', not %s", $action);
-    }
-}
-
 =head2 processCreateRequest
 
 Create process to create the files necessary
 
 =cut
+
 sub processCreateRequest
 {
-    my ($cgi, $config) = @_;
     my $url = $cgi->param('imageUrl');
-    my @missing;
-    push @missing, 'imageUrl' unless ($url);
-    if (scalar @missing) {
-        http400($cgi, "Missing params: %s\n\n", join(', ', @missing));
+    if (! $url) {
+        return http400("Missing parameter 'imageUrl' \n\n");
     }
     # Create file object
-    my $location = mapUrltoFile($cgi, $config, $url);
-    getPageDirs($cgi, $config,  $location);
-    # Make sure the correctionDir exists
-    ensureCorrectionDir($cgi, $config, $location);
+    my $location = parseUrl($url);
+    # getPageDirs($location);
+    # Make sure the 'correction-dir' exists
+    ensureCorrectionDir($location);
     # Make sure the correction HTML exists
-    ensureCorrection($cgi, $config, $location);
-    ensureCommentsTxt($cgi, $config, $location);
-    # Send JSON response
-    httpJSON($cgi, $location);
+    ensureCorrection($location);
+    ensureCommentsTxt($location);
     # clean up
-    unlink glob sprintf("%s/line-*", $location->{correctionDir});
+    unlink glob sprintf("%s/line-*", $location->{'paths'}->{'correction-dir'});
+    # Send JSON response
+    delete $location->{'paths'};
+    httpJSON($location);
 }
 
-=head2 processCreateRequest
+
+=head2 processSaveRequest
 
 Save transliterations and comments passed via POST params.
 
 =cut
+
 sub processSaveRequest
 {
-    my ($cgi, $config) = @_;
     my $imageUrl = $cgi->param('imageUrl');
     my $pageComment = $cgi->param('pageComment');
     my $lineComments = [$cgi->multi_param('lineComments[]')];
+    # TODO https://github.com/UB-Mannheim/ocr-gt-tools/issues/65
     my $transliterations = [$cgi->multi_param('transliterations[]')];
-    my $location = mapUrltoFile($cgi, $config, $imageUrl);
-    saveTransliteration($cgi, $config, $location->{correctionHtml}, $transliterations);
-    saveComments($cgi, $config, $location->{commentsTxt}, $pageComment, $lineComments);
-    return httpJSON($cgi, { result => 1 });
+    my $location = parseUrl($imageUrl);
+    saveTransliteration($location->{'paths'}->{'correction-file'}, $transliterations);
+    saveComments($location->{'paths'}->{'comment-file'}, $pageComment, $lineComments);
+    return httpJSON({ result => 1 });
 }
 
-=head2 processCreateRequest
+
+=head2 processHistoryRequest
 
 Send the request log for the calling IP address.
 
 =cut
+
 sub processHistoryRequest
 {
-    my ($cgi, $config) = @_;
     my $query = $cgi->param('q');
     my $mine = defined $cgi->param('mine');
     open my $RL, "<", $REQUESTLOG_FILENAME;
@@ -587,14 +482,39 @@ sub processHistoryRequest
     print "]";
 }
 
-debugStandout('START REQUEST');
-my $cgi = CGI->new;
-my $config = loadConfig();
-if (! -d $config->{docRoot}) {
-    http500($cgi, "The 'docRoot' directory doesn't exist. Please check the configuration");
+
+=head2 processRequest
+
+Start processing CGI request
+
+=cut
+
+sub processRequest
+{
+    my $action = $cgi->url_param('action');
+    if (! $action) {
+        http400("URL parameter 'action' missing.");
+    }
+    debug "CGI Params: %s", Dump($cgi->{param});
+    if ($action eq 'create') {
+        processCreateRequest();
+    } elsif ($action eq 'save') {
+        processSaveRequest();
+    } elsif ($action eq 'history') {
+        processHistoryRequest();
+    } else {
+        http400("URL parameter 'action' must be 'create' or 'save', not %s", $action);
+    }
 }
-processRequest($cgi, $config);
-logRequest($cgi);
+
+
+#
+# MAIN
+#
+setupLogging();
+debugStandout('START REQUEST');
+processRequest();
+logRequest();
 debugStandout('END REQUEST');
 
 # vim: sw=4 ts=4 :
