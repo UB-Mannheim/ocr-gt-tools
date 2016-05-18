@@ -163,11 +163,6 @@ dev-deps: dev-apt-get bower_components node_modules
 # Run the development standalone server on port 9090
 #
 
-# Sanity check to prevent running without a config file
-conf/ocr-gt-tools.ini:
-	@echo "Copy conf/ocr-gt-tools.ini_tmpl to conf/ocr-gt-tools.ini and set paths."
-	exit 1
-
 dev-server:
 	$(PLACKUP) app.psgi
 
@@ -250,7 +245,7 @@ deploy:
 	sudo -u $(APACHE_USER) $(MKDIR) $(APACHE_DIR)/$(APACHE_BASEURL)
 	sudo -u $(APACHE_USER) $(CP) dist/* dist/.htaccess $(APACHE_DIR)/$(APACHE_BASEURL)
 	sudo -u $(APACHE_USER) find $(APACHE_DIR)/$(APACHE_BASEURL) -exec chmod u+w -R {} \;
-	sudo -u $(APACHE_USER) $(RM) $(APACHE_DIR)/$(APACHE_BASEURL)/ocr-gt-tools.dev.ini
+	sudo -u $(APACHE_USER) $(RM) $(APACHE_DIR)/$(APACHE_BASEURL)/ocr-gt-tools.dev.yml
 
 
 #

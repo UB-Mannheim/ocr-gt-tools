@@ -1,4 +1,3 @@
-[PATH]
 # Path resolution:
 #   * if absolute (starting '/'): keep as-is
 #   * else: relative to CGI script directory
@@ -21,46 +20,42 @@
 # │                   └── <id>_<page>.jpg
 
 # absolute path to root of documents (without trailing '/')
-# doc-root=/var/www/html
-doc-root=../example
+# doc-root: /var/www/html
+doc-root: ../example
 
 # Directory relative to 'doc-root' containing the images
 # relative path (without leading and trailing '/')
-scans-root=fileadmin
+scans-root: fileadmin
 
 # Directory relative to 'doc-root' for correction data storage.
 # relative path (without leading and trailing '/')
 # ocr-gt-tools will create subdirectories for page data here.
-corrections-root=ocr-corrections
+corrections-root: ocr-corrections
 
 # path to directory containing 'hocr-extract-images' 
 # absolute path (with leading and trailing '/')
 # (see https://github.com/tmbdev/hocr-tools)
-hocr-extract-imagesPath=vendor/hocr-tools
+hocr-extract-imagesPath: vendor/hocr-tools
 
 # path to script 'ocropus-gtedit'
 # (see https://github.com/tmbdev/ocropy)
-ocropus-gteditPath=vendor/ocropy
-
-[MISC]
+ocropus-gteditPath: vendor/ocropy
 
 # The base URL of the doc-root folder
-baseUrl=/
+baseUrl: /
 
 # If the 'correctionDir' is newly created, use this owner, e.g. www-data
 # Set to false-ish value to use default owner
-correctionDir-owner=0
+correctionDir-owner: 0
 
 # If the 'correctionDir' is newly created, use this group, e.g. www-data
 # Set to false-ish value to use default group
-correctionDir-group=0
-
-[TEMPLATE]
+correctionDir-group: 0
 
 # Filename of the correction.html file created by ocropus
-correction-filename=correction.html
+correction-filename: correction.html
 
 # Filename of the text file containing the line comments
-comments-filename=anmerkungen.txt
+comments-filename: anmerkungen.txt
 
 # vim: ft=dosini :

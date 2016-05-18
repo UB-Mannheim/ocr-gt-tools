@@ -13,7 +13,7 @@ $Data::Dumper::Terse = 1;
 use JSON;
 use CGI;
 use File::Path qw(make_path);
-use Config::IniFiles qw( :all);                 # wg. Ini-Files
+use YAML::XS qw(LoadFile);
 use Time::HiRes qw(time);
 use POSIX qw(strftime);
 
@@ -100,43 +100,43 @@ sub debugStandout
 
 =head2 loadConfig
 
-Load the configuration from the ini file
+Load the configuration from the YAML file
 
 =cut
 
 sub loadConfig
 {
-    my $iniFile = "$OCR_GT_BASEDIR/ocr-gt-tools.ini";
+    my $ymlFile = "$OCR_GT_BASEDIR/ocr-gt-tools.yml";
 
     # load development config if it exists instead
-    if (-e "$OCR_GT_BASEDIR/ocr-gt-tools.dev.ini") {
-        $iniFile = "$OCR_GT_BASEDIR/ocr-gt-tools.dev.ini";
+    if (-e "$OCR_GT_BASEDIR/ocr-gt-tools.dev.yml") {
+        $ymlFile = "$OCR_GT_BASEDIR/ocr-gt-tools.dev.yml";
     }
-    my $cfg = new Config::IniFiles( -file => $iniFile );
+    my $cfg = LoadFile($ymlFile);
     #
-    # All PATH properties can be either relative (to OCR_GT_BASEDIR, the base of this repository) or absolute.
+    # All path properties can be either relative (to OCR_GT_BASEDIR, the base of this repository) or absolute.
     #
     for my $pathProperty ('doc-root', 'hocr-extract-imagesPath', 'ocropus-gteditPath') {
-        my $val = $cfg->val('PATH', $pathProperty);
+        my $val = $cfg->{$pathProperty};
         unless ($val && $val =~ m,^/,mx) {
-            $cfg->setval('PATH', $pathProperty, "$OCR_GT_BASEDIR/$val");
+            $cfg->{$pathProperty} = "$OCR_GT_BASEDIR/$val";
         }
     }
 
     my %config = (
         #'/var/www/html
-        docRoot                 => $cfg->val('PATH', 'doc-root'),
+        docRoot                 => $cfg->{'doc-root'},
         #<docRoot>/fileadmin
-        scansRoot               => $cfg->val('PATH', 'scans-root'),
+        scansRoot               => $cfg->{'scans-root'},
         #<docRoot>/ocr-corrections
-        correctionsRoot         => $cfg->val('PATH', 'corrections-root'),
-        hocrExtractImagesBinary => $cfg->val('PATH', 'hocr-extract-imagesPath') . '/hocr-extract-images',
-        ocropusGteditBinary     => $cfg->val('PATH', 'ocropus-gteditPath' ). '/ocropus-gtedit',
-        baseUrl                 => $cfg->val('MISC', 'baseUrl'),
-        correctionDir_owner     => $cfg->val('MISC', 'correctionDir-owner'),
-        correctionDir_group     => $cfg->val('MISC', 'correctionDir-group'),
-        commentsFilename        => $cfg->val('TEMPLATE', 'comments-filename'),
-        correctionHtml_basename => $cfg->val('TEMPLATE', 'correction-filename') #,
+        correctionsRoot         => $cfg->{'corrections-root'},
+        hocrExtractImagesBinary => $cfg->{'hocr-extract-imagesPath'} . '/hocr-extract-images',
+        ocropusGteditBinary     => $cfg->{'ocropus-gteditPath'}. '/ocropus-gtedit',
+        baseUrl                 => $cfg->{'baseUrl'},
+        correctionDir_owner     => $cfg->{'correctionDir-owner'},
+        correctionDir_group     => $cfg->{'correctionDir-group'},
+        commentsFilename        => $cfg->{'comments-filename'},
+        correctionHtml_basename => $cfg->{'correction-filename'} #,
         #correctionHtml_withRemarks_basename => $cfg->val('TEMPLATE', 'correction-with-comments-filename'),
     );
 
@@ -390,9 +390,10 @@ sub ensureCorrection
         , '>/dev/null'
         , '2>/dev/null'
     );
-    debug("About to execute '%s' in '%s' for '%s'", $cmd_extract, $location->{correctionDir}, $location->{pathPage});
+    debug("About to execute \n'%s'\n in '%s' for '%s'", $cmd_extract, $location->{correctionDir}, $location->{pathPage});
     system $cmd_extract;
     if($?) {
+        warn $?;
         http500($cgi, "hocr-extract-images returned non-zero exit code $?\n\n");
     }
 
