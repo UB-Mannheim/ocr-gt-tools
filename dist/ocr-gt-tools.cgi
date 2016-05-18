@@ -1,9 +1,7 @@
 #!/usr/bin/perl
 use strict;
 use warnings;
-my $OCR_GT_BASEDIR;
 my $ERRORLOG;
-my $REQUESTLOG_FILENAME;
 my $REQUESTLOG;
 my $DATE_FORMAT = "%Y-%m-%d";
 my $TIME_FORMAT = "%H:%M:%S";
@@ -14,30 +12,31 @@ use JSON;
 use CGI;
 use File::Path qw(make_path);
 use YAML::XS qw(LoadFile);
+use File::Basename qw(dirname);
+use Cwd qw(abs_path);
 use Time::HiRes qw(time);
 use POSIX qw(strftime);
+use CGI::Carp qw(carpout);
 
 my $jsonEncoder = JSON->new->utf8->pretty(0);
 
-BEGIN {
-    use File::Path qw(make_path);
-    use File::Basename qw(dirname);
-    use Cwd qw(abs_path);
 
-    # Directory containing the CGI script
-    $OCR_GT_BASEDIR = dirname(abs_path($0));
-    $REQUESTLOG_FILENAME = "$OCR_GT_BASEDIR/log/request.log";
+# Directory containing the CGI script
+my $OCR_GT_BASEDIR = dirname(abs_path($0));
+my $REQUESTLOG_FILENAME = "$OCR_GT_BASEDIR/log/request.log";
 
-    #-----------------------------------------------
-    # die Datei muss fuer OTHER schreibbar sein!
-    #-----------------------------------------------
-    use CGI::Carp qw(carpout);
-    open( $ERRORLOG, ">>", "$OCR_GT_BASEDIR/log/ocr-gt-tools.log" )
-      or die "Cannot write to log file '$OCR_GT_BASEDIR/log/ocr-gt-tools.log': $!\n";
-    carpout(*$ERRORLOG);
-    open( $REQUESTLOG, ">>", $REQUESTLOG_FILENAME )
-      or die "Cannot write to log file '$OCR_GT_BASEDIR/log/request.log': $!\n";
+#-----------------------------------------------
+# Setup logging
+#-----------------------------------------------
+
+if (! -d "$OCR_GT_BASEDIR/log") {
+    make_path "$OCR_GT_BASEDIR/log", {mode => oct(777)};
 }
+open( $ERRORLOG, ">>", "$OCR_GT_BASEDIR/log/ocr-gt-tools.log" )
+  or die "Cannot write to log file '$OCR_GT_BASEDIR/log/ocr-gt-tools.log': $!\n";
+carpout(*$ERRORLOG);
+open( $REQUESTLOG, ">>", $REQUESTLOG_FILENAME )
+  or die "Cannot write to log file '$OCR_GT_BASEDIR/log/request.log': $!\n";
 
 =head1 METHODS
 
