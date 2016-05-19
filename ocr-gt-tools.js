@@ -24,7 +24,7 @@ Utils.parseLineComments = function parseLineComments(txt, target) {
     var lineComments = [];
     for (var i = 0; i < lines.length ; i++) {
         var lineComment = lines[i].replace(/^\d+:\s*/, '');
-        lineComment = encodeForServer(lineComment);
+        lineComment = Utils.encodeForServer(lineComment);
         lineComments.push(lineComment);
     }
     target.pageComment = lineComments[0];
@@ -64,10 +64,40 @@ Utils.uncachedURL = function uncachedURL(url) {
  * Thanks to Dan's StackOverflow answer for this:
  * http://stackoverflow.com/questions/123999/how-to-tell-if-a-dom-element-is-visible-in-the-current-viewport
 */
-function isElementInViewport(el) {
+Utils.isElementInViewport = function isElementInViewport(el) {
     var rect = el.getBoundingClientRect();
     return (rect.top >= 0 && rect.left >= 0);
-}
+};
+
+/**
+ * Get the width of the first image in an element.
+ */
+Utils.getImageWidth = function getImageWidth(el) {
+    if (el.tagName !== 'IMG') {
+        el = $(el).find('img')[0];
+        if (!el) {
+            return -1;
+        }
+    }
+    return el.clientWidth;
+};
+
+Utils.encodeForBrowser = function encodeForBrowser(str) {
+    return str
+        .replace(/&amp;/g, '&')
+        .replace(/&gt;/g, '>')
+        .replace(/&lt;/g, '<')
+        .replace(/^\n*/, '')
+        .replace(/\n*$/, '')
+        .replace(/\n/g, '<br>');
+};
+
+Utils.encodeForServer = function encodeForServer(str) {
+    return str
+        .replace(/^(<br[^>]*>)*/, '')
+        .replace(/(<br[^>]*>)*$/, '')
+        .replace(/<br[^>]*>/g, "\n");
+};
 
 /**
  * Compile the Handlebars templates
@@ -79,36 +109,6 @@ function compileTemplates() {
         var tplId = $this.attr('id').replace(/^tpl-/, '');
         window.templates[tplId] = Handlebars.compile($this.html());
     });
-}
-
-/**
- * Get the width of the first image in an element.
- */
-function getImageWidth(el) {
-    if (el.tagName !== 'IMG') {
-        el = $(el).find('img')[0];
-        if (!el) {
-            return -1;
-        }
-    }
-    return el.clientWidth;
-}
-
-function encodeForBrowser(str) {
-    return str
-        .replace(/&amp;/g, '&')
-        .replace(/&gt;/g, '>')
-        .replace(/&lt;/g, '<')
-        .replace(/^\n*/, '')
-        .replace(/\n*$/, '')
-        .replace(/\n/g, '<br>');
-}
-
-function encodeForServer(str) {
-    return str
-        .replace(/^(<br[^>]*>)*/, '')
-        .replace(/(<br[^>]*>)*$/, '')
-        .replace(/<br[^>]*>/g, "\n");
 }
 
 function startWaitingAnimation() {
@@ -160,15 +160,17 @@ function loadGtEditLocation(url) {
             window.ocrGtLocation = res;
             window.location.hash = window.ocrGtLocation.imageUrl;
             window.setTimeout(function() {
+                // ajax
                 $("#raw-html").load(
-                    Utils.uncachedURL(window.ocrGtLocation.correctionUrl),
+                    Utils.uncachedURL(window.ocrGtLocation.urls['correction-url']),
                     function handleCorrectionAjax(response, status, xhr) {
                         $.ajax({
                             type: 'GET',
-                            url: Utils.uncachedURL(window.ocrGtLocation.commentsUrl),
+                            url: Utils.uncachedURL(window.ocrGtLocation.urls['comment-url']),
                             error: function(x, e) {
                                 console.log(arguments);
                                 notie.alert(3, "HTTP Fehler " + x.status + ":\n" + x.responseText);
+                                stopWaitingAnimation();
                             },
                             success: function(response, status, xhr) {
                                 Utils.parseLineComments(response, window.ocrGtLocation);
@@ -214,12 +216,12 @@ function saveGtEditLocation() {
     $("#wait_save").addClass("wait").removeClass("hidden");
     $("#disk").addClass("hidden");
     window.ocrGtLocation.transliterations = $('li.transcription div').map(function() {
-        return encodeForServer($(this).html());
+        return Utils.encodeForServer($(this).html());
     }).get();
     window.ocrGtLocation.lineComments = $("li.line-comment div").map(function() {
-        return encodeForServer($(this).html());
+        return Utils.encodeForServer($(this).html());
     }).get();
-    window.ocrGtLocation.pageComment = encodeForServer($("#page-comment div").html());
+    window.ocrGtLocation.pageComment = Utils.encodeForServer($("#page-comment div").html());
     // console.log(window.ocrGtLocation.pageComment);
     // console.log(window.ocrGtLocation.transliterations);
     // console.log(window.ocrGtLocation.lineComments);
@@ -258,7 +260,7 @@ function markSaved() {
     $("#disk").removeClass("hidden");
     $("#save_button").addClass("disabled");
     $(".line div[contenteditable]").each(function() {
-        $(this).html(encodeForBrowser(encodeForServer($(this).html())));
+        $(this).html(Utils.encodeForBrowser(Utils.encodeForServer($(this).html())));
     });
     notie.alert(1, "Gespeichert", 1);
 }
@@ -274,8 +276,8 @@ function addCommentFields() {
             "id": curLine,
             "title": $this.find("td")[0].innerHTML,
             "imgSrc": $this.find("img")[0].getAttribute('src'),
-            "transcription": encodeForBrowser($this.find("td")[2].innerHTML),
-            "comment": encodeForBrowser(window.ocrGtLocation.lineComments[curLine]),
+            "transcription": Utils.encodeForBrowser($this.find("td")[2].innerHTML),
+            "comment": Utils.encodeForBrowser(window.ocrGtLocation.lineComments[curLine]),
         };
         var $line = $(window.templates.line(line));
         $(":checkbox", $line).on('click', function(e) {
@@ -291,7 +293,7 @@ function addCommentFields() {
             }
         });
         $("div[contenteditable]", $line).on('blur', function(e) {
-            $(this).html(encodeForBrowser(encodeForServer($(this).html())));
+            $(this).html(Utils.encodeForBrowser(Utils.encodeForServer($(this).html())));
         });
         $("#file-correction").append($line);
     });
@@ -394,8 +396,8 @@ function sortRowsByWidth(order) {
     var order = order || 1;
     $("#file-correction").append(
         $("#file-correction .row").sort(function(a, b) {
-            var aWidth = getImageWidth(a);
-            var bWidth = getImageWidth(b);
+            var aWidth = Utils.getImageWidth(a);
+            var bWidth = Utils.getImageWidth(b);
             return (aWidth - bWidth) * order;
         }).detach()
     );
@@ -485,7 +487,7 @@ function onScroll() {
         if (done) {
             return;
         }
-        if (isElementInViewport(this)) {
+        if (Utils.isElementInViewport(this)) {
             cur = 1 + parseInt(this.getAttribute('data-line-number'));
             done = true;
         }
