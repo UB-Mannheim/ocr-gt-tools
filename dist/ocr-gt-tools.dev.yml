@@ -13,9 +13,11 @@ defaults:
 
 template:
   urls:
-    thumb-url: 'https://digi.bib.uni-mannheim.de/fileadmin/<collection>/<work>/thumb/<work>_<page>.jpg'
-    hires-url: 'https://digi.bib.uni-mannheim.de/fileadmin/<collection>/<work>/max/<work>_<page>.jpg'
-    alto:      'https://digi.bib.uni-mannheim.de/fileadmin/<collection>/<work>/alto/<work>_<page>.alto'
+    thumb-url:      'https://digi.bib.uni-mannheim.de/fileadmin/<collection>/<work>/thumb/<work>_<page>.jpg'
+    hires-url:      'https://digi.bib.uni-mannheim.de/fileadmin/<collection>/<work>/max/<work>_<page>.jpg'
+    alto-url:       'https://digi.bib.uni-mannheim.de/fileadmin/<collection>/<work>/alto/<work>_<page>.alto'
+    correction-url: '/ocr-corrections/<collection>/<work>/gt/<page>/<correction-filename>'
+    comment-url:   '/ocr-corrections/<collection>/<work>/gt/<page>/<comments-filename>'
   paths:
     correction-parent-dir: '../example/ocr-corrections/<collection>/<work>/gt'
     correction-dir:        '../example/ocr-corrections/<collection>/<work>/gt/<page>'
