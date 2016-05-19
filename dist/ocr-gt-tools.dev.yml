@@ -1,3 +1,20 @@
+defaults:
+  path-prefix:         '<OCR_GT_BASEDIR>/../example'
+  correction-root:     '/ocr-corrections'
+  images-root:         '/fileadmin'
+  correction-filename: 'correction.html'
+  comments-filename:   'anmerkungen.txt'
+  debuglog: '/tmp/ocr-gt.log'
+  url-prefix:          ''
+
+path-pattern:
+  gt-pattern: |
+    /(?<collection>[^/]+)
+    /(?<work>[^/]+)
+    /gt
+    /(?<page>[^/]+)
+    /[^/]+
+
 url-pattern:
   default-pattern: |
     https?://digi.bib.uni-mannheim.de
@@ -7,32 +24,42 @@ url-pattern:
     /[^\/]+
     /[^_]+_(?<page>\d+)
 
-defaults:
-  correction-filename: 'correction.html'
-  comments-filename:   'anmerkungen.txt'
-
 template:
   urls:
-    thumb-url:      'https://digi.bib.uni-mannheim.de/fileadmin/<collection>/<work>/thumb/<work>_<page>.jpg'
-    hires-url:      'https://digi.bib.uni-mannheim.de/fileadmin/<collection>/<work>/max/<work>_<page>.jpg'
-    alto-url:       'https://digi.bib.uni-mannheim.de/fileadmin/<collection>/<work>/alto/<work>_<page>.alto'
-    correction-url: '/ocr-corrections/<collection>/<work>/gt/<page>/<correction-filename>'
-    comment-url:   '/ocr-corrections/<collection>/<work>/gt/<page>/<comments-filename>'
+    thumb-url:      '<url-prefix><images-root>/<collection>/<work>/thumb/<work>_<page>.jpg'
+    hires-url:      '<url-prefix><images-root>/<collection>/<work>/max/<work>_<page>.jpg'
+    alto-url:       '<url-prefix><images-root>/<collection>/<work>/alto/<work>_<page>.alto'
+    correction-url: '<url-prefix><correction-root>/<collection>/<work>/gt/<page>/<correction-filename>'
+    comment-url:    '<url-prefix><correction-root>/<collection>/<work>/gt/<page>/<comments-filename>'
   paths:
-    correction-parent-dir: '../example/ocr-corrections/<collection>/<work>/gt'
-    correction-dir:        '../example/ocr-corrections/<collection>/<work>/gt/<page>'
-    correction-file:       '../example/ocr-corrections/<collection>/<work>/gt/<page>/<correction-filename>'
-    comment-file:          '../example/ocr-corrections/<collection>/<work>/gt/<page>/<comments-filename>'
-    hocr-file:             '../example/fileadmin/<collection>/<work>/hocr/<work>_<page>.hocr'
-    hires-dir:             '../example/fileadmin/<collection>/<work>/max'
-    hires-file:            '../example/fileadmin/<collection>/<work>/max/<work>_<page>.jpg'
-
-paths:
-  hocr-extract-images: 'vendor/hocr-tools/hocr-extract-images'
-  ocropus-gtedit: 'vendor/ocropy/ocropus-gtedit'
-
-# TODO
-find:
-  collections: 'fileadmin -maxdepth 1 -type d'
-  works: 'fileadmin/<collection> -maxdepth 1 -type d'
-  thumbnails: 'fileadmin/<collection>/<work>/thumbs/ -type f'
+    correction-parent-dir: '<path-prefix><correction-root>/<collection>/<work>/gt'
+    correction-dir:        '<path-prefix><correction-root>/<collection>/<work>/gt/<page>'
+    correction-file:       '<path-prefix><correction-root>/<collection>/<work>/gt/<page>/<correction-filename>'
+    comment-file:          '<path-prefix><correction-root>/<collection>/<work>/gt/<page>/<comments-filename>'
+    hocr-file:             ''
+    hires-file:            '<path-prefix><images-root>/<collection>/<work>/max/<work>_<page>.jpg'
+  # These are arguments to find(1)
+  query:
+    corrections_for_work: '<path-prefix><correction-root>/<collection>/<work> -type f -name "<corection-filename>"'
+    works: 'fileadmin/<collection> -maxdepth 1 -type d'
+    thumbnails: 'fileadmin/<collection>/<work>/thumbs/ -type f'
+  command:
+    hocr-extract-images: >
+      cd <path-prefix><correction-root>/<collection>/<work>/gt/<page>
+      &&
+      <OCR_GT_BASEDIR>/vendor/hocr-tools/hocr-extract-images
+      -b '<path-prefix><images-root>/<collection>/<work>/max'
+      '<path-prefix><images-root>/<collection>/<work>/hocr/<work>_<page>.hocr'
+      >><debuglog> 2><debuglog>
+    # ocropusGtedit sollte vom übergeordneten Verzeichnis aufgerufen werden,
+    # sonst haben nachgeordnete Scripte probleme weil Verzeichnisname in correction.html
+    # nicht enthalten ist Vergleiche Issue #22
+    ocropus-gtedit: >
+      cd <path-prefix><correction-root>/<collection>/<work>/gt
+      &&
+      <OCR_GT_BASEDIR>/vendor/ocropy/ocropus-gtedit
+      'html'
+      -x xxx
+      <page>/line*.png
+      -o "<page>/<correction-filename>"
+      >><debuglog> 2><debuglog>

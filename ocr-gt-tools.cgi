@@ -172,19 +172,16 @@ sub loadConfig
     }
     my $config = LoadFile($ymlFile);
 
-    # All path properties can be either relative (to OCR_GT_BASEDIR, the
-    # directory containing this CGI) or absolute.
-    for my $pathHash ($config->{'paths'}, $config->{'template'}->{'paths'}) {
-        while (my ($pathType, $path) = each %{$pathHash}) {
-            if ($path !~ m,^/,) {
-                $pathHash->{$pathType} = "$OCR_GT_BASEDIR/$path";
-            }
-        }
-    }
-
     # Compile all 'url-pattern' as regexes
     while (my ($patName, $pat) = each %{$config->{'url-pattern'}}) {
         $config->{'url-pattern'}->{$patName} = qr/$pat/smx;
+    }
+    # Remove all newlines
+    for my $category (keys %{$config->{'template'}}) {
+        while (my ($k, $v) = each %{$config->{'template'}->{$category}}) {
+            $v =~ s/\n//g;
+            $config->{'template'}->{$category}->{$k} = $v;
+        }
     }
 
     return $config;
@@ -200,39 +197,61 @@ Map a URL to local file paths.
 sub parseUrl
 {
     my ($url) = @_;
-    my %location = ( imageUrl => $url );
 
     # Try to match all the 'url-pattern' 
     while (my ($patName, $pat) = each %{$config->{'url-pattern'}}) {
         if ($url =~ $pat) {
             debug("URL Pattern '$patName' matched '$url'");
-            $location{ids} = {%+};
-            last;
+            return {
+                imageUrl => $url,
+                ids => {%+},
+                renderTemplates(%+),
+            }
         }
     }
+    http400("Could not match URL '$url' to any known pattern");
     # TODO handle non-match
+}
+
+
+=head2 renderTemplates
+
+Replace all variables apropriately
+
+=cut
+
+sub renderTemplates
+{
+    my %ids = @_;
+
+    my %obj;
 
     # Copy templates from the configuration and fill them with the ids parsed
     for my $category (keys %{ $config->{'template'} }) {
-        $location{$category} = {};
+        $obj{$category} = {};
         while (my ($tplName, $tpl) = each %{$config->{'template'}->{$category}}) {
-            $location{$category}->{$tplName} = $tpl;
+
+            # Initially set to the template string
+            $obj{$category}->{$tplName} = $tpl;
 
             # First replace the tokens from the URL pattern
-            while (my ($key, $value) = each %{$location{'ids'}}) {
-                $location{$category}->{$tplName} =~ s/<$key>/$value/g;
+            while (my ($key, $value) = each %ids) {
+                $obj{$category}->{$tplName} =~ s/<$key>/$value/g;
             }
 
             # Second replace the tokens from the 'defaults' config option
             while (my ($key, $value) = each %{$config->{'defaults'}}) {
-                $location{$category}->{$tplName} =~ s/<$key>/$value/g;
+                $obj{$category}->{$tplName} =~ s/<$key>/$value/g;
             }
+
+            # Lastly, replace OCR_GT_BASEDIR
+            $obj{$category}->{$tplName} =~ s/<OCR_GT_BASEDIR>/$OCR_GT_BASEDIR/g;
         }
     }
 
-    debug( "Location object: %s", Dump(\%location));
+    debug( "Rendered object: %s", Dump(\%obj));
 
-    return \%location;
+    return %obj;
 }
 
 
@@ -297,37 +316,17 @@ sub ensureCorrection
     }
 
     # Seiten in Bildzeilen und Textzeilen aufteilen
-    chdir $location->{'paths'}->{'correction-dir'};
-    my $cmd_extract = join(' '
-        , $config->{'paths'}->{'hocr-extract-images'}
-        , ' -b'
-        , $location->{'hires-dir'}
-        , $location->{'hocr-file'}
-        , '>/dev/null'
-        , '2>/dev/null'
-    );
-    debug("About to execute \n'%s'\n in '%s' for '%s'", $cmd_extract, $location->{'paths'}->{'correction-dir'}, $location->{'ids'}->{'page'});
+    my $cmd_extract = $location->{'command'}->{'hocr-extract-images'};
+    debug("About to execute '%s' in '%s'", $cmd_extract);
     system $cmd_extract;
     if($?) {
-        warn $?;
-        http500("hocr-extract-images returned non-zero exit code $?\n\n");
+        return http500("hocr-extract-images returned non-zero exit code $?\n\n");
     }
 
-    # ocropusGtedit sollte vom übergeordneten Verzeichnis aufgerufen werden,
-    # sonst haben nachgeordnete Scripte probleme weil Verzeichnisname in correction.html
-    # nicht enthalten ist Vergleiche Issue #22
-    chdir $location->{'paths'}->{'correction-parent-dir'};
-
     # Korrigierwebseite erstellen
-    system join(' '
-            , $config->{'paths'}->{'ocropus-gtedit'}
-            , 'html'
-            , '-x xxx'
-            , join('/', $location->{'ids'}->{'page'}, 'line*.png')
-            , '-o'
-            , join('/', $location->{'ids'}->{'page'},  $config->{'defaults'}->{'correction-filename'})
-            , '>/dev/null'
-            , '2>/dev/null');
+    my $cmd_gtedit = $location->{'command'}->{'ocropus-gtedit'};
+    debug("About to execute '%s' in '%s'", $cmd_gtedit);
+    system $cmd_gtedit;
     if($?) {
         http500("ocropus-gtedit returned non-zero exit code $?\n\n");
     }
