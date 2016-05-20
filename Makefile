@@ -58,7 +58,7 @@ CHOKIDAR      = chokidar $(CHOKIDAR_OPTS)
 DEBIAN_PACKAGES = \
 	git \
 	libjson-perl \
-	libconfig-inifiles-perl \
+	libipc-run-perl \
 	python-numpy \
 	python-scipy \
 	python-matplotlib

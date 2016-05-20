@@ -9,13 +9,15 @@ defaults:
 
 pattern:
   - |
-    https?://digi.bib.uni-mannheim.de
+    ^
+    https?://(?<hostname>[^/]+)
     /fileadmin
     /(?<collection>[^/]+)
     /(?<work>[^/]+)
     /[^\/]+
     /[^_]+_(?<page>\d+)
     .*
+    $
   - |
     /(?<collection>[^/]+)
     /(?<work>[^/]+)
@@ -45,22 +47,17 @@ template:
     hocr-file:             '<path-prefix><images-root>/<collection>/<work>/hocr/<work>_<page>.hocr'
     hires-dir:             '<path-prefix><images-root>/<collection>/<work>/max'
     hires-file:            '<path-prefix><images-root>/<collection>/<work>/max/<work>_<page>.jpg'
-  query:
-    corrections-for-work: >
-      <path-prefix><correction-root>/<collection>/<work>
-      -type f
-      -name "<correction-filename>"
   command:
-    hocr-extract-images: >
-      cd <correction-dir> &&
-      <OCR_GT_BASEDIR>/vendor/hocr-tools/hocr-extract-images
-      -b '<hires-dir>' '<hocr-file>'
-      2>&1 >> <debuglog>
-    # ocropusGtedit sollte vom uebergeordneten Verzeichnis aufgerufen werden,
-    # sonst haben nachgeordnete Scripte probleme weil Verzeichnisname in correction.html
-    # nicht enthalten ist Vergleiche Issue #22
-    ocropus-gtedit: >
-      cd <correction-dir>/..  &&
-      <OCR_GT_BASEDIR>/vendor/ocropy/ocropus-gtedit
-      'html' -x xxx <page>/line*.png -o "<page>/<correction-filename>"
-      2>&1 >><debuglog> 
+    find-corrections-for-work:
+      - 'find'
+      - '<path-prefix><correction-root>/<collection>/<work>'
+      - '-type'
+      - 'f'
+      - '-name'
+      - '<correction-filename>'
+    build-correction-html:
+      - '<OCR_GT_BASEDIR>/ocropus-gtedit-wrapper.sh'
+      - '<hocr-file>'
+      - '<hires-dir>'
+      - '<correction-file>'
+      - '<comment-file>'
