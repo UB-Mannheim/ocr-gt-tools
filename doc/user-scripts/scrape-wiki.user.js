@@ -71,6 +71,10 @@ var SCHEMAS = {
         'type': 'object',
         "additionalProperties": false,
         'properties': {
+            'id': {
+                'type': 'string',
+                'pattern': '^[a-z0-9-]+$',
+            },
             'sample': {
                 'type': 'array',
                 'items': {
