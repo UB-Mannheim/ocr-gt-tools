@@ -4,62 +4,63 @@ defaults:
   images-root:         '/fileadmin'
   correction-filename: 'correction.html'
   comments-filename:   'anmerkungen.txt'
-  debuglog: '/tmp/ocr-gt.log'
-  url-prefix:          ''
+  debuglog:            '/tmp/ocr-gt.log'
+  url-prefix:          'http://localhost:9090'
 
-path-pattern:
-  gt-pattern: |
-    /(?<collection>[^/]+)
-    /(?<work>[^/]+)
-    /gt
-    /(?<page>[^/]+)
-    /[^/]+
-
-url-pattern:
-  default-pattern: |
+pattern:
+  - |
     https?://digi.bib.uni-mannheim.de
     /fileadmin
     /(?<collection>[^/]+)
     /(?<work>[^/]+)
     /[^\/]+
     /[^_]+_(?<page>\d+)
+    .*
+  - |
+    /(?<collection>[^/]+)
+    /(?<work>[^/]+)
+    /gt
+    /(?<page>[^/]+)
+    /[^/]+
+    $
+  - |
+    /(?<collection>[^/]+)
+    /(?<work>[^/]+)
+    /(?<page>[^/]+)
+    $
 
+
+# in this order
 template:
-  urls:
+  url:
     thumb-url:      '<url-prefix><images-root>/<collection>/<work>/thumb/<work>_<page>.jpg'
     hires-url:      '<url-prefix><images-root>/<collection>/<work>/max/<work>_<page>.jpg'
     alto-url:       '<url-prefix><images-root>/<collection>/<work>/alto/<work>_<page>.alto'
     correction-url: '<url-prefix><correction-root>/<collection>/<work>/gt/<page>/<correction-filename>'
     comment-url:    '<url-prefix><correction-root>/<collection>/<work>/gt/<page>/<comments-filename>'
-  paths:
-    correction-parent-dir: '<path-prefix><correction-root>/<collection>/<work>/gt'
+  path:
     correction-dir:        '<path-prefix><correction-root>/<collection>/<work>/gt/<page>'
     correction-file:       '<path-prefix><correction-root>/<collection>/<work>/gt/<page>/<correction-filename>'
     comment-file:          '<path-prefix><correction-root>/<collection>/<work>/gt/<page>/<comments-filename>'
-    hocr-file:             ''
+    hocr-file:             '<path-prefix><images-root>/<collection>/<work>/hocr/<work>_<page>.hocr'
+    hires-dir:             '<path-prefix><images-root>/<collection>/<work>/max'
     hires-file:            '<path-prefix><images-root>/<collection>/<work>/max/<work>_<page>.jpg'
-  # These are arguments to find(1)
   query:
-    corrections_for_work: '<path-prefix><correction-root>/<collection>/<work> -type f -name "<corection-filename>"'
-    works: 'fileadmin/<collection> -maxdepth 1 -type d'
-    thumbnails: 'fileadmin/<collection>/<work>/thumbs/ -type f'
+    corrections-for-work: >
+      <path-prefix><correction-root>/<collection>/<work>
+      -type f
+      -name "<correction-filename>"
   command:
     hocr-extract-images: >
-      cd <path-prefix><correction-root>/<collection>/<work>/gt/<page>
-      &&
+      cd <correction-dir> &&
       <OCR_GT_BASEDIR>/vendor/hocr-tools/hocr-extract-images
-      -b '<path-prefix><images-root>/<collection>/<work>/max'
-      '<path-prefix><images-root>/<collection>/<work>/hocr/<work>_<page>.hocr'
-      >><debuglog> 2><debuglog>
-    # ocropusGtedit sollte vom übergeordneten Verzeichnis aufgerufen werden,
+      -b '<hires-dir>' '<hocr-file>'
+      2>&1 >> <debuglog>
+    # ocropusGtedit sollte vom uebergeordneten Verzeichnis aufgerufen werden,
     # sonst haben nachgeordnete Scripte probleme weil Verzeichnisname in correction.html
     # nicht enthalten ist Vergleiche Issue #22
     ocropus-gtedit: >
-      cd <path-prefix><correction-root>/<collection>/<work>/gt
-      &&
+      cd <correction-dir>/..  &&
       <OCR_GT_BASEDIR>/vendor/ocropy/ocropus-gtedit
-      'html'
-      -x xxx
-      <page>/line*.png
-      -o "<page>/<correction-filename>"
-      >><debuglog> 2><debuglog>
+      'html' -x xxx <page>/line*.png -o "<page>/<correction-filename>"
+      2>&1 >><debuglog> 

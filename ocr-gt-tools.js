@@ -158,15 +158,16 @@ function loadGtEditLocation(url) {
             // file correction will be loaded
             $("#dropzone").addClass('hidden');
             window.ocrGtLocation = res;
-            window.location.hash = window.ocrGtLocation.imageUrl;
+            console.log(window.ocrGtLocation);
+            window.location.hash = window.ocrGtLocation.url['thumb-url'];
             window.setTimeout(function() {
                 // ajax
                 $("#raw-html").load(
-                    Utils.uncachedURL(window.ocrGtLocation.urls['correction-url']),
+                    Utils.uncachedURL(window.ocrGtLocation.url['correction-url']),
                     function handleCorrectionAjax(response, status, xhr) {
                         $.ajax({
                             type: 'GET',
-                            url: Utils.uncachedURL(window.ocrGtLocation.urls['comment-url']),
+                            url: Utils.uncachedURL(window.ocrGtLocation.url['comment-url']),
                             error: function(x, e) {
                                 console.log(arguments);
                                 notie.alert(3, "HTTP Fehler " + x.status + ":\n" + x.responseText);
