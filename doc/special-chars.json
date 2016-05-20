@@ -108,10 +108,38 @@
       "en": "Lowercase e stressed with macron"
     },
     "sample": [
-      "<a href=\"http://digi.bib.uni-mannheim.de/seitenansicht_sammlung//dlf/1327/11/\"><img src=\"https://camo.githubusercontent.com/3fd106eb30d256c8f00da4d72fc951b84e41c7c3/68747470733a2f2f63646e2e7261776769742e636f6d2f55422d4d616e6e6865696d2f75626d612d73637265656e73686f74732f6d61737465722f6f63722d636861726163746572732f652d776974682d74696c64652e706e67\" alt=\"e-with-macron\" data-canonical-src=\"https://cdn.rawgit.com/UB-Mannheim/ubma-screenshots/master/ocr-characters/e-with-tilde.png\"></a>"
+      "<a href=\"http://digi.bib.uni-mannheim.de/seitenansicht_sammlung//dlf/1327/11/\"><img src=\"https://camo.githubusercontent.com/ceab0b28623b341c13700260b8c1b857c30a7375/68747470733a2f2f63646e2e7261776769742e636f6d2f55422d4d616e6e6865696d2f75626d612d73637265656e73686f74732f6d61737465722f6f63722d636861726163746572732f652d776974682d6d6163726f6e2e706e67\" alt=\"e-with-macron\" data-canonical-src=\"https://cdn.rawgit.com/UB-Mannheim/ubma-screenshots/master/ocr-characters/e-with-macron.png\"></a>"
     ],
     "shortcutWindows": "<kbd>Alt</kbd>+<kbd>0</kbd><kbd>2</kbd><kbd>7</kbd><kbd>5</kbd>",
     "shortcutLinux": "<kbd>Strg</kbd>+<kbd>Shift</kbd>+<kbd>U</kbd>+<kbd>0</kbd><kbd>1</kbd><kbd>1</kbd><kbd>3</kbd>"
+  },
+  "o-with-macron": {
+    "recognition": "ō",
+    "baseLetter": [
+      "o"
+    ],
+    "name": {
+      "de": "Kleines o betont mit Makron",
+      "en": "Lowercase o stressed with macron"
+    },
+    "sample": [
+      "<a href=\"http://digi.bib.uni-mannheim.de/seitenansicht_sammlung//dlf/1327/11/\"><img src=\"https://camo.githubusercontent.com/1f9a3a1c96d3d45ec025ab5bffe4097d5b3e2d01/68747470733a2f2f7261776769742e636f6d2f55422d4d616e6e6865696d2f75626d612d73637265656e73686f74732f6d61737465722f6f63722d636861726163746572732f6f2d776974682d6d6163726f6e2e706e67\" alt=\"o-with-macron\" data-canonical-src=\"https://rawgit.com/UB-Mannheim/ubma-screenshots/master/ocr-characters/o-with-macron.png\"></a>",
+      "<a href=\"http://digi.bib.uni-mannheim.de/seitenansicht_sammlung//dlf/1327/16/\"><img src=\"https://camo.githubusercontent.com/1c67dab311f20d01351d25a61f6463e6235006bc/68747470733a2f2f7261776769742e636f6d2f55422d4d616e6e6865696d2f75626d612d73637265656e73686f74732f6d61737465722f6f63722d636861726163746572732f6f2d776974682d6d6163726f6e2d322e706e67\" alt=\"o-with-macron-2\" data-canonical-src=\"https://rawgit.com/UB-Mannheim/ubma-screenshots/master/ocr-characters/o-with-macron-2.png\"></a>"
+    ]
+  },
+  "u-with-macron": {
+    "recognition": "ū",
+    "baseLetter": [
+      "u"
+    ],
+    "name": {
+      "de": "Kleines u betont mit Makron",
+      "en": "Lowercase u stressed with macron"
+    },
+    "sample": [
+      "<a href=\"http://digi.bib.uni-mannheim.de/seitenansicht_sammlung//dlf/1327/16/\"><img src=\"https://camo.githubusercontent.com/816a4df8957d9bdff5d99a81db0f0b9fe0436561/68747470733a2f2f7261776769742e636f6d2f55422d4d616e6e6865696d2f75626d612d73637265656e73686f74732f6d61737465722f6f63722d636861726163746572732f752d776974682d6d6163726f6e2d322e706e67\" alt=\"u-with-macron-2\" data-canonical-src=\"https://rawgit.com/UB-Mannheim/ubma-screenshots/master/ocr-characters/u-with-macron-2.png\"></a>",
+      "<a href=\"http://digi.bib.uni-mannheim.de/seitenansicht_sammlung//dlf/1327/11/\"><img src=\"https://camo.githubusercontent.com/2fd82293fdc933fbd39e8cd8f1446332e220425e/68747470733a2f2f7261776769742e636f6d2f55422d4d616e6e6865696d2f75626d612d73637265656e73686f74732f6d61737465722f6f63722d636861726163746572732f752d776974682d6d6163726f6e2e706e67\" alt=\"u-with-macron\" data-canonical-src=\"https://rawgit.com/UB-Mannheim/ubma-screenshots/master/ocr-characters/u-with-macron.png\"></a>"
+    ]
   },
   "i-with-diaeresis": {
     "recognition": "ï",
@@ -401,6 +429,292 @@
     },
     "sample": [
       "<a href=\"http://digi.bib.uni-mannheim.de/seitenansicht_suche/dlf/1293/294/?cHash=4e4a311d6ad8460a8e10ad98a81a9a2f\"><img src=\"https://camo.githubusercontent.com/fae2dee24a11bfd8eda42d6982374d42821e5707/68747470733a2f2f63646e2e7261776769742e636f6d2f55422d4d616e6e6865696d2f75626d612d73637265656e73686f74732f6d61737465722f6f63722d636861726163746572732f677265656b2d6c6f776572636173652d7a6574612e706e67\" alt=\"greek-lowercase-zeta\" data-canonical-src=\"https://cdn.rawgit.com/UB-Mannheim/ubma-screenshots/master/ocr-characters/greek-lowercase-zeta.png\"></a>"
+    ]
+  },
+  "cross": {
+    "recognition": "†",
+    "baseLetter": [
+      "+, t"
+    ],
+    "name": {
+      "de": "Kreuz",
+      "en": "Cross"
+    },
+    "sample": [
+      "<a href=\"http://digi.bib.uni-mannheim.de/seitenansicht_suche/dlf/1625/155/?cHash=71168bd6d90662144c9be60d07da419f\"><img src=\"https://camo.githubusercontent.com/a2056616de005756869faf5e33b6511545073bf8/68747470733a2f2f63646e2e7261776769742e636f6d2f55422d4d616e6e6865696d2f75626d612d73637265656e73686f74732f6d61737465722f6f63722d636861726163746572732f63726f73732e706e67\" alt=\"cross\" data-canonical-src=\"https://cdn.rawgit.com/UB-Mannheim/ubma-screenshots/master/ocr-characters/cross.png\"></a>"
+    ]
+  },
+  "greek-gamma": {
+    "recognition": "γ",
+    "baseLetter": [
+      "g"
+    ],
+    "name": {
+      "de": "Kleines griechisches Gamma",
+      "en": "Lowercase greek gamma"
+    },
+    "sample": [
+      "<a href=\"http://digi.bib.uni-mannheim.de/seitenansicht_suche/dlf/1293/335/?cHash=2bb96a8683652ce8137cb77fc37f2b89\"><img src=\"https://camo.githubusercontent.com/ae1dea0897103d3c8b9c570b558aebb6eaa9c6a5/68747470733a2f2f63646e2e7261776769742e636f6d2f55422d4d616e6e6865696d2f75626d612d73637265656e73686f74732f6d61737465722f6f63722d636861726163746572732f677265656b2d6c6f776572636173652d67616d6d612e706e67\" alt=\"greek-lowercase-gamma\" data-canonical-src=\"https://cdn.rawgit.com/UB-Mannheim/ubma-screenshots/master/ocr-characters/greek-lowercase-gamma.png\"></a>"
+    ]
+  },
+  "greek-chi": {
+    "recognition": "χ",
+    "baseLetter": [
+      "c, h"
+    ],
+    "name": {
+      "de": "Kleines griechisches Chi",
+      "en": "Lowercase greek Chi"
+    },
+    "sample": [
+      "<a href=\"http://digi.bib.uni-mannheim.de/seitenansicht_suche/dlf/1293/340/?cHash=059407fe3144240b064a5624a7f821f2\"><img src=\"https://camo.githubusercontent.com/a80f0825970fa7221c7ce3c4edc7fb35e099a65d/68747470733a2f2f63646e2e7261776769742e636f6d2f55422d4d616e6e6865696d2f75626d612d73637265656e73686f74732f6d61737465722f6f63722d636861726163746572732f677265656b2d6c6f776572636173652d6368692e706e67\" alt=\"greek-lowercase-chi\" data-canonical-src=\"https://cdn.rawgit.com/UB-Mannheim/ubma-screenshots/master/ocr-characters/greek-lowercase-chi.png\"></a>"
+    ]
+  },
+  "greek-psi": {
+    "recognition": "ψ",
+    "baseLetter": [
+      "p, s"
+    ],
+    "name": {
+      "de": "Kleines griechisches Psi",
+      "en": "Lowercase greek Psi"
+    },
+    "sample": [
+      "<a href=\"http://digi.bib.uni-mannheim.de/seitenansicht_suche/dlf/1293/340/?cHash=059407fe3144240b064a5624a7f821f2\"><img src=\"https://camo.githubusercontent.com/06430c3702671386fff486af6e72acc87ad5fd00/68747470733a2f2f63646e2e7261776769742e636f6d2f55422d4d616e6e6865696d2f75626d612d73637265656e73686f74732f6d61737465722f6f63722d636861726163746572732f677265656b2d6c6f776572636173652d7073692e706e67\" alt=\"greek-lowercase-psi\" data-canonical-src=\"https://cdn.rawgit.com/UB-Mannheim/ubma-screenshots/master/ocr-characters/greek-lowercase-psi.png\"></a>"
+    ]
+  },
+  "greek-omega": {
+    "recognition": "ω",
+    "baseLetter": [
+      "o"
+    ],
+    "name": {
+      "de": "Kleines griechisches Omega",
+      "en": "Lowercase greek Omega"
+    },
+    "sample": [
+      "<a href=\"http://digi.bib.uni-mannheim.de/seitenansicht_suche/dlf/1293/340/?cHash=059407fe3144240b064a5624a7f821f2\"><img src=\"https://camo.githubusercontent.com/403b0a386cb97becad2e556bff64a64e6608f746/68747470733a2f2f63646e2e7261776769742e636f6d2f55422d4d616e6e6865696d2f75626d612d73637265656e73686f74732f6d61737465722f6f63722d636861726163746572732f677265656b2d6c6f776572636173652d6f6d6567612e706e67\" alt=\"greek-lowercase-omega\" data-canonical-src=\"https://cdn.rawgit.com/UB-Mannheim/ubma-screenshots/master/ocr-characters/greek-lowercase-omega.png\"></a>"
+    ]
+  },
+  "greek-alpha": {
+    "recognition": "α",
+    "baseLetter": [
+      "a"
+    ],
+    "name": {
+      "de": "Kleines griechisches Alpha",
+      "en": "Lowercase greek Alphqa"
+    },
+    "sample": [
+      "<a href=\"http://digi.bib.uni-mannheim.de/seitenansicht_suche/dlf/1293/340/?cHash=059407fe3144240b064a5624a7f821f2\"><img src=\"https://camo.githubusercontent.com/3e6092b87ec651992de3ba27d31dbcd657281422/68747470733a2f2f63646e2e7261776769742e636f6d2f55422d4d616e6e6865696d2f75626d612d73637265656e73686f74732f6d61737465722f6f63722d636861726163746572732f677265656b2d6c6f776572636173652d616c7068612e706e67\" alt=\"greek-lowercase-alpha\" data-canonical-src=\"https://cdn.rawgit.com/UB-Mannheim/ubma-screenshots/master/ocr-characters/greek-lowercase-alpha.png\"></a>"
+    ]
+  },
+  "greek-beta": {
+    "recognition": "β",
+    "baseLetter": [
+      "a"
+    ],
+    "name": {
+      "de": "Kleines griechisches Beta",
+      "en": "Lowercase greek Beta"
+    },
+    "sample": [
+      "<a href=\"http://digi.bib.uni-mannheim.de/seitenansicht_suche/dlf/1293/340/?cHash=059407fe3144240b064a5624a7f821f2\"><img src=\"https://camo.githubusercontent.com/0fe4c76b7f8bc6ad756426d00610fd6694d13a91/68747470733a2f2f63646e2e7261776769742e636f6d2f55422d4d616e6e6865696d2f75626d612d73637265656e73686f74732f6d61737465722f6f63722d636861726163746572732f677265656b2d6c6f776572636173652d626574612e706e67\" alt=\"greek-lowercase-beta\" data-canonical-src=\"https://cdn.rawgit.com/UB-Mannheim/ubma-screenshots/master/ocr-characters/greek-lowercase-beta.png\"></a>"
+    ]
+  },
+  "greek-pi": {
+    "recognition": "π",
+    "baseLetter": [
+      "p"
+    ],
+    "name": {
+      "de": "Kleines griechisches Pi",
+      "en": "Lowercase greek Pi"
+    },
+    "sample": [
+      "<a href=\"http://digi.bib.uni-mannheim.de/seitenansicht_suche/dlf/1293/351/?cHash=2165baac11435a1fdb9a77c88155cd21\"><img src=\"https://camo.githubusercontent.com/28ad880505e2b8619d8bdecb1fd42bad2cd2f8f0/68747470733a2f2f63646e2e7261776769742e636f6d2f55422d4d616e6e6865696d2f75626d612d73637265656e73686f74732f6d61737465722f6f63722d636861726163746572732f677265656b2d6c6f776572636173652d70692e706e67\" alt=\"greek-lowercase-pi\" data-canonical-src=\"https://cdn.rawgit.com/UB-Mannheim/ubma-screenshots/master/ocr-characters/greek-lowercase-pi.png\"></a>"
+    ]
+  },
+  "greek-rho": {
+    "recognition": "ρ",
+    "baseLetter": [
+      "r"
+    ],
+    "name": {
+      "de": "Kleines griechisches Rho",
+      "en": "Lowercase greek Rho"
+    },
+    "sample": [
+      "<a href=\"http://digi.bib.uni-mannheim.de/seitenansicht_suche/dlf/1293/351/?cHash=2165baac11435a1fdb9a77c88155cd21\"><img src=\"https://camo.githubusercontent.com/bd9edf7de926ae252c7f3fed7ff53bdb3da4458e/68747470733a2f2f63646e2e7261776769742e636f6d2f55422d4d616e6e6865696d2f75626d612d73637265656e73686f74732f6d61737465722f6f63722d636861726163746572732f677265656b2d6c6f776572636173652d72686f2e706e67\" alt=\"greek-lowercase-rho\" data-canonical-src=\"https://cdn.rawgit.com/UB-Mannheim/ubma-screenshots/master/ocr-characters/greek-lowercase-rho.png\"></a>"
+    ]
+  },
+  "greek-omikron": {
+    "recognition": "ο",
+    "baseLetter": [
+      "o"
+    ],
+    "name": {
+      "de": "Kleines griechisches Omikron",
+      "en": "Lowercase greek Omikron"
+    },
+    "sample": [
+      "<a href=\"http://digi.bib.uni-mannheim.de/seitenansicht_suche/dlf/1293/351/?cHash=2165baac11435a1fdb9a77c88155cd21\"><img src=\"https://camo.githubusercontent.com/70625bd832bb54c8d4fcd78ca4337ef23feaa1a1/68747470733a2f2f63646e2e7261776769742e636f6d2f55422d4d616e6e6865696d2f75626d612d73637265656e73686f74732f6d61737465722f6f63722d636861726163746572732f677265656b2d6c6f776572636173652d6f6d696b726f6e2e706e67\" alt=\"greek-lowercase-omikron\" data-canonical-src=\"https://cdn.rawgit.com/UB-Mannheim/ubma-screenshots/master/ocr-characters/greek-lowercase-omikron.png\"></a>"
+    ]
+  },
+  "greek-my": {
+    "recognition": "μ",
+    "baseLetter": [
+      "m"
+    ],
+    "name": {
+      "de": "Kleines griechisches My",
+      "en": "Lowercase greek My"
+    },
+    "sample": [
+      "<a href=\"http://digi.bib.uni-mannheim.de/seitenansicht_suche/dlf/1293/360/?cHash=06af3a1cdd48066303ebaa85735aad6c\"><img src=\"https://camo.githubusercontent.com/6dd050abc0a367105703627b618e1fb01bb5f7cd/68747470733a2f2f63646e2e7261776769742e636f6d2f55422d4d616e6e6865696d2f75626d612d73637265656e73686f74732f6d61737465722f6f63722d636861726163746572732f677265656b2d6c6f776572636173652d6d792e706e67\" alt=\"greek-lowercase-my\" data-canonical-src=\"https://cdn.rawgit.com/UB-Mannheim/ubma-screenshots/master/ocr-characters/greek-lowercase-my.png\"></a>"
+    ]
+  },
+  "greek-ny": {
+    "recognition": "ν",
+    "baseLetter": [
+      "n"
+    ],
+    "name": {
+      "de": "Kleines griechisches Ny",
+      "en": "Lowercase greek Ny"
+    },
+    "sample": [
+      "<a href=\"http://digi.bib.uni-mannheim.de/seitenansicht_suche/dlf/1293/360/?cHash=06af3a1cdd48066303ebaa85735aad6c\"><img src=\"https://camo.githubusercontent.com/4651256342bf6fd56f3ee42be3c33bedb8940a65/68747470733a2f2f63646e2e7261776769742e636f6d2f55422d4d616e6e6865696d2f75626d612d73637265656e73686f74732f6d61737465722f6f63722d636861726163746572732f677265656b2d6c6f776572636173652d6e792e706e67\" alt=\"greek-lowercase-ny\" data-canonical-src=\"https://cdn.rawgit.com/UB-Mannheim/ubma-screenshots/master/ocr-characters/greek-lowercase-ny.png\"></a>"
+    ]
+  },
+  "greek-xi": {
+    "recognition": "ξ",
+    "baseLetter": [
+      "x"
+    ],
+    "name": {
+      "de": "Kleines griechisches Xi",
+      "en": "Lowercase greek Xi"
+    },
+    "sample": [
+      "<a href=\"http://digi.bib.uni-mannheim.de/seitenansicht_suche/dlf/1293/360/?cHash=06af3a1cdd48066303ebaa85735aad6c\"><img src=\"https://camo.githubusercontent.com/1089b674f20957cc68ee4ef81007033ef594fb7a/68747470733a2f2f63646e2e7261776769742e636f6d2f55422d4d616e6e6865696d2f75626d612d73637265656e73686f74732f6d61737465722f6f63722d636861726163746572732f677265656b2d6c6f776572636173652d78692e706e67\" alt=\"greek-lowercase-xi\" data-canonical-src=\"https://cdn.rawgit.com/UB-Mannheim/ubma-screenshots/master/ocr-characters/greek-lowercase-xi.png\"></a>"
+    ]
+  },
+  "greek-eta": {
+    "recognition": "η",
+    "baseLetter": [
+      "e"
+    ],
+    "name": {
+      "de": "Kleines griechisches Eta",
+      "en": "Lowercase greek Eta"
+    },
+    "sample": [
+      "<a href=\"http://digi.bib.uni-mannheim.de/seitenansicht_suche/dlf/1293/683/?cHash=abd95e6293985af4991be974424638bd\"><img src=\"https://camo.githubusercontent.com/ababad1ede6c82c25a0cf04c639d3dd9a1a16a50/68747470733a2f2f63646e2e7261776769742e636f6d2f55422d4d616e6e6865696d2f75626d612d73637265656e73686f74732f6d61737465722f6f63722d636861726163746572732f677265656b2d6c6f776572636173652d6574612e706e67\" alt=\"greek-lowercase-eta\" data-canonical-src=\"https://cdn.rawgit.com/UB-Mannheim/ubma-screenshots/master/ocr-characters/greek-lowercase-eta.png\"></a>"
+    ]
+  },
+  "greek-theta": {
+    "recognition": "ϑ",
+    "baseLetter": [
+      "t, h"
+    ],
+    "name": {
+      "de": "Kleines griechisches Theta",
+      "en": "Lowercase greek Theta"
+    },
+    "sample": [
+      "<a href=\"http://digi.bib.uni-mannheim.de/seitenansicht_suche/dlf/1293/683/?cHash=abd95e6293985af4991be974424638bd\"><img src=\"https://camo.githubusercontent.com/7274ad2f800ef005d37ef174b6362c061376a4db/68747470733a2f2f63646e2e7261776769742e636f6d2f55422d4d616e6e6865696d2f75626d612d73637265656e73686f74732f6d61737465722f6f63722d636861726163746572732f677265656b2d6c6f776572636173652d74686574612e706e67\" alt=\"greek-lowercase-theta\" data-canonical-src=\"https://cdn.rawgit.com/UB-Mannheim/ubma-screenshots/master/ocr-characters/greek-lowercase-theta.png\"></a>"
+    ]
+  },
+  "greek-iota": {
+    "recognition": "ι",
+    "baseLetter": [
+      "i"
+    ],
+    "name": {
+      "de": "Kleines griechisches Iota",
+      "en": "Lowercase greek Iota"
+    },
+    "sample": [
+      "<a href=\"http://digi.bib.uni-mannheim.de/seitenansicht_suche/dlf/1293/683/?cHash=abd95e6293985af4991be974424638bd\"><img src=\"https://camo.githubusercontent.com/8c51affa1f94848b02ae971d8a985ff90d39b40d/68747470733a2f2f63646e2e7261776769742e636f6d2f55422d4d616e6e6865696d2f75626d612d73637265656e73686f74732f6d61737465722f6f63722d636861726163746572732f677265656b2d6c6f776572636173652d696f74612e706e67\" alt=\"greek-lowercase-iota\" data-canonical-src=\"https://cdn.rawgit.com/UB-Mannheim/ubma-screenshots/master/ocr-characters/greek-lowercase-iota.png\"></a>"
+    ]
+  },
+  "greek-kappa": {
+    "recognition": "ϰ",
+    "baseLetter": [
+      "k"
+    ],
+    "name": {
+      "de": "Kleines griechisches Kappa",
+      "en": "Lowercase greek Kappa"
+    },
+    "sample": [
+      "<a href=\"http://digi.bib.uni-mannheim.de/seitenansicht_suche/dlf/1293/683/?cHash=abd95e6293985af4991be974424638bd\"><img src=\"https://camo.githubusercontent.com/45ec50c83d7eb03485c692b6381db0b95b516cc7/68747470733a2f2f63646e2e7261776769742e636f6d2f55422d4d616e6e6865696d2f75626d612d73637265656e73686f74732f6d61737465722f6f63722d636861726163746572732f677265656b2d6c6f776572636173652d6b617070612e706e67\" alt=\"greek-lowercase-kappa\" data-canonical-src=\"https://cdn.rawgit.com/UB-Mannheim/ubma-screenshots/master/ocr-characters/greek-lowercase-kappa.png\"></a>"
+    ]
+  },
+  "greek-lambda": {
+    "recognition": "λ",
+    "baseLetter": [
+      "l"
+    ],
+    "name": {
+      "de": "Kleines griechisches Lambda",
+      "en": "Lowercase greek Lambda"
+    },
+    "sample": [
+      "<a href=\"http://digi.bib.uni-mannheim.de/seitenansicht_suche/dlf/1293/683/?cHash=abd95e6293985af4991be974424638bd\"><img src=\"https://camo.githubusercontent.com/579d27d97bdbbae4d93b17a738f80d8674253b46/68747470733a2f2f63646e2e7261776769742e636f6d2f55422d4d616e6e6865696d2f75626d612d73637265656e73686f74732f6d61737465722f6f63722d636861726163746572732f677265656b2d6c6f776572636173652d6c616d6264612e706e67\" alt=\"greek-lowercase-lambda\" data-canonical-src=\"https://cdn.rawgit.com/UB-Mannheim/ubma-screenshots/master/ocr-characters/greek-lowercase-lambda.png\"></a>"
+    ]
+  },
+  "greek-sigma": {
+    "recognition": "σ",
+    "baseLetter": [
+      "s, z"
+    ],
+    "name": {
+      "de": "Kleines griechisches Sigma",
+      "en": "Lowercase greek Sigma"
+    },
+    "sample": [
+      "<a href=\"http://digi.bib.uni-mannheim.de/seitenansicht_suche/dlf/1293/729/?cHash=61d627d0a0b76a635a2c795f04f20f0f\"><img src=\"https://camo.githubusercontent.com/ec08c519ef08418d6fe266f6bfa283eb098b2310/68747470733a2f2f63646e2e7261776769742e636f6d2f55422d4d616e6e6865696d2f75626d612d73637265656e73686f74732f6d61737465722f6f63722d636861726163746572732f677265656b2d6c6f776572636173652d7369676d612e706e67\" alt=\"greek-lowercase-sigma\" data-canonical-src=\"https://cdn.rawgit.com/UB-Mannheim/ubma-screenshots/master/ocr-characters/greek-lowercase-sigma.png\"></a>"
+    ]
+  },
+  "greek-tau": {
+    "recognition": "τ",
+    "baseLetter": [
+      "t"
+    ],
+    "name": {
+      "de": "Kleines griechisches Tau",
+      "en": "Lowercase greek Tau"
+    },
+    "sample": [
+      "<a href=\"http://digi.bib.uni-mannheim.de/seitenansicht_suche/dlf/1293/729/?cHash=61d627d0a0b76a635a2c795f04f20f0f\"><img src=\"https://camo.githubusercontent.com/ee29835f41c87dbe8d3969a26f1d2db1dc34957e/68747470733a2f2f63646e2e7261776769742e636f6d2f55422d4d616e6e6865696d2f75626d612d73637265656e73686f74732f6d61737465722f6f63722d636861726163746572732f677265656b2d6c6f776572636173652d7461752e706e67\" alt=\"greek-lowercase-tau\" data-canonical-src=\"https://cdn.rawgit.com/UB-Mannheim/ubma-screenshots/master/ocr-characters/greek-lowercase-tau.png\"></a>"
+    ]
+  },
+  "greek-ypsilon": {
+    "recognition": "υ",
+    "baseLetter": [
+      "i, u, v, f"
+    ],
+    "name": {
+      "de": "Kleines griechisches Ypsilon",
+      "en": "Lowercase greek Ypsilon"
+    },
+    "sample": [
+      "<a href=\"http://digi.bib.uni-mannheim.de/seitenansicht_suche/dlf/1293/729/?cHash=61d627d0a0b76a635a2c795f04f20f0f\"><img src=\"https://camo.githubusercontent.com/c2a8a2141c76e5cd1f4902f5ae459d8ca6b592a6/68747470733a2f2f63646e2e7261776769742e636f6d2f55422d4d616e6e6865696d2f75626d612d73637265656e73686f74732f6d61737465722f6f63722d636861726163746572732f677265656b2d6c6f776572636173652d797073696c6f6e2e706e67\" alt=\"greek-lowercase-ypsilon\" data-canonical-src=\"https://cdn.rawgit.com/UB-Mannheim/ubma-screenshots/master/ocr-characters/greek-lowercase-ypsilon.png\"></a>"
+    ]
+  },
+  "greek-phi": {
+    "recognition": "φ",
+    "baseLetter": [
+      "p, h, f"
+    ],
+    "name": {
+      "de": "Kleines griechisches Phi",
+      "en": "Lowercase greek Phi"
+    },
+    "sample": [
+      "<a href=\"http://digi.bib.uni-mannheim.de/seitenansicht_suche/dlf/1293/729/?cHash=61d627d0a0b76a635a2c795f04f20f0f\"><img src=\"https://camo.githubusercontent.com/1e50b14c216df42da7bf57ddb0bc379a4c9d970a/68747470733a2f2f63646e2e7261776769742e636f6d2f55422d4d616e6e6865696d2f75626d612d73637265656e73686f74732f6d61737465722f6f63722d636861726163746572732f677265656b2d6c6f776572636173652d7068692e706e67\" alt=\"greek-lowercase-phi\" data-canonical-src=\"https://cdn.rawgit.com/UB-Mannheim/ubma-screenshots/master/ocr-characters/greek-lowercase-phi.png\"></a>"
     ]
   }
 }
