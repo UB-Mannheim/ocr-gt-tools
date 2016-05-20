@@ -391,7 +391,11 @@
   "ligature-que": {
     "recognition": "que",
     "baseLetter": [
-      "q, u, e, que"
+      "q",
+      "u",
+      "e",
+      "que",
+      "B"
     ],
     "name": {
       "de": "Lateinische \"-que\"-Ligatur",
@@ -434,7 +438,8 @@
   "cross": {
     "recognition": "†",
     "baseLetter": [
-      "+, t"
+      "+",
+      "t"
     ],
     "name": {
       "de": "Kreuz",
@@ -460,7 +465,8 @@
   "greek-chi": {
     "recognition": "χ",
     "baseLetter": [
-      "c, h"
+      "c",
+      "h"
     ],
     "name": {
       "de": "Kleines griechisches Chi",
@@ -473,7 +479,8 @@
   "greek-psi": {
     "recognition": "ψ",
     "baseLetter": [
-      "p, s"
+      "p",
+      "s"
     ],
     "name": {
       "de": "Kleines griechisches Psi",
@@ -616,7 +623,8 @@
   "greek-theta": {
     "recognition": "ϑ",
     "baseLetter": [
-      "t, h"
+      "t",
+      "h"
     ],
     "name": {
       "de": "Kleines griechisches Theta",
@@ -668,7 +676,8 @@
   "greek-sigma": {
     "recognition": "σ",
     "baseLetter": [
-      "s, z"
+      "s",
+      "z"
     ],
     "name": {
       "de": "Kleines griechisches Sigma",
@@ -694,7 +703,10 @@
   "greek-ypsilon": {
     "recognition": "υ",
     "baseLetter": [
-      "i, u, v, f"
+      "i",
+      "u",
+      "v",
+      "f"
     ],
     "name": {
       "de": "Kleines griechisches Ypsilon",
@@ -707,7 +719,9 @@
   "greek-phi": {
     "recognition": "φ",
     "baseLetter": [
-      "p, h, f"
+      "p",
+      "h",
+      "f"
     ],
     "name": {
       "de": "Kleines griechisches Phi",
