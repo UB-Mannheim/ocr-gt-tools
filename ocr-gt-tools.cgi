@@ -11,6 +11,7 @@ use CGI::Carp qw(carpout);
 use Cwd qw(abs_path);
 use File::Basename qw(dirname);
 use File::Path qw(make_path);
+use IPC::Run qw(run);
 use JSON;
 use POSIX qw(strftime);
 use Time::HiRes qw(time);
@@ -108,36 +109,16 @@ Send an HTTP error message
 sub httpError
 {
     my $status = shift;
+    my $msg = sprintf(shift(), @_);
     print $cgi->header(
         -type   => 'text/plain',
         -status => $status
     );
-    printf @_;
-    debugStandout("REQUEST ERROR $status");
+    debugStandout("ERROR $status - $msg");
+    print $msg;
     exit 1;
 }
 
-=head2 http500
-
-Send a server error message
-
-=cut
-
-sub http500
-{
-    httpError(shift(), '500 Internal Server Error', @_);
-}
-
-=head2 http400
-
-Send a client error message
-
-=cut
-
-sub http400
-{
-    httpError(shift(), '400 Method Not Allowed', @_);
-}
 
 =head2 httpJSON
 
@@ -147,10 +128,16 @@ convert data to JSON and send it
 
 sub httpJSON
 {
-    my ($location, $compact) =  @_;
-    my $json = JSON->new->utf8->pretty(1)->encode($location);
-    # debug( __LINE__ . " " . "\$json", \$json );
-
+    my ($obj, $compact) =  @_;
+    if (ref $obj eq 'ARRAY') {
+        $obj = [
+            map { delete $_->{'path'}; delete $_->{'command'}; $_; }
+            @{ $obj }
+        ];
+    } elsif (ref $obj) {
+        delete $obj->{'path'}; delete $obj->{'command'}
+    }
+    my $json = JSON->new->utf8->pretty(1)->encode($obj);
     print $cgi->header( -type => 'application/json', -charset => 'utf-8');
     print $json;
 }
@@ -172,11 +159,13 @@ sub loadConfig
     }
     my $config = LoadFile($ymlFile);
 
-    # Compile all 'url-pattern' as regexes
-    while (my ($patName, $pat) = each %{$config->{'url-pattern'}}) {
-        $config->{'url-pattern'}->{$patName} = qr/$pat/smx;
+    # Compile all 'pattern' as regexes
+    for (my $i = 0; $i < scalar @{$config->{'pattern'}}; $i++) {
+        my $pat = $config->{'pattern'}->[$i];
+        $config->{'pattern'}->[$i] = qr/$pat/smx;
     }
-    # Remove all newlines
+
+    # Remove all newlines from 'template'
     for my $category (keys %{$config->{'template'}}) {
         while (my ($k, $v) = each %{$config->{'template'}->{$category}}) {
             $v =~ s/\n//g;
@@ -188,29 +177,30 @@ sub loadConfig
 }
 
 
-=head2 parseUrl
 
-Map a URL to local file paths.
+=head2 parse
+
+Map a URL/path to a location
 
 =cut
 
-sub parseUrl
+sub parse
 {
-    my ($url) = @_;
+    my ($str) = @_;
 
-    # Try to match all the 'url-pattern' 
-    while (my ($patName, $pat) = each %{$config->{'url-pattern'}}) {
-        if ($url =~ $pat) {
-            debug("URL Pattern '$patName' matched '$url'");
+    # Try to match all the 'pattern'
+    for (my $i = 0; $i < scalar @{$config->{'pattern'}}; $i++) {
+        my $pat = $config->{'pattern'}->[$i];
+        if ($str =~ $pat) {
+            debug("Pattern # $i matched '$str'");
             return {
-                imageUrl => $url,
                 ids => {%+},
                 renderTemplates(%+),
             }
         }
+        debug("No match: $str =~ $pat");
     }
-    http400("Could not match URL '$url' to any known pattern");
-    # TODO handle non-match
+    httpError(400, "Could not match '$str' to any known pattern");
 }
 
 
@@ -222,115 +212,63 @@ Replace all variables apropriately
 
 sub renderTemplates
 {
-    my %ids = @_;
-
+    my  %tokens = (%{ $config->{'defaults'} }, @_);
     my %obj;
 
-    # Copy templates from the configuration and fill them with the ids parsed
-    for my $category (keys %{ $config->{'template'} }) {
+    # Copy templates from the configuration and fill them with the tokens parsed
+    for my $category ('url', 'path', 'command') {
         $obj{$category} = {};
         while (my ($tplName, $tpl) = each %{$config->{'template'}->{$category}}) {
 
             # Initially set to the template string
             $obj{$category}->{$tplName} = $tpl;
 
-            # First replace the tokens from the URL pattern
-            while (my ($key, $value) = each %ids) {
-                $obj{$category}->{$tplName} =~ s/<$key>/$value/g;
+            # First replace the tokens from the pattern
+            while (my ($key, $value) = each %tokens) {
+                if (ref $obj{$category}->{$tplName} eq 'ARRAY') {
+                    $obj{$category}->{$tplName} = [
+                        map {
+                            my $foo = $_;
+                            $foo =~ s/<$key>/$value/g;
+                            $foo =~ s/<OCR_GT_BASEDIR>/$OCR_GT_BASEDIR/g;
+                            $foo;
+                        } @{ $obj{$category}->{$tplName} }
+                    ];
+                } else {
+                    $obj{$category}->{$tplName} =~ s/<$key>/$value/g;
+                    $obj{$category}->{$tplName} =~ s/<OCR_GT_BASEDIR>/$OCR_GT_BASEDIR/g;
+                }
             }
 
-            # Second replace the tokens from the 'defaults' config option
-            while (my ($key, $value) = each %{$config->{'defaults'}}) {
-                $obj{$category}->{$tplName} =~ s/<$key>/$value/g;
+            # Add this to the list of expanded tokens
+            unless (ref $obj{$category}->{$tplName}) {
+                $tokens{$tplName} = $obj{$category}->{$tplName};
             }
-
-            # Lastly, replace OCR_GT_BASEDIR
-            $obj{$category}->{$tplName} =~ s/<OCR_GT_BASEDIR>/$OCR_GT_BASEDIR/g;
         }
     }
-
     debug( "Rendered object: %s", Dump(\%obj));
-
     return %obj;
 }
 
 
-# TODO
-=head2
+=head2 executeCommand
 
-Get page dirs
-
-=cut
-
-sub getPageDirs {
-    my ($location) = @_;
-    my $DIR;
-    opendir($DIR, $location->{'paths'}->{'correction-parent-dir'});
-    my @pages = grep { /^(\d{4,4})/ && -d join('/', $location->{'paths'}->{'correction-parent-dir'}, $_)} readdir ($DIR);
-    $location->{'pages'} = [];
-    #loop through the array printing out the filenames
-    foreach my $subdir (sort {$a cmp $b} (@pages)) {
-        #print $DEBUGLOG "$subdir\n";
-        my $url = $location->{'imageUrl'};
-        my $curPage = $location->{'ids'}->{'page'};
-        $url =~ s/$curPage/$subdir/;
-        push @{ $location->{'pages'} }, {
-            url => $url,
-            page => $subdir
-        };
-    }
-    closedir($DIR);
-    return $location;
-}
-
-
-=head2 ensureCorrectionDir
-
-Create 'correction-dir' unless it exists.
+Execute one of the location's commands.
 
 =cut
 
-sub ensureCorrectionDir
+sub executeCommand
 {
-    my ($location) = @_;
-    if (-e $location->{'paths'}->{'correction-dir'}) {
-        return;
-    }
-    debug("mkdir '%s'", $location->{'paths'}->{'correction-dir'});
-    my @okFile = make_path($location->{'paths'}->{'correction-dir'});
-    if (-d $location->{'paths'}->{'correction-dir'}) {
-        debug("Created directory %s", $location->{'paths'}->{'correction-dir'});
-    }
-}
-
-=head2 ensureCorrection
-
-=cut
-
-sub ensureCorrection
-{
-    my ($location) = @_;
-
-    if (-e $location->{'paths'}->{'correction-file'} ) {
-        return;
-    }
-
+    my ($cmd) = @_;
     # Seiten in Bildzeilen und Textzeilen aufteilen
-    my $cmd_extract = $location->{'command'}->{'hocr-extract-images'};
-    debug("About to execute '%s' in '%s'", $cmd_extract);
-    system $cmd_extract;
+    debug("About to execute '%s'", join(' ', @{$cmd}));
+    run $cmd, '>', \my $stdout, '2>', \my $stderr;
     if($?) {
-        return http500("hocr-extract-images returned non-zero exit code $?\n\n");
+        return httpError(500, "'$cmd' returned non-zero exit code '$?':\n\t$stdout\n$stderr")
     }
-
-    # Korrigierwebseite erstellen
-    my $cmd_gtedit = $location->{'command'}->{'ocropus-gtedit'};
-    debug("About to execute '%s' in '%s'", $cmd_gtedit);
-    system $cmd_gtedit;
-    if($?) {
-        http500("ocropus-gtedit returned non-zero exit code $?\n\n");
-    }
+    return $stdout;
 }
+
 
 =head2
 
@@ -341,8 +279,8 @@ Create a file that contains all the line comments for a page unless that file ex
 sub ensureCommentsTxt
 {
     my ($location) = @_;
-    opendir my $dh, $location->{'paths'}->{'correction-dir'} or
-        die http500("opendir '%s': %s", $location->{'paths'}->{'correction-dir'}, $!);
+    opendir my $dh, $location->{'path'}->{'correction-dir'} or
+        die httpError(500, "opendir '%s': %s", $location->{'path'}->{'correction-dir'}, $!);
     my $numberOfLines = 0;
     # TODO handle deletion
     while (readdir $dh) {
@@ -350,32 +288,32 @@ sub ensureCommentsTxt
         $numberOfLines += 1;
     }
     close $dh;
-    if (! -e $location->{'paths'}->{'comment-file'}) {
+    if (! -e $location->{'path'}->{'comment-file'}) {
         debug("%s has %d lines", $location->{'ids'}->{'page'}, $numberOfLines);
         my @comments;
         for (0 .. $numberOfLines) {
             push @comments, ' ';
         }
-        saveComments($location->{'paths'}->{'comment-file'}, ' ', \@comments);
+        saveComments($location->{'path'}->{'comment-file'}, ' ', \@comments);
     }
 }
 
 =head2
 
-Save transliterations.
+Save transcriptions.
 
 =cut
 
-sub saveTransliteration
+sub saveTranscription
 {
-    my($correctionHtml, $transliterations) = @_;
+    my($correctionHtml, $transcriptions) = @_;
     my $temp = "$correctionHtml.new.html";
-    open my $CORR_IN, "<", $correctionHtml or http500("Could not read from '%s': %s\n", $correctionHtml, $!);
-    open my $CORR_OUT, ">", $temp or http500("Could not writeTo '%s': %s\n", $temp, $!);
+    open my $CORR_IN, "<", $correctionHtml or httpError(500, "Could not read from '%s': %s\n", $correctionHtml, $!);
+    open my $CORR_OUT, ">", $temp or httpError(500, "Could not writeTo '%s': %s\n", $temp, $!);
     my $i = 0;
     while (<$CORR_IN>) {
         if (m/(spellcheck='true'>).*?<\/td/) {
-            my $transliteration = $transliterations->[ $i++ ];
+            my $transliteration = $transcriptions->[ $i++ ];
             my $leftOfClosingTag = $1;
             s/\Q$&\E/$leftOfClosingTag$transliteration<\/td/;
         }
@@ -393,7 +331,7 @@ Save comments.
 sub saveComments
 {
     my($commentsTxt, $pageComment, $lineComments) = @_;
-    open my $COMMENTS, ">", $commentsTxt or http500("Could not write to '%s': %s\n", $commentsTxt, $!);
+    open my $COMMENTS, ">", $commentsTxt or httpError(500, "Could not write to '%s': %s\n", $commentsTxt, $!);
     printf $COMMENTS "000:%s\n", $pageComment;
     my $i = 0;
     for (@{$lineComments}) {
@@ -413,41 +351,58 @@ sub processCreateRequest
 {
     my $url = $cgi->param('imageUrl');
     if (! $url) {
-        return http400("Missing parameter 'imageUrl' \n\n");
+        return httpError(400, "Missing parameter 'imageUrl' \n\n");
     }
     # Create file object
-    my $location = parseUrl($url);
-    # getPageDirs($location);
-    # Make sure the 'correction-dir' exists
-    ensureCorrectionDir($location);
-    # Make sure the correction HTML exists
-    ensureCorrection($location);
+    my $location = parse($url);
+    executeCommand($location->{'command'}->{'build-correction-html'});
     ensureCommentsTxt($location);
-    # clean up
-    unlink glob sprintf("%s/line-*", $location->{'paths'}->{'correction-dir'});
     # Send JSON response
-    delete $location->{'paths'};
     httpJSON($location);
 }
 
 
 =head2 processSaveRequest
 
-Save transliterations and comments passed via POST params.
+Save transcriptions and comments passed via POST params.
 
 =cut
 
 sub processSaveRequest
 {
-    my $imageUrl = $cgi->param('imageUrl');
+    my $imageUrl = $cgi->param('url[thumb-url]');
     my $pageComment = $cgi->param('pageComment');
     my $lineComments = [$cgi->multi_param('lineComments[]')];
-    # TODO https://github.com/UB-Mannheim/ocr-gt-tools/issues/65
-    my $transliterations = [$cgi->multi_param('transliterations[]')];
-    my $location = parseUrl($imageUrl);
-    saveTransliteration($location->{'paths'}->{'correction-file'}, $transliterations);
-    saveComments($location->{'paths'}->{'comment-file'}, $pageComment, $lineComments);
+    my $transcriptions = [$cgi->multi_param('transcriptions[]')];
+    my $location = parse($imageUrl);
+    saveTranscription($location->{'path'}->{'correction-file'}, $transcriptions);
+    saveComments($location->{'path'}->{'comment-file'}, $pageComment, $lineComments);
     return httpJSON({ result => 1 });
+}
+
+=head2 processListRequest
+
+
+=cut
+
+sub processListRequest
+{
+    my $queryName = $cgi->param('name');
+    return httpError(400, "Must set parameter 'name'\n") unless $queryName;
+    my $queryStr = $cgi->param('q');
+    return httpError(400, "Must set parameter 'q'\n") unless $queryStr;
+    my $queryLocation = parse($queryStr);
+    if (!$queryLocation->{'command'}->{'find-' . $queryName}) {
+        return httpError(400, "Invalid parameter 'name' %s. Must be one of [%s]",
+            $queryName, join('|', 
+                grep { /^find-/ } keys %{$queryLocation->{'command'}}
+            ));
+    }
+    my $cmd = $queryLocation->{'command'}->{'find-' . $queryName};
+    debug(Dump($cmd));
+    my $ret = executeCommand($cmd);
+    my @locations = map { parse($_) } split(/\n/, $ret);
+    return httpJSON(\@locations);
 }
 
 
@@ -491,18 +446,20 @@ Start processing CGI request
 sub processRequest
 {
     my $action = $cgi->url_param('action');
-    if (! $action) {
-        http400("URL parameter 'action' missing.");
-    }
     debug "CGI Params: %s", Dump($cgi->{param});
+    if (! $action) {
+        return httpError(400, "URL parameter 'action' missing.");
+    }
     if ($action eq 'create') {
         processCreateRequest();
     } elsif ($action eq 'save') {
         processSaveRequest();
+    } elsif ($action eq 'list') {
+        processListRequest();
     } elsif ($action eq 'history') {
         processHistoryRequest();
     } else {
-        http400("URL parameter 'action' must be 'create' or 'save', not %s", $action);
+        httpError(400, "URL parameter 'action' must be 'create', 'save', 'list' or 'history'. Not %s", $action);
     }
 }
 

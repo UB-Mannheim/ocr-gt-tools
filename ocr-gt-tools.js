@@ -99,6 +99,10 @@ Utils.encodeForServer = function encodeForServer(str) {
         .replace(/<br[^>]*>/g, "\n");
 };
 
+Utils.httpError = function httpError(xhr) {
+    notie.alert(3, "HTTP Fehler " + xhr.status + ":\n<pre style='text-align: left'>" + xhr.responseText + "</pre>");
+    stopWaitingAnimation();
+};
 /**
  * Compile the Handlebars templates
  */
@@ -168,11 +172,7 @@ function loadGtEditLocation(url) {
                         $.ajax({
                             type: 'GET',
                             url: Utils.uncachedURL(window.ocrGtLocation.url['comment-url']),
-                            error: function(x, e) {
-                                console.log(arguments);
-                                notie.alert(3, "HTTP Fehler " + x.status + ":\n" + x.responseText);
-                                stopWaitingAnimation();
-                            },
+                            error: Utils.httpError,
                             success: function(response, status, xhr) {
                                 Utils.parseLineComments(response, window.ocrGtLocation);
                                 addCommentFields();
@@ -196,10 +196,7 @@ function loadGtEditLocation(url) {
             $("#save_button").removeClass("hidden");
             // activate button if #file-correction is changed
         },
-        error: function(x, e) {
-            notie.alert(3, "HTTP Fehler " + x.status + ":\n" + x.responseText);
-            stopWaitingAnimation();
-        }
+        error: Utils.httpError,
     });
 }
 
@@ -210,13 +207,13 @@ function loadGtEditLocation(url) {
 function saveGtEditLocation() {
 
     if (!window.ocrGtLocation.changed) {
-        console.log("Nothing changed.");
+        notie.alert(2, "Nothing changed.", 1);
         return;
     }
 
     $("#wait_save").addClass("wait").removeClass("hidden");
     $("#disk").addClass("hidden");
-    window.ocrGtLocation.transliterations = $('li.transcription div').map(function() {
+    window.ocrGtLocation.transcriptions = $('li.transcription div').map(function() {
         return Utils.encodeForServer($(this).html());
     }).get();
     window.ocrGtLocation.lineComments = $("li.line-comment div").map(function() {
@@ -224,7 +221,7 @@ function saveGtEditLocation() {
     }).get();
     window.ocrGtLocation.pageComment = Utils.encodeForServer($("#page-comment div").html());
     // console.log(window.ocrGtLocation.pageComment);
-    // console.log(window.ocrGtLocation.transliterations);
+    // console.log(window.ocrGtLocation.transcriptions);
     // console.log(window.ocrGtLocation.lineComments);
 
     $.ajax({
@@ -232,9 +229,7 @@ function saveGtEditLocation() {
         url: UISettings.cgiUrl + '?action=save',
         data: window.ocrGtLocation,
         success: markSaved,
-        error: function(x, e) {
-            notie.alert(3, "HTTP Fehler " + x.status + ":\n" + x.responseText);
-        }
+        error: Utils.httpError,
     });
 }
 
@@ -578,7 +573,7 @@ function onPageLoaded() {
                 }
             },
             error: function(x, e) {
-                notie.alert(3, "HTTP Fehler " + x.status + ":\n" + x.responseText);
+                Utils.httpE(x);
             }
         });
     });
@@ -624,16 +619,14 @@ $(function() {
         type: 'GET',
         url: 'special-chars.json',
         dataType: "json",
-        error: function() {
-            notie.alert(3, "HTTP Fehler " + x.status + ":\n" + x.responseText);
-        },
+        error: Utils.httpError,
         success: function(specialChars) {
             $.ajax({
                 type: 'GET',
                 url: 'error-tags.json',
                 dataType: "json",
                 error: function() {
-                    notie.alert(3, "HTTP Fehler " + x.status + ":\n" + x.responseText);
+                    Utils.httpE(x);
                 },
                 success: function(errorTags) {
                     UISettings['special-chars'] = specialChars;
