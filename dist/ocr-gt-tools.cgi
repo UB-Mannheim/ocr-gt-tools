@@ -117,27 +117,6 @@ sub httpError
     exit 1;
 }
 
-=head2 http500
-
-Send a server error message
-
-=cut
-
-sub http500
-{
-    httpError(shift(), '500 Internal Server Error', @_);
-}
-
-=head2 http400
-
-Send a client error message
-
-=cut
-
-sub http400
-{
-    httpError(shift(), '400 Method Not Allowed', @_);
-}
 
 =head2 httpJSON
 
@@ -172,11 +151,13 @@ sub loadConfig
     }
     my $config = LoadFile($ymlFile);
 
-    # Compile all 'url-pattern' as regexes
-    while (my ($patName, $pat) = each %{$config->{'url-pattern'}}) {
-        $config->{'url-pattern'}->{$patName} = qr/$pat/smx;
+    # Compile all 'pattern' as regexes
+    for (my $i = 0; $i < scalar @{$config->{'pattern'}}; $i++) {
+        my $pat = $config->{'pattern'}->[$i];
+        $config->{'pattern'}->[$i] = qr/$pat/smx;
     }
-    # Remove all newlines
+
+    # Remove all newlines from 'template'
     for my $category (keys %{$config->{'template'}}) {
         while (my ($k, $v) = each %{$config->{'template'}->{$category}}) {
             $v =~ s/\n//g;
@@ -188,29 +169,30 @@ sub loadConfig
 }
 
 
-=head2 parseUrl
 
-Map a URL to local file paths.
+=head2 parse
+
+Map a URL/path to a location
 
 =cut
 
-sub parseUrl
+sub parse
 {
-    my ($url) = @_;
+    my ($str) = @_;
 
-    # Try to match all the 'url-pattern' 
-    while (my ($patName, $pat) = each %{$config->{'url-pattern'}}) {
-        if ($url =~ $pat) {
-            debug("URL Pattern '$patName' matched '$url'");
+    # Try to match all the 'pattern'
+    for (my $i = 0; $i < scalar @{$config->{'pattern'}}; $i++) {
+        my $pat = $config->{'pattern'}->[$i];
+        if ($str =~ $pat) {
+            debug("Pattern # $i matched '$str'");
             return {
-                imageUrl => $url,
                 ids => {%+},
                 renderTemplates(%+),
             }
         }
+        debug("No match: $str =~ $pat");
     }
-    http400("Could not match URL '$url' to any known pattern");
-    # TODO handle non-match
+    httpError(400, "Could not match '$str' to any known pattern");
 }
 
 
@@ -227,14 +209,14 @@ sub renderTemplates
     my %obj;
 
     # Copy templates from the configuration and fill them with the ids parsed
-    for my $category (keys %{ $config->{'template'} }) {
+    for my $category ('url', 'path', 'query', 'command') {
         $obj{$category} = {};
         while (my ($tplName, $tpl) = each %{$config->{'template'}->{$category}}) {
 
             # Initially set to the template string
             $obj{$category}->{$tplName} = $tpl;
 
-            # First replace the tokens from the URL pattern
+            # First replace the tokens from the pattern
             while (my ($key, $value) = each %ids) {
                 $obj{$category}->{$tplName} =~ s/<$key>/$value/g;
             }
@@ -246,41 +228,15 @@ sub renderTemplates
 
             # Lastly, replace OCR_GT_BASEDIR
             $obj{$category}->{$tplName} =~ s/<OCR_GT_BASEDIR>/$OCR_GT_BASEDIR/g;
+
+            # Add this to the list of expanded tokens
+            $ids{$tplName} = $obj{$category}->{$tplName};
         }
     }
 
     debug( "Rendered object: %s", Dump(\%obj));
 
     return %obj;
-}
-
-
-# TODO
-=head2
-
-Get page dirs
-
-=cut
-
-sub getPageDirs {
-    my ($location) = @_;
-    my $DIR;
-    opendir($DIR, $location->{'paths'}->{'correction-parent-dir'});
-    my @pages = grep { /^(\d{4,4})/ && -d join('/', $location->{'paths'}->{'correction-parent-dir'}, $_)} readdir ($DIR);
-    $location->{'pages'} = [];
-    #loop through the array printing out the filenames
-    foreach my $subdir (sort {$a cmp $b} (@pages)) {
-        #print $DEBUGLOG "$subdir\n";
-        my $url = $location->{'imageUrl'};
-        my $curPage = $location->{'ids'}->{'page'};
-        $url =~ s/$curPage/$subdir/;
-        push @{ $location->{'pages'} }, {
-            url => $url,
-            page => $subdir
-        };
-    }
-    closedir($DIR);
-    return $location;
 }
 
 
@@ -293,13 +249,13 @@ Create 'correction-dir' unless it exists.
 sub ensureCorrectionDir
 {
     my ($location) = @_;
-    if (-e $location->{'paths'}->{'correction-dir'}) {
+    if (-e $location->{'path'}->{'correction-dir'}) {
         return;
     }
-    debug("mkdir '%s'", $location->{'paths'}->{'correction-dir'});
-    my @okFile = make_path($location->{'paths'}->{'correction-dir'});
-    if (-d $location->{'paths'}->{'correction-dir'}) {
-        debug("Created directory %s", $location->{'paths'}->{'correction-dir'});
+    debug("mkdir '%s'", $location->{'path'}->{'correction-dir'});
+    my @okFile = make_path($location->{'path'}->{'correction-dir'});
+    if (-d $location->{'path'}->{'correction-dir'}) {
+        debug("Created directory %s", $location->{'path'}->{'correction-dir'});
     }
 }
 
@@ -311,7 +267,7 @@ sub ensureCorrection
 {
     my ($location) = @_;
 
-    if (-e $location->{'paths'}->{'correction-file'} ) {
+    if (-e $location->{'path'}->{'correction-file'} ) {
         return;
     }
 
@@ -320,7 +276,7 @@ sub ensureCorrection
     debug("About to execute '%s' in '%s'", $cmd_extract);
     system $cmd_extract;
     if($?) {
-        return http500("hocr-extract-images returned non-zero exit code $?\n\n");
+        return httpError(500, "hocr-extract-images returned non-zero exit code $?\n\n");
     }
 
     # Korrigierwebseite erstellen
@@ -328,7 +284,7 @@ sub ensureCorrection
     debug("About to execute '%s' in '%s'", $cmd_gtedit);
     system $cmd_gtedit;
     if($?) {
-        http500("ocropus-gtedit returned non-zero exit code $?\n\n");
+        httpError(500, "ocropus-gtedit returned non-zero exit code $?\n\n");
     }
 }
 
@@ -341,8 +297,8 @@ Create a file that contains all the line comments for a page unless that file ex
 sub ensureCommentsTxt
 {
     my ($location) = @_;
-    opendir my $dh, $location->{'paths'}->{'correction-dir'} or
-        die http500("opendir '%s': %s", $location->{'paths'}->{'correction-dir'}, $!);
+    opendir my $dh, $location->{'path'}->{'correction-dir'} or
+        die httpError(500, "opendir '%s': %s", $location->{'path'}->{'correction-dir'}, $!);
     my $numberOfLines = 0;
     # TODO handle deletion
     while (readdir $dh) {
@@ -350,13 +306,13 @@ sub ensureCommentsTxt
         $numberOfLines += 1;
     }
     close $dh;
-    if (! -e $location->{'paths'}->{'comment-file'}) {
+    if (! -e $location->{'path'}->{'comment-file'}) {
         debug("%s has %d lines", $location->{'ids'}->{'page'}, $numberOfLines);
         my @comments;
         for (0 .. $numberOfLines) {
             push @comments, ' ';
         }
-        saveComments($location->{'paths'}->{'comment-file'}, ' ', \@comments);
+        saveComments($location->{'path'}->{'comment-file'}, ' ', \@comments);
     }
 }
 
@@ -370,8 +326,8 @@ sub saveTransliteration
 {
     my($correctionHtml, $transliterations) = @_;
     my $temp = "$correctionHtml.new.html";
-    open my $CORR_IN, "<", $correctionHtml or http500("Could not read from '%s': %s\n", $correctionHtml, $!);
-    open my $CORR_OUT, ">", $temp or http500("Could not writeTo '%s': %s\n", $temp, $!);
+    open my $CORR_IN, "<", $correctionHtml or httpError(500, "Could not read from '%s': %s\n", $correctionHtml, $!);
+    open my $CORR_OUT, ">", $temp or httpError(500, "Could not writeTo '%s': %s\n", $temp, $!);
     my $i = 0;
     while (<$CORR_IN>) {
         if (m/(spellcheck='true'>).*?<\/td/) {
@@ -393,7 +349,7 @@ Save comments.
 sub saveComments
 {
     my($commentsTxt, $pageComment, $lineComments) = @_;
-    open my $COMMENTS, ">", $commentsTxt or http500("Could not write to '%s': %s\n", $commentsTxt, $!);
+    open my $COMMENTS, ">", $commentsTxt or httpError(500, "Could not write to '%s': %s\n", $commentsTxt, $!);
     printf $COMMENTS "000:%s\n", $pageComment;
     my $i = 0;
     for (@{$lineComments}) {
@@ -413,20 +369,19 @@ sub processCreateRequest
 {
     my $url = $cgi->param('imageUrl');
     if (! $url) {
-        return http400("Missing parameter 'imageUrl' \n\n");
+        return httpError(400, "Missing parameter 'imageUrl' \n\n");
     }
     # Create file object
-    my $location = parseUrl($url);
-    # getPageDirs($location);
+    my $location = parse($url);
     # Make sure the 'correction-dir' exists
     ensureCorrectionDir($location);
     # Make sure the correction HTML exists
     ensureCorrection($location);
     ensureCommentsTxt($location);
     # clean up
-    unlink glob sprintf("%s/line-*", $location->{'paths'}->{'correction-dir'});
+    unlink glob sprintf("%s/line-*", $location->{'path'}->{'correction-dir'});
     # Send JSON response
-    delete $location->{'paths'};
+    delete $location->{'path'};
     httpJSON($location);
 }
 
@@ -444,10 +399,39 @@ sub processSaveRequest
     my $lineComments = [$cgi->multi_param('lineComments[]')];
     # TODO https://github.com/UB-Mannheim/ocr-gt-tools/issues/65
     my $transliterations = [$cgi->multi_param('transliterations[]')];
-    my $location = parseUrl($imageUrl);
-    saveTransliteration($location->{'paths'}->{'correction-file'}, $transliterations);
-    saveComments($location->{'paths'}->{'comment-file'}, $pageComment, $lineComments);
+    my $location = pars('url', $imageUrl);
+    saveTransliteration($location->{'path'}->{'correction-file'}, $transliterations);
+    saveComments($location->{'path'}->{'comment-file'}, $pageComment, $lineComments);
     return httpJSON({ result => 1 });
+}
+
+=head2 processListRequest
+
+
+=cut
+
+sub processListRequest
+{
+    my $queryName = $cgi->param('name');
+    return httpError(400, "Must set 'name'\n") unless $queryName;
+    my $queryStr = $cgi->param('q');
+    return httpError(400, "Must set 'q'\n") unless $queryStr;
+    my $queryLocation = parse($queryStr);
+    if (!$queryLocation->{'query'}->{$queryName}) {
+        return httpError(400, "Invalid 'name' $queryName. Must be one of " .
+            join('|', keys %{$queryLocation->{'query'}}) .  "\n");
+    }
+    my $cmd = ("find " . $queryLocation->{'query'}->{$queryName} . " 2>&1");
+    debug($cmd);
+    my $ret = qx($cmd);
+    if ($?) {
+        return httpError(400, $ret);
+    }
+    my @locations;
+    for my $path (split(/\n/, $ret)) {
+        push @locations, parse($path);
+    }
+    return httpJSON(\@locations);
 }
 
 
@@ -491,18 +475,20 @@ Start processing CGI request
 sub processRequest
 {
     my $action = $cgi->url_param('action');
-    if (! $action) {
-        http400("URL parameter 'action' missing.");
-    }
     debug "CGI Params: %s", Dump($cgi->{param});
+    if (! $action) {
+        return httpError(400, "URL parameter 'action' missing.");
+    }
     if ($action eq 'create') {
         processCreateRequest();
     } elsif ($action eq 'save') {
         processSaveRequest();
+    } elsif ($action eq 'list') {
+        processListRequest();
     } elsif ($action eq 'history') {
         processHistoryRequest();
     } else {
-        http400("URL parameter 'action' must be 'create' or 'save', not %s", $action);
+        httpError(400, "URL parameter 'action' must be 'create' or 'save', not %s", $action);
     }
 }
 
