@@ -14,7 +14,7 @@
         <div class="panel-heading">
           <h4 class="panel-title"><a data-toggle="collapse" href="#page-comment">Seiten-Kommentar</a></h4>
         </div>
-        <div id="page-comment" class="panel-collapse collapse in"><a target="_blank" href="{{ hiresUrl }}" class="list-group-item"><img src="{{ imageUrl }}"></a>
+        <div id="page-comment" class="panel-collapse collapse in"><a target="_blank" href="{{ this.url.hires-url }}" class="list-group-item"><img src="{{ this.url.thumb-url }}"></a>
           <div contenteditable>{{ pageComment }}</div>
         </div>
       </div>
@@ -23,7 +23,7 @@
           <h4 class="panel-title"><a data-toggle="collapse" href="#work-info">Werk-Info</a></h4>
         </div>
         <div id="work-info" class="panel-collapse collapse">
-          <div class="list-group"><a target="_blank" href="http://digi.bib.uni-mannheim.de/en/suchergebnis/?tx_dlf[query]={{ pathId }}" class="list-group-item"><i class="fa fa-download"></i>Werk in Digitaler Bibliothek</a>{{#each pages}}<a href="#{{ this.url }}" class="list-group-item"><i class="fa fa-history"></i>Seite {{this.page}}</a>{{/each}}</div>
+          <div class="list-group"><a target="_blank" href="{{ this.url.landing-page-url }}" class="list-group-item"><i class="fa fa-download"></i>Werk in Digitaler Bibliothek</a>{{#each pages}}<a href="#{{ this.url }}" class="list-group-item"><i class="fa fa-history"></i>Seite {{this.page}}</a>{{/each}}</div>
         </div>
       </div>
       <div class="panel panel-info">
@@ -31,7 +31,7 @@
           <h4 class="panel-title"><a data-toggle="collapse" href="#page-info">Seiten-Info</a></h4>
         </div>
         <div id="page-info" aria-expanded="true" class="panel-collapse collapse in">
-          <div class="list-group"><a id="download-comments" target="_blank" href="{{ commentsUrl }}" class="list-group-item"><i class="fa fa-download"></i>Anmerkungen</a><a id="download-correction" target="_blank" href="{{ correctionUrl }}" class="list-group-item"><i class="fa fa-download"></i>Korrektur</a></div>
+          <div class="list-group"><a id="download-comments" target="_blank" href="{{ this.url.comment-url }}" class="list-group-item"><i class="fa fa-download"></i>Anmerkungen</a><a id="download-correction" target="_blank" href="{{ this.url.correction-url }}" class="list-group-item"><i class="fa fa-download"></i>Korrektur</a></div>
         </div>
       </div>
     </script>
@@ -128,6 +128,7 @@
         <div class="modal-content">
           <div class="modal-header">
             <h4 class="modal-title">Eingabe Spickzettel</h4>
+            <input type="text">
             <button type="button" data-dismiss="modal" class="close"><span>&times;</span></button>
           </div>
           <div class="modal-body">

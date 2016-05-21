@@ -7,102 +7,11 @@ var UISettings = {
     defaultViews: ['.transcription','img']
 };
 
-var Utils = {};
-
-/********************/
-/* Utiliy functions */
-/********************/
-
-/**
- * Transform text file to array of line lineComments
- *
- * @param {string} txt Contents of the text file
- * @param {object} target the object to attach 'pageComment'/'lineComments' to
- */
-Utils.parseLineComments = function parseLineComments(txt, target) {
-    var lines = txt.split(/\n/);
-    var lineComments = [];
-    for (var i = 0; i < lines.length ; i++) {
-        var lineComment = lines[i].replace(/^\d+:\s*/, '');
-        lineComment = Utils.encodeForServer(lineComment);
-        lineComments.push(lineComment);
-    }
-    target.pageComment = lineComments[0];
-    target.lineComments = lineComments.slice(1);
-};
-
-/**
- * Scale the 'height' attribute of an element by a factor,
- * effectively zooming images.
- *
- * @param {DOMElement} el the element to scale
- * @param {float} factor the scale factor
- */
-Utils.scaleHeight = function scaleHeight(el, factor) {
-    var curHeight = el.getAttribute('height') || el.offsetHeight;
-    if (!el.hasAttribute('data-original-height')) {
-        el.setAttribute('data-original-height', curHeight);
-    }
-    var originalHeight = el.getAttribute('data-original-height');
-    var newHeight = factor == 1 ? originalHeight : curHeight * factor;
-    el.setAttribute('height',  newHeight);
-};
-
-/**
- * Attach current UNIX time as a URL parameter to a URL so a GET request to it
- * won't be cached.
- *
- * @param {string} url the URL to timestamp
- */
-Utils.uncachedURL = function uncachedURL(url) {
-    return url + "?nocache=" + Date.now();
-};
-
-/**
- * Test whether element is within viewport
- * No jQuery necessary.
- * Thanks to Dan's StackOverflow answer for this:
- * http://stackoverflow.com/questions/123999/how-to-tell-if-a-dom-element-is-visible-in-the-current-viewport
-*/
-Utils.isElementInViewport = function isElementInViewport(el) {
-    var rect = el.getBoundingClientRect();
-    return (rect.top >= 0 && rect.left >= 0);
-};
-
-/**
- * Get the width of the first image in an element.
- */
-Utils.getImageWidth = function getImageWidth(el) {
-    if (el.tagName !== 'IMG') {
-        el = $(el).find('img')[0];
-        if (!el) {
-            return -1;
-        }
-    }
-    return el.clientWidth;
-};
-
-Utils.encodeForBrowser = function encodeForBrowser(str) {
-    return str
-        .replace(/&amp;/g, '&')
-        .replace(/&gt;/g, '>')
-        .replace(/&lt;/g, '<')
-        .replace(/^\n*/, '')
-        .replace(/\n*$/, '')
-        .replace(/\n/g, '<br>');
-};
-
-Utils.encodeForServer = function encodeForServer(str) {
-    return str
-        .replace(/^(<br[^>]*>)*/, '')
-        .replace(/(<br[^>]*>)*$/, '')
-        .replace(/<br[^>]*>/g, "\n");
-};
-
-Utils.httpError = function httpError(xhr) {
+function httpError(xhr) {
     notie.alert(3, "HTTP Fehler " + xhr.status + ":\n<pre style='text-align: left'>" + xhr.responseText + "</pre>");
-    stopWaitingAnimation();
+    WaitingAnimation.stop();
 };
+
 /**
  * Compile the Handlebars templates
  */
@@ -113,26 +22,6 @@ function compileTemplates() {
         var tplId = $this.attr('id').replace(/^tpl-/, '');
         window.templates[tplId] = Handlebars.compile($this.html());
     });
-}
-
-function startWaitingAnimation() {
-    $("#dropzone").addClass('hidden');
-    $("#waiting-animation").removeClass('hidden');
-    var keys = Object.keys(UISettings['special-chars']);
-    window.waitingAnimation = setInterval(function() {
-        perRound = 50;
-        while (perRound-- > 0) {
-            var randGlyph = UISettings['special-chars'][keys[parseInt(Math.random() * keys.length)]];
-            var $el = $("#waiting-animation" +
-                " tr:nth-child(" + parseInt(Math.random() * 20) + ")" +
-                " td:nth-child(" + parseInt(Math.random() * 20) + ")"
-            ).html(randGlyph.sample);
-        }
-    }, 100);
-}
-function stopWaitingAnimation() {
-    $("#waiting-animation").addClass('hidden');
-    clearInterval(window.waitingAnimation);
 }
 
 /*******************************/
@@ -156,7 +45,7 @@ function loadGtEditLocation(url) {
         beforeSend: function(xhr) {
             // to instantly see when a new document has been retrieved
             $("#file-correction").addClass("hidden");
-            startWaitingAnimation();
+            WaitingAnimation.start();
         },
         success: function(res) {
             // file correction will be loaded
@@ -172,7 +61,7 @@ function loadGtEditLocation(url) {
                         $.ajax({
                             type: 'GET',
                             url: Utils.uncachedURL(window.ocrGtLocation.url['comment-url']),
-                            error: Utils.httpError,
+                            error: httpError,
                             success: function(response, status, xhr) {
                                 Utils.parseLineComments(response, window.ocrGtLocation);
                                 addCommentFields();
@@ -184,7 +73,7 @@ function loadGtEditLocation(url) {
                                     $('#page-index').append('<li><a href="#' + pageObj.url + '">' + pageObj.page + '</a></li>');
                                 });
                                 onScroll();
-                                stopWaitingAnimation();
+                                WaitingAnimation.stop();
                             }
                         });
                     }
@@ -196,7 +85,7 @@ function loadGtEditLocation(url) {
             $("#save_button").removeClass("hidden");
             // activate button if #file-correction is changed
         },
-        error: Utils.httpError,
+        error: httpError,
     });
 }
 
@@ -229,7 +118,7 @@ function saveGtEditLocation() {
         url: UISettings.cgiUrl + '?action=save',
         data: window.ocrGtLocation,
         success: markSaved,
-        error: Utils.httpError,
+        error: httpError,
     });
 }
 
@@ -462,18 +351,6 @@ function onHashChange() {
     }
 }
 
-function getUrlFromDragEvent(e) {
-    var elem = e.originalEvent.dataTransfer.getData('text/html');
-    var url = $(elem).find('img').addBack('img').attr('src');
-    if (!url) {
-        url = $(elem).find('a').addBack('a').attr('href');
-    }
-    if (!url) {
-        url = e.originalEvent.dataTransfer.getData('text/plain');
-    }
-    return url;
-}
-
 function onScroll() {
     var done = false;
     var cur = 0;
@@ -526,7 +403,7 @@ function setupDragAndDrop() {
             if (window.ocrGtLocation && window.ocrGtLocation.changed) {
                 notie.alert(2, "Ungesicherte Inhalte vorhanden, bitte zuerst speichern!", 2);
             } else {
-                var url = getUrlFromDragEvent(e);
+                var url = Utils.getUrlFromDragEvent(e);
                 if (url) {
                     loadGtEditLocation(url);
                 } else {
@@ -572,23 +449,12 @@ function onPageLoaded() {
                     $("#history-modal tbody").append(window.templates.historyItem(data[i]));
                 }
             },
-            error: function(x, e) {
-                Utils.httpE(x);
-            }
+            error: httpError
         });
     });
 
-    // Open cheatsheet modal
-    $('button[data-target="#cheatsheet-modal"]').on('click', function() {
-        var keys = Object.keys(UISettings['special-chars']);
-        $("#cheatsheet-modal .cheatsheet").empty();
-        for (var i = 0; i < keys.length; i++) {
-            var key = keys[i];
-            $("#cheatsheet-modal .cheatsheet").append(
-                window.templates.cheatsheetEntry(UISettings['special-chars'][key])
-            );
-        }
-    });
+    window.cheatsheetView = new CheatsheetView($("#cheatsheet-modal"), UISettings['special-chars']);
+    window.cheatsheetView.render();
 
     // Select Mode
     $("#toggle-select").on('click', toggleSelectMode);
@@ -619,7 +485,7 @@ $(function() {
         type: 'GET',
         url: 'special-chars.json',
         dataType: "json",
-        error: Utils.httpError,
+        error: httpError,
         success: function(specialChars) {
             $.ajax({
                 type: 'GET',

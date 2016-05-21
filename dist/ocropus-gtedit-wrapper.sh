@@ -25,8 +25,8 @@ mv -v correction.html "$html"
 touch anmerkungen.txt
 nrLines=$(find "$tempdir" -name '*.txt'|wc -l)
 lineIdx=0
-while ((lineIdx < nrLines));do
-    printf "%03d: " >> anmerkungen.txt
+while ((lineIdx <= nrLines));do
+    printf "%03d: \n" >> anmerkungen.txt
     lineIdx=$((lineIdx + 1))
 done
 

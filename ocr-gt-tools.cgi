@@ -272,34 +272,6 @@ sub executeCommand
 
 =head2
 
-Create a file that contains all the line comments for a page unless that file exists
-
-=cut
-
-sub ensureCommentsTxt
-{
-    my ($location) = @_;
-    opendir my $dh, $location->{'path'}->{'correction-dir'} or
-        die httpError(500, "opendir '%s': %s", $location->{'path'}->{'correction-dir'}, $!);
-    my $numberOfLines = 0;
-    # TODO handle deletion
-    while (readdir $dh) {
-        next unless m/line-\d{3}\.txt/;
-        $numberOfLines += 1;
-    }
-    close $dh;
-    if (! -e $location->{'path'}->{'comment-file'}) {
-        debug("%s has %d lines", $location->{'ids'}->{'page'}, $numberOfLines);
-        my @comments;
-        for (0 .. $numberOfLines) {
-            push @comments, ' ';
-        }
-        saveComments($location->{'path'}->{'comment-file'}, ' ', \@comments);
-    }
-}
-
-=head2
-
 Save transcriptions.
 
 =cut
@@ -313,9 +285,9 @@ sub saveTranscription
     my $i = 0;
     while (<$CORR_IN>) {
         if (m/(spellcheck='true'>).*?<\/td/) {
-            my $transliteration = $transcriptions->[ $i++ ];
+            my $transcription = $transcriptions->[ $i++ ];
             my $leftOfClosingTag = $1;
-            s/\Q$&\E/$leftOfClosingTag$transliteration<\/td/;
+            s/\Q$&\E/$leftOfClosingTag$transcription<\/td/;
         }
         print $CORR_OUT $_;
     }
@@ -356,7 +328,7 @@ sub processCreateRequest
     # Create file object
     my $location = parse($url);
     executeCommand($location->{'command'}->{'build-correction-html'});
-    ensureCommentsTxt($location);
+    # ensureCommentsTxt($location);
     # Send JSON response
     httpJSON($location);
 }

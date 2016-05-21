@@ -91,7 +91,7 @@ JS_FILES    = bower_components/jquery/dist/jquery.js \
 # The HTML files, described in the Jade shorthand / templating language
 JADE_FILES  = ocr-gt-tools.jade
 # The files to watch for changes for to trigger a rebuild
-WATCH_FILES = Makefile ocr-gt-tools.* ${JADE_FILES} *.json
+WATCH_FILES = Makefile ocr-gt-tools.* ${JADE_FILES} *.json js/**/*.js js/*.js
 
 #
 # Define the list of targets that will "always fail", i.e. the CLI api
@@ -198,8 +198,12 @@ dist/ocr-gt-tools.cgi: ocr-gt-tools.cgi
 	$(CP) $< $@
 	chmod a+x $@
 
-dist/ocr-gt-tools.js: ocr-gt-tools.js
-	$(UGLIFYJS) --source-map --compress --output $@ $<
+dist/ocr-gt-tools.js:\
+	js/utils.js\
+	js/animation.js\
+	js/views/cheatsheet-view.js\
+	ocr-gt-tools.js
+	$(UGLIFYJS) --compress --output $@ $^
 
 dist/ocr-gt-tools.css: ocr-gt-tools.styl
 	$(STYLUS) < $< > $@
