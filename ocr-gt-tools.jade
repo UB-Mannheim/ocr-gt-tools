@@ -28,9 +28,9 @@ html(lang='de')
 							i.fa.fa-download
 							| Werk in Digitaler Bibliothek
 						| {{#each pages}}
-						a.list-group-item(href='\#{{ this.url }}')
+						a.list-group-item(href='\#{{ this.url.thumb-url }}')
 							i.fa.fa-history
-							| Seite {{this.page}}
+							| Seite {{this.ids.page}}
 						| {{/each}}
 			.panel.panel-info
 				.panel-heading
@@ -49,14 +49,15 @@ html(lang='de')
 		// A cheatsheet entry
 		//*
 		script#tpl-cheatsheetEntry(type='text/x-handlebars-template')
-			tr
+			tr(id="cheatsheet-{{ id }}")
 				td
 					a(target="_blank", href="https://github.com/UB-Mannheim/ocr-gt-tools/wiki/Special-Characters\#{{ id }}")
 						| {{ name.de }}
 				td {{{ sample }}}
 				td
 					button.code(data-clipboard-text="{{ recognition }}")
-						| {{ recognition }}
+						span.fa.fa-clipboard.clipboard
+						span.recognition {{ recognition }}
 
 		//*
 		// A line of page
@@ -137,7 +138,8 @@ html(lang='de')
 				.modal-content
 					.modal-header
 						h4.modal-title Eingabe Spickzettel
-						input(type='text')
+						.cheatsheet-entry
+							input(type='text')
 						button.close(type='button', data-dismiss='modal')
 							span &times;
 					.modal-body
@@ -154,6 +156,8 @@ html(lang='de')
 		//*
 		#select-bar.hidden
 			.panel-heading.clearfix
+				button.close.pull-left(type='button', data-dismiss='modal')
+					span &times;
 				.btn-group.pull-right
 					a.btn.btn-sm.btn-default.select-all
 						i.fa.btn-sm.fa-arrows-alt

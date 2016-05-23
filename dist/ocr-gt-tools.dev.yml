@@ -5,6 +5,7 @@ defaults:
   correction-filename: 'correction.html'
   comments-filename:   'anmerkungen.txt'
   debuglog:            '/tmp/ocr-gt.log'
+  hostname:            'http://localhost:9090'
   url_prefix:          'http://localhost:9090'
 
 pattern:

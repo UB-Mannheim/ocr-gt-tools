@@ -458,6 +458,7 @@ function onPageLoaded() {
 
     // Select Mode
     $("#toggle-select").on('click', toggleSelectMode);
+    $("#select-bar .close").on('click', toggleSelectMode);
     $('.add-multi-comment').on('click', addMultiComment);
     $(".set-view").on('click', function() {
         reduceViewToSelectors($(this).attr('data-target').split(/\s*,\s*/));

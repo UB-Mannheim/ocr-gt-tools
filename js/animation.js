@@ -9,7 +9,7 @@ var WaitingAnimation = (function WaitingAnimation() {
             perRound = 50;
             while (perRound-- > 0) {
                 var randGlyph = UISettings['special-chars'][keys[parseInt(Math.random() * keys.length)]];
-                var $el = $("#waiting-animation" +
+                $("#waiting-animation" +
                     " tr:nth-child(" + parseInt(Math.random() * 20) + ")" +
                     " td:nth-child(" + parseInt(Math.random() * 20) + ")"
                 ).html(randGlyph.sample);

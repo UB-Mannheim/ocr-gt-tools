@@ -328,6 +328,9 @@ sub processCreateRequest
     # Create file object
     my $location = parse($url);
     executeCommand($location->{'command'}->{'build-correction-html'});
+    $location->{pages} = [
+        map {parse($_)} split /\n/, executeCommand($location->{'command'}->{'find-corrections-for-work'})
+    ];
     # ensureCommentsTxt($location);
     # Send JSON response
     httpJSON($location);
