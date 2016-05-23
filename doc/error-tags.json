@@ -5,7 +5,8 @@
       "de": "Falsch erfasste Bildausschnitte, die keine Textzeile enthalten, sondern leere Seitenbereiche oder Seitenränder usw."
     },
     "total": 443,
-    "frequencyAvg": 5.7
+    "frequencyAvg": 5.7,
+    "id": "wrong-image-section"
   },
   "text-blocked": {
     "name": {
@@ -13,7 +14,8 @@
       "de": "Gesperrter Text mit sichtbaren Leerzeichen zwischen den Buchstaben"
     },
     "total": 51,
-    "frequencyAvg": 0.7
+    "frequencyAvg": 0.7,
+    "id": "text-blocked"
   },
   "text-italic": {
     "name": {
@@ -21,7 +23,8 @@
       "de": "Zeile vollständig oder teilweise in kursiver Schrift"
     },
     "total": 156,
-    "frequencyAvg": 2
+    "frequencyAvg": 2,
+    "id": "text-italic"
   },
   "initial": {
     "name": {
@@ -32,7 +35,8 @@
       "en": "This most likely causes <a href=\"##%20wrong-image-section\">wrong-image-section</a>"
     },
     "total": 10,
-    "frequencyAvg": 0.1
+    "frequencyAvg": 0.1,
+    "id": "initial"
   },
   "letter-faded": {
     "name": {
@@ -40,7 +44,8 @@
       "de": "Teilweise oder vollständig ausgebleichte Buchstaben"
     },
     "total": 6,
-    "frequencyAvg": 0.1
+    "frequencyAvg": 0.1,
+    "id": "letter-faded"
   },
   "notes-within-line": {
     "name": {
@@ -48,7 +53,8 @@
       "de": "Anmerkungen am Seitenrand mit Textzeile erfasst"
     },
     "total": 93,
-    "frequencyAvg": 1.2
+    "frequencyAvg": 1.2,
+    "id": "notes-within-line"
   },
   "notes-separate": {
     "name": {
@@ -56,7 +62,8 @@
       "de": "Anmerkungen am Seitenrand als separate Zeilen erfasst"
     },
     "total": 95,
-    "frequencyAvg": 1.2
+    "frequencyAvg": 1.2,
+    "id": "notes-separate"
   },
   "letter-handling-unclear": {
     "name": {
@@ -67,7 +74,8 @@
       "de": "Zum Beispiel q mit Akut, que-Ligatur"
     },
     "total": 17,
-    "frequencyAvg": 0.2
+    "frequencyAvg": 0.2,
+    "id": "letter-handling-unclear"
   },
   "line-incomplete": {
     "name": {
@@ -79,7 +87,8 @@
       "en": "Line was captured correctly, but letters in the left or right of the line are missing"
     },
     "total": 33,
-    "frequencyAvg": 0.4
+    "frequencyAvg": 0.4,
+    "id": "line-incomplete"
   },
   "line-incorrect": {
     "name": {
@@ -91,7 +100,8 @@
       "de": "Mehrere Zeilen im Bild erfasst; Zeile liegt schräg im Bild"
     },
     "total": 57,
-    "frequencyAvg": 0.7
+    "frequencyAvg": 0.7,
+    "id": "line-incorrect"
   },
   "line-captured-twice": {
     "name": {
@@ -99,7 +109,8 @@
       "de": "Zeile teilweise oder vollständig doppelt erfasst"
     },
     "total": 33,
-    "frequencyAvg": 0.4
+    "frequencyAvg": 0.4,
+    "id": "line-captured-twice"
   },
   "text-greek": {
     "name": {
@@ -107,7 +118,8 @@
       "de": "Griechischer Text"
     },
     "total": 3,
-    "frequencyAvg": 0
+    "frequencyAvg": 0,
+    "id": "text-greek"
   },
   "letter-unidentified": {
     "name": {
@@ -118,7 +130,8 @@
       "en": "May be similar with <a href=\"##%20letter-handling-unclear\">letter-handling-unclear</a>"
     },
     "total": 12,
-    "frequencyAvg": 0.2
+    "frequencyAvg": 0.2,
+    "id": "letter-unidentified"
   },
   "letter-unreadable": {
     "name": {
@@ -126,7 +139,8 @@
       "de": "Buchstabe nicht ausgebleicht aber trotzdem unleserlich"
     },
     "total": 2,
-    "frequencyAvg": 0
+    "frequencyAvg": 0,
+    "id": "letter-unreadable"
   },
   "line-not-in-order": {
     "name": {
@@ -134,6 +148,15 @@
       "de": "Zeile nicht in richtiger Reihenfolge erfasst"
     },
     "total": 4,
-    "frequencyAvg": 0.1
+    "frequencyAvg": 0.1,
+    "id": "line-not-in-order"
+  },
+  "dividing-line": {
+    "name": {
+      "en": "Dividing line captured as line",
+      "de": "Trennlinie als Zeile erfasst"
+    },
+    "total": 2,
+    "id": "dividing-line"
   }
 }

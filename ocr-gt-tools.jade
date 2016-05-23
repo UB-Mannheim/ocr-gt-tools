@@ -15,8 +15,8 @@ html(lang='de')
 					h4.panel-title
 						a(data-toggle='collapse', href='#page-comment') Seiten-Kommentar
 				#page-comment.panel-collapse.collapse.in
-					a.list-group-item(target='_blank', href='{{ hiresUrl }}')
-						img(src='{{ imageUrl }}')
+					a.list-group-item(target='_blank', href='{{ this.url.hires-url }}')
+						img(src='{{ this.url.thumb-url }}')
 					div(contenteditable) {{ pageComment }}
 			.panel.panel-info
 				.panel-heading
@@ -24,13 +24,13 @@ html(lang='de')
 						a(data-toggle='collapse', href='#work-info') Werk-Info
 				#work-info.panel-collapse.collapse
 					.list-group
-						a.list-group-item(target='_blank', href='http://digi.bib.uni-mannheim.de/en/suchergebnis/?tx_dlf[query]={{ pathId }}')
+						a.list-group-item(target='_blank', href='{{ this.url.landing-page-url }}')
 							i.fa.fa-download
 							| Werk in Digitaler Bibliothek
 						| {{#each pages}}
-						a.list-group-item(href='\#{{ this.url }}')
+						a.list-group-item(href='\#{{ this.url.thumb-url }}')
 							i.fa.fa-history
-							| Seite {{this.page}}
+							| Seite {{this.ids.page}}
 						| {{/each}}
 			.panel.panel-info
 				.panel-heading
@@ -38,10 +38,10 @@ html(lang='de')
 						a(data-toggle='collapse', href='#page-info') Seiten-Info
 				#page-info.panel-collapse.collapse.in(aria-expanded='true')
 					.list-group
-						a#download-comments.list-group-item(target='_blank', href='{{ commentsUrl }}')
+						a#download-comments.list-group-item(target='_blank', href='{{ this.url.comment-url }}')
 							i.fa.fa-download
 							| Anmerkungen
-						a#download-correction.list-group-item(target='_blank', href='{{ correctionUrl }}')
+						a#download-correction.list-group-item(target='_blank', href='{{ this.url.correction-url }}')
 							i.fa.fa-download
 							| Korrektur
 
@@ -49,14 +49,15 @@ html(lang='de')
 		// A cheatsheet entry
 		//*
 		script#tpl-cheatsheetEntry(type='text/x-handlebars-template')
-			tr
+			tr(id="cheatsheet-{{ id }}")
 				td
 					a(target="_blank", href="https://github.com/UB-Mannheim/ocr-gt-tools/wiki/Special-Characters\#{{ id }}")
 						| {{ name.de }}
 				td {{{ sample }}}
 				td
 					button.code(data-clipboard-text="{{ recognition }}")
-						| {{ recognition }}
+						span.fa.fa-clipboard.clipboard
+						span.recognition {{ recognition }}
 
 		//*
 		// A line of page
@@ -137,6 +138,8 @@ html(lang='de')
 				.modal-content
 					.modal-header
 						h4.modal-title Eingabe Spickzettel
+						.cheatsheet-entry
+							input(type='text')
 						button.close(type='button', data-dismiss='modal')
 							span &times;
 					.modal-body
@@ -153,6 +156,8 @@ html(lang='de')
 		//*
 		#select-bar.hidden
 			.panel-heading.clearfix
+				button.close.pull-left(type='button', data-dismiss='modal')
+					span &times;
 				.btn-group.pull-right
 					a.btn.btn-sm.btn-default.select-all
 						i.fa.btn-sm.fa-arrows-alt

@@ -195,7 +195,7 @@ var ON_LOAD = {
         });
     },
     'Error-Tags': function(scraped) {
-        window.alert('Not Implemented');
+        console.log('Not Implemented for Error-Tags (yet?)');
     }
 };
 
@@ -234,6 +234,7 @@ function scrapeJsonFromWikiPage(schema) {
                 thingDesc[varName] = rawValue;
             }
         }
+        thingDesc.id = thingId;
         console.log([thingDesc, schema]);
         if (!validator.validate(thingId, schema.properties.id)) {
             showError(thingId, validator.getLastErrors());

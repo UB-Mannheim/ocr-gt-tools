@@ -7,67 +7,10 @@ var UISettings = {
     defaultViews: ['.transcription','img']
 };
 
-var Utils = {};
-
-/********************/
-/* Utiliy functions */
-/********************/
-
-/**
- * Transform text file to array of line lineComments
- *
- * @param {string} txt Contents of the text file
- * @param {object} target the object to attach 'pageComment'/'lineComments' to
- */
-Utils.parseLineComments = function parseLineComments(txt, target) {
-    var lines = txt.split(/\n/);
-    var lineComments = [];
-    for (var i = 0; i < lines.length ; i++) {
-        var lineComment = lines[i].replace(/^\d+:\s*/, '');
-        lineComment = encodeForServer(lineComment);
-        lineComments.push(lineComment);
-    }
-    target.pageComment = lineComments[0];
-    target.lineComments = lineComments.slice(1);
+function httpError(xhr) {
+    notie.alert(3, "HTTP Fehler " + xhr.status + ":\n<pre style='text-align: left'>" + xhr.responseText + "</pre>");
+    WaitingAnimation.stop();
 };
-
-/**
- * Scale the 'height' attribute of an element by a factor,
- * effectively zooming images.
- *
- * @param {DOMElement} el the element to scale
- * @param {float} factor the scale factor
- */
-Utils.scaleHeight = function scaleHeight(el, factor) {
-    var curHeight = el.getAttribute('height') || el.offsetHeight;
-    if (!el.hasAttribute('data-original-height')) {
-        el.setAttribute('data-original-height', curHeight);
-    }
-    var originalHeight = el.getAttribute('data-original-height');
-    var newHeight = factor == 1 ? originalHeight : curHeight * factor;
-    el.setAttribute('height',  newHeight);
-};
-
-/**
- * Attach current UNIX time as a URL parameter to a URL so a GET request to it
- * won't be cached.
- *
- * @param {string} url the URL to timestamp
- */
-Utils.uncachedURL = function uncachedURL(url) {
-    return url + "?nocache=" + Date.now();
-};
-
-/**
- * Test whether element is within viewport
- * No jQuery necessary.
- * Thanks to Dan's StackOverflow answer for this:
- * http://stackoverflow.com/questions/123999/how-to-tell-if-a-dom-element-is-visible-in-the-current-viewport
-*/
-function isElementInViewport(el) {
-    var rect = el.getBoundingClientRect();
-    return (rect.top >= 0 && rect.left >= 0);
-}
 
 /**
  * Compile the Handlebars templates
@@ -79,56 +22,6 @@ function compileTemplates() {
         var tplId = $this.attr('id').replace(/^tpl-/, '');
         window.templates[tplId] = Handlebars.compile($this.html());
     });
-}
-
-/**
- * Get the width of the first image in an element.
- */
-function getImageWidth(el) {
-    if (el.tagName !== 'IMG') {
-        el = $(el).find('img')[0];
-        if (!el) {
-            return -1;
-        }
-    }
-    return el.clientWidth;
-}
-
-function encodeForBrowser(str) {
-    return str
-        .replace(/&amp;/g, '&')
-        .replace(/&gt;/g, '>')
-        .replace(/&lt;/g, '<')
-        .replace(/^\n*/, '')
-        .replace(/\n*$/, '')
-        .replace(/\n/g, '<br>');
-}
-
-function encodeForServer(str) {
-    return str
-        .replace(/^(<br[^>]*>)*/, '')
-        .replace(/(<br[^>]*>)*$/, '')
-        .replace(/<br[^>]*>/g, "\n");
-}
-
-function startWaitingAnimation() {
-    $("#dropzone").addClass('hidden');
-    $("#waiting-animation").removeClass('hidden');
-    var keys = Object.keys(UISettings['special-chars']);
-    window.waitingAnimation = setInterval(function() {
-        perRound = 50;
-        while (perRound-- > 0) {
-            var randGlyph = UISettings['special-chars'][keys[parseInt(Math.random() * keys.length)]];
-            var $el = $("#waiting-animation" +
-                " tr:nth-child(" + parseInt(Math.random() * 20) + ")" +
-                " td:nth-child(" + parseInt(Math.random() * 20) + ")"
-            ).html(randGlyph.sample);
-        }
-    }, 100);
-}
-function stopWaitingAnimation() {
-    $("#waiting-animation").addClass('hidden');
-    clearInterval(window.waitingAnimation);
 }
 
 /*******************************/
@@ -152,24 +45,23 @@ function loadGtEditLocation(url) {
         beforeSend: function(xhr) {
             // to instantly see when a new document has been retrieved
             $("#file-correction").addClass("hidden");
-            startWaitingAnimation();
+            WaitingAnimation.start();
         },
         success: function(res) {
             // file correction will be loaded
             $("#dropzone").addClass('hidden');
             window.ocrGtLocation = res;
-            window.location.hash = window.ocrGtLocation.imageUrl;
+            console.log(window.ocrGtLocation);
+            window.location.hash = window.ocrGtLocation.url['thumb-url'];
             window.setTimeout(function() {
+                // ajax
                 $("#raw-html").load(
-                    Utils.uncachedURL(window.ocrGtLocation.correctionUrl),
+                    Utils.uncachedURL(window.ocrGtLocation.url['correction-url']),
                     function handleCorrectionAjax(response, status, xhr) {
                         $.ajax({
                             type: 'GET',
-                            url: Utils.uncachedURL(window.ocrGtLocation.commentsUrl),
-                            error: function(x, e) {
-                                console.log(arguments);
-                                notie.alert(3, "HTTP Fehler " + x.status + ":\n" + x.responseText);
-                            },
+                            url: Utils.uncachedURL(window.ocrGtLocation.url['comment-url']),
+                            error: httpError,
                             success: function(response, status, xhr) {
                                 Utils.parseLineComments(response, window.ocrGtLocation);
                                 addCommentFields();
@@ -181,7 +73,7 @@ function loadGtEditLocation(url) {
                                     $('#page-index').append('<li><a href="#' + pageObj.url + '">' + pageObj.page + '</a></li>');
                                 });
                                 onScroll();
-                                stopWaitingAnimation();
+                                WaitingAnimation.stop();
                             }
                         });
                     }
@@ -193,10 +85,7 @@ function loadGtEditLocation(url) {
             $("#save_button").removeClass("hidden");
             // activate button if #file-correction is changed
         },
-        error: function(x, e) {
-            notie.alert(3, "HTTP Fehler " + x.status + ":\n" + x.responseText);
-            stopWaitingAnimation();
-        }
+        error: httpError,
     });
 }
 
@@ -207,21 +96,21 @@ function loadGtEditLocation(url) {
 function saveGtEditLocation() {
 
     if (!window.ocrGtLocation.changed) {
-        console.log("Nothing changed.");
+        notie.alert(2, "Nothing changed.", 1);
         return;
     }
 
     $("#wait_save").addClass("wait").removeClass("hidden");
     $("#disk").addClass("hidden");
-    window.ocrGtLocation.transliterations = $('li.transcription div').map(function() {
-        return encodeForServer($(this).html());
+    window.ocrGtLocation.transcriptions = $('li.transcription div').map(function() {
+        return Utils.encodeForServer($(this).html());
     }).get();
     window.ocrGtLocation.lineComments = $("li.line-comment div").map(function() {
-        return encodeForServer($(this).html());
+        return Utils.encodeForServer($(this).html());
     }).get();
-    window.ocrGtLocation.pageComment = encodeForServer($("#page-comment div").html());
+    window.ocrGtLocation.pageComment = Utils.encodeForServer($("#page-comment div").html());
     // console.log(window.ocrGtLocation.pageComment);
-    // console.log(window.ocrGtLocation.transliterations);
+    // console.log(window.ocrGtLocation.transcriptions);
     // console.log(window.ocrGtLocation.lineComments);
 
     $.ajax({
@@ -229,9 +118,7 @@ function saveGtEditLocation() {
         url: UISettings.cgiUrl + '?action=save',
         data: window.ocrGtLocation,
         success: markSaved,
-        error: function(x, e) {
-            notie.alert(3, "HTTP Fehler " + x.status + ":\n" + x.responseText);
-        }
+        error: httpError,
     });
 }
 
@@ -258,7 +145,7 @@ function markSaved() {
     $("#disk").removeClass("hidden");
     $("#save_button").addClass("disabled");
     $(".line div[contenteditable]").each(function() {
-        $(this).html(encodeForBrowser(encodeForServer($(this).html())));
+        $(this).html(Utils.encodeForBrowser(Utils.encodeForServer($(this).html())));
     });
     notie.alert(1, "Gespeichert", 1);
 }
@@ -274,8 +161,8 @@ function addCommentFields() {
             "id": curLine,
             "title": $this.find("td")[0].innerHTML,
             "imgSrc": $this.find("img")[0].getAttribute('src'),
-            "transcription": encodeForBrowser($this.find("td")[2].innerHTML),
-            "comment": encodeForBrowser(window.ocrGtLocation.lineComments[curLine]),
+            "transcription": Utils.encodeForBrowser($this.find("td")[2].innerHTML),
+            "comment": Utils.encodeForBrowser(window.ocrGtLocation.lineComments[curLine]),
         };
         var $line = $(window.templates.line(line));
         $(":checkbox", $line).on('click', function(e) {
@@ -291,7 +178,7 @@ function addCommentFields() {
             }
         });
         $("div[contenteditable]", $line).on('blur', function(e) {
-            $(this).html(encodeForBrowser(encodeForServer($(this).html())));
+            $(this).html(Utils.encodeForBrowser(Utils.encodeForServer($(this).html())));
         });
         $("#file-correction").append($line);
     });
@@ -394,8 +281,8 @@ function sortRowsByWidth(order) {
     var order = order || 1;
     $("#file-correction").append(
         $("#file-correction .row").sort(function(a, b) {
-            var aWidth = getImageWidth(a);
-            var bWidth = getImageWidth(b);
+            var aWidth = Utils.getImageWidth(a);
+            var bWidth = Utils.getImageWidth(b);
             return (aWidth - bWidth) * order;
         }).detach()
     );
@@ -464,18 +351,6 @@ function onHashChange() {
     }
 }
 
-function getUrlFromDragEvent(e) {
-    var elem = e.originalEvent.dataTransfer.getData('text/html');
-    var url = $(elem).find('img').addBack('img').attr('src');
-    if (!url) {
-        url = $(elem).find('a').addBack('a').attr('href');
-    }
-    if (!url) {
-        url = e.originalEvent.dataTransfer.getData('text/plain');
-    }
-    return url;
-}
-
 function onScroll() {
     var done = false;
     var cur = 0;
@@ -485,7 +360,7 @@ function onScroll() {
         if (done) {
             return;
         }
-        if (isElementInViewport(this)) {
+        if (Utils.isElementInViewport(this)) {
             cur = 1 + parseInt(this.getAttribute('data-line-number'));
             done = true;
         }
@@ -528,7 +403,7 @@ function setupDragAndDrop() {
             if (window.ocrGtLocation && window.ocrGtLocation.changed) {
                 notie.alert(2, "Ungesicherte Inhalte vorhanden, bitte zuerst speichern!", 2);
             } else {
-                var url = getUrlFromDragEvent(e);
+                var url = Utils.getUrlFromDragEvent(e);
                 if (url) {
                     loadGtEditLocation(url);
                 } else {
@@ -574,26 +449,16 @@ function onPageLoaded() {
                     $("#history-modal tbody").append(window.templates.historyItem(data[i]));
                 }
             },
-            error: function(x, e) {
-                notie.alert(3, "HTTP Fehler " + x.status + ":\n" + x.responseText);
-            }
+            error: httpError
         });
     });
 
-    // Open cheatsheet modal
-    $('button[data-target="#cheatsheet-modal"]').on('click', function() {
-        var keys = Object.keys(UISettings['special-chars']);
-        $("#cheatsheet-modal .cheatsheet").empty();
-        for (var i = 0; i < keys.length; i++) {
-            var key = keys[i];
-            $("#cheatsheet-modal .cheatsheet").append(
-                window.templates.cheatsheetEntry(UISettings['special-chars'][key])
-            );
-        }
-    });
+    window.cheatsheetView = new CheatsheetView($("#cheatsheet-modal"), UISettings['special-chars']);
+    window.cheatsheetView.render();
 
     // Select Mode
     $("#toggle-select").on('click', toggleSelectMode);
+    $("#select-bar .close").on('click', toggleSelectMode);
     $('.add-multi-comment').on('click', addMultiComment);
     $(".set-view").on('click', function() {
         reduceViewToSelectors($(this).attr('data-target').split(/\s*,\s*/));
@@ -621,16 +486,14 @@ $(function() {
         type: 'GET',
         url: 'special-chars.json',
         dataType: "json",
-        error: function() {
-            notie.alert(3, "HTTP Fehler " + x.status + ":\n" + x.responseText);
-        },
+        error: httpError,
         success: function(specialChars) {
             $.ajax({
                 type: 'GET',
                 url: 'error-tags.json',
                 dataType: "json",
                 error: function() {
-                    notie.alert(3, "HTTP Fehler " + x.status + ":\n" + x.responseText);
+                    Utils.httpE(x);
                 },
                 success: function(errorTags) {
                     UISettings['special-chars'] = specialChars;

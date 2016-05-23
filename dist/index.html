@@ -14,7 +14,7 @@
         <div class="panel-heading">
           <h4 class="panel-title"><a data-toggle="collapse" href="#page-comment">Seiten-Kommentar</a></h4>
         </div>
-        <div id="page-comment" class="panel-collapse collapse in"><a target="_blank" href="{{ hiresUrl }}" class="list-group-item"><img src="{{ imageUrl }}"></a>
+        <div id="page-comment" class="panel-collapse collapse in"><a target="_blank" href="{{ this.url.hires-url }}" class="list-group-item"><img src="{{ this.url.thumb-url }}"></a>
           <div contenteditable>{{ pageComment }}</div>
         </div>
       </div>
@@ -23,7 +23,7 @@
           <h4 class="panel-title"><a data-toggle="collapse" href="#work-info">Werk-Info</a></h4>
         </div>
         <div id="work-info" class="panel-collapse collapse">
-          <div class="list-group"><a target="_blank" href="http://digi.bib.uni-mannheim.de/en/suchergebnis/?tx_dlf[query]={{ pathId }}" class="list-group-item"><i class="fa fa-download"></i>Werk in Digitaler Bibliothek</a>{{#each pages}}<a href="#{{ this.url }}" class="list-group-item"><i class="fa fa-history"></i>Seite {{this.page}}</a>{{/each}}</div>
+          <div class="list-group"><a target="_blank" href="{{ this.url.landing-page-url }}" class="list-group-item"><i class="fa fa-download"></i>Werk in Digitaler Bibliothek</a>{{#each pages}}<a href="#{{ this.url.thumb-url }}" class="list-group-item"><i class="fa fa-history"></i>Seite {{this.ids.page}}</a>{{/each}}</div>
         </div>
       </div>
       <div class="panel panel-info">
@@ -31,7 +31,7 @@
           <h4 class="panel-title"><a data-toggle="collapse" href="#page-info">Seiten-Info</a></h4>
         </div>
         <div id="page-info" aria-expanded="true" class="panel-collapse collapse in">
-          <div class="list-group"><a id="download-comments" target="_blank" href="{{ commentsUrl }}" class="list-group-item"><i class="fa fa-download"></i>Anmerkungen</a><a id="download-correction" target="_blank" href="{{ correctionUrl }}" class="list-group-item"><i class="fa fa-download"></i>Korrektur</a></div>
+          <div class="list-group"><a id="download-comments" target="_blank" href="{{ this.url.comment-url }}" class="list-group-item"><i class="fa fa-download"></i>Anmerkungen</a><a id="download-correction" target="_blank" href="{{ this.url.correction-url }}" class="list-group-item"><i class="fa fa-download"></i>Korrektur</a></div>
         </div>
       </div>
     </script>
@@ -39,11 +39,11 @@
     <!-- A cheatsheet entry-->
     <!--*-->
     <script id="tpl-cheatsheetEntry" type="text/x-handlebars-template">
-      <tr>
+      <tr id="cheatsheet-{{ id }}">
         <td><a target="_blank" href="https://github.com/UB-Mannheim/ocr-gt-tools/wiki/Special-Characters#{{ id }}">{{ name.de }}</a></td>
         <td>{{{ sample }}}</td>
         <td>
-          <button data-clipboard-text="{{ recognition }}" class="code">{{ recognition }}</button>
+          <button data-clipboard-text="{{ recognition }}" class="code"><span class="fa fa-clipboard clipboard"></span><span class="recognition">{{ recognition }}</span></button>
         </td>
       </tr>
     </script>
@@ -128,6 +128,9 @@
         <div class="modal-content">
           <div class="modal-header">
             <h4 class="modal-title">Eingabe Spickzettel</h4>
+            <div class="cheatsheet-entry">
+              <input type="text">
+            </div>
             <button type="button" data-dismiss="modal" class="close"><span>&times;</span></button>
           </div>
           <div class="modal-body">
@@ -147,6 +150,7 @@
     <!--*-->
     <div id="select-bar" class="hidden">
       <div class="panel-heading clearfix">
+        <button type="button" data-dismiss="modal" class="close pull-left"><span>&times;</span></button>
         <div class="btn-group pull-right"><a class="btn btn-sm btn-default select-all"><i class="fa btn-sm fa-arrows-alt"></i>Alle auswählen</a><a class="btn btn-sm btn-default select-none"><i class="fa btn-sm fa-arrows-alt"></i>Auswahl aufheben</a><a class="btn btn-sm btn-default select-toggle"><i class="fa btn-sm fa-arrows-alt"></i>Auswahl umkehren</a><a data-tag="text-italic" class="btn btn-sm btn-default add-multi-comment"><i class="fa btn-sm fa-italic"></i>Kursiv</a><a data-tag="wrong-image-section" class="btn btn-sm btn-warning add-multi-comment"><i class="fa btn-sm fa-exclamation-circle"></i>Fehler in Vorlage</a></div>
       </div>
     </div>

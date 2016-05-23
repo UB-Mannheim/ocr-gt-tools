@@ -58,7 +58,7 @@ CHOKIDAR      = chokidar $(CHOKIDAR_OPTS)
 DEBIAN_PACKAGES = \
 	git \
 	libjson-perl \
-	libconfig-inifiles-perl \
+	libipc-run-perl \
 	python-numpy \
 	python-scipy \
 	python-matplotlib
@@ -91,7 +91,7 @@ JS_FILES    = bower_components/jquery/dist/jquery.js \
 # The HTML files, described in the Jade shorthand / templating language
 JADE_FILES  = ocr-gt-tools.jade
 # The files to watch for changes for to trigger a rebuild
-WATCH_FILES = Makefile ocr-gt-tools.* ${JADE_FILES} *.json
+WATCH_FILES = Makefile ocr-gt-tools.* ${JADE_FILES} *.json js/**/*.js js/*.js
 
 #
 # Define the list of targets that will "always fail", i.e. the CLI api
@@ -163,11 +163,6 @@ dev-deps: dev-apt-get bower_components node_modules
 # Run the development standalone server on port 9090
 #
 
-# Sanity check to prevent running without a config file
-conf/ocr-gt-tools.ini:
-	@echo "Copy conf/ocr-gt-tools.ini_tmpl to conf/ocr-gt-tools.ini and set paths."
-	exit 1
-
 dev-server:
 	$(PLACKUP) app.psgi
 
@@ -203,8 +198,12 @@ dist/ocr-gt-tools.cgi: ocr-gt-tools.cgi
 	$(CP) $< $@
 	chmod a+x $@
 
-dist/ocr-gt-tools.js: ocr-gt-tools.js
-	$(UGLIFYJS) --source-map --compress --output $@ $<
+dist/ocr-gt-tools.js:\
+	js/utils.js\
+	js/animation.js\
+	js/views/cheatsheet-view.js\
+	ocr-gt-tools.js
+	$(UGLIFYJS) --compress --output $@ $^
 
 dist/ocr-gt-tools.css: ocr-gt-tools.styl
 	$(STYLUS) < $< > $@
@@ -250,7 +249,7 @@ deploy:
 	sudo -u $(APACHE_USER) $(MKDIR) $(APACHE_DIR)/$(APACHE_BASEURL)
 	sudo -u $(APACHE_USER) $(CP) dist/* dist/.htaccess $(APACHE_DIR)/$(APACHE_BASEURL)
 	sudo -u $(APACHE_USER) find $(APACHE_DIR)/$(APACHE_BASEURL) -exec chmod u+w -R {} \;
-	sudo -u $(APACHE_USER) $(RM) $(APACHE_DIR)/$(APACHE_BASEURL)/ocr-gt-tools.dev.ini
+	sudo -u $(APACHE_USER) $(RM) $(APACHE_DIR)/$(APACHE_BASEURL)/ocr-gt-tools.dev.yml
 
 
 #

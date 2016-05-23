@@ -157,12 +157,19 @@ div[contenteditable]
 
 #select-bar
 	position fixed
-	background-color yellow
-	border: 2px solid blue
+	background-color #eee
+	border-radius 0 0 10px 10px
+	border-left: 2px solid blue
+	border-right 2px solid blue
+	border-bottom 2px solid blue
 	top 0
 	left 200px
-	height 48px
 	z-index: 1001
+	.close
+		opacity .5
+		display inline-block
+		padding-right 5px
+		font-size xx-large
 
 #cheatsheet-modal
 	// disable selection
@@ -172,18 +179,30 @@ div[contenteditable]
 	-moz-user-select: none;
 	-ms-user-select: none;
 	user-select: none;
+	h4
+		float: left
+	.cheatsheet-entry
+		float: left
+		margin-left 25%
+		font-size: 200%
+		max-width: 64px
 	img
 		height: 64px
 	th
 		font-weight: bold
+	td:nth-child(1)
+		width: 40%
 	td
 		vertical-align: middle
 		font-size: 120%
 		button.code
-			font-family: monospace
-			font-size: 48px
-			height: 64px
-			width: 100%
+			width 100%
+			font-family monospace
+			font-size 48px
+			height 64px
+		.clipboard
+			float: left
+			font-size: 50%
 
 .select-col
 	padding-left: 20px

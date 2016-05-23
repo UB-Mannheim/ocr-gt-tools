@@ -29,7 +29,7 @@ make vendor
 Copy the configuration template and edit as needed:
 
 ```
-cp dist/ocr-gt-tools.dev.ini dist/ocr-gt-tools.ini
+cp dist/ocr-gt-tools.dev.yml dist/ocr-gt-tools.yml
 ```
 
 ## Deploy on a server
@@ -72,8 +72,8 @@ sudo $EDITOR /etc/apache2/sites-available/000-default.conf
 * Copy the configuration:
 
 ```
-sudo -u www-data cp dist/ocr-gt-tools.dev.ini $APACHE_DIR/$APACHE_BASEURL/ocr-gt-tools.ini
-# "sudo $EDITOR $APACHE_DIR/$APACHE_BASEURL/ocr-gt-tools.ini" as needed
+sudo -u www-data cp dist/ocr-gt-tools.dev.yml $APACHE_DIR/$APACHE_BASEURL/ocr-gt-tools.yml
+# "sudo $EDITOR $APACHE_DIR/$APACHE_BASEURL/ocr-gt-tools.yml" as needed
 ```
 
 * Restart apache 
