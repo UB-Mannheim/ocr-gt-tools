@@ -1,0 +1,629 @@
+// Name: ocr-gt-tools.js
+
+var UISettings = {
+    zoomInFactor: 1.4,
+    zoomOutFactor: 0.8,
+    cgiUrl: 'ocr-gt-tools.cgi',
+    defaultViews: ['.transcription','img']
+};
+
+var Templates = (function() {
+    templates = {};
+    $("*[id^='tpl-']").each(function() {
+        var $this = $(this);
+        var tplId = $this.attr('id').replace(/^tpl-/, '');
+        templates[tplId] = Handlebars.compile($this.html());
+    });
+    return templates;
+})();
+
+var Utils = {
+
+    getUrlFromDragEvent: function(e) {
+        var elem = e.originalEvent.dataTransfer.getData('text/html');
+        var url = $(elem).find('img').addBack('img').attr('src');
+        if (!url) {
+            url = $(elem).find('a').addBack('a').attr('href');
+        }
+        if (!url) {
+            url = e.originalEvent.dataTransfer.getData('text/plain');
+        }
+        return url;
+    },
+
+    /**
+     * Transform text file to array of line lineComments
+     *
+     * @param {string} txt Contents of the text file
+     * @param {object} target the object to attach 'pageComment'/'lineComments' to
+     */
+    parseLineComments: function parseLineComments(txt, target) {
+        var lines = txt.split(/\n/);
+        var lineComments = [];
+        for (var i = 0; i < lines.length ; i++) {
+            var lineComment = lines[i].replace(/^\d+:\s*/, '');
+            lineComment = Utils.encodeForServer(lineComment);
+            lineComments.push(lineComment);
+        }
+        target.pageComment = lineComments[0];
+        target.lineComments = lineComments.slice(1);
+    },
+
+    /**
+     * Scale the 'height' attribute of an element by a factor,
+     * effectively zooming images.
+     *
+     * @param {DOMElement} el the element to scale
+     * @param {float} factor the scale factor
+     */
+    scaleHeight: function scaleHeight(el, factor) {
+        var curHeight = el.getAttribute('height') || el.offsetHeight;
+        if (!el.hasAttribute('data-original-height')) {
+            el.setAttribute('data-original-height', curHeight);
+        }
+        var originalHeight = el.getAttribute('data-original-height');
+        var newHeight = factor == 1 ? originalHeight : curHeight * factor;
+        el.setAttribute('height',  newHeight);
+    },
+
+    /**
+     * Attach current UNIX time as a URL parameter to a URL so a GET request to it
+     * won't be cached.
+     *
+     * @param {string} url the URL to timestamp
+     */
+    uncachedURL: function uncachedURL(url) {
+        return url + "?nocache=" + Date.now();
+    },
+
+    /**
+     * Test whether element is within viewport
+     * No jQuery necessary.
+     * Thanks to Dan's StackOverflow answer for this:
+     * http://stackoverflow.com/questions/123999/how-to-tell-if-a-dom-element-is-visible-in-the-current-viewport
+    */
+    isElementInViewport: function isElementInViewport(el) {
+        var rect = el.getBoundingClientRect();
+        return (rect.top >= 0 && rect.left >= 0);
+    },
+
+    /**
+     * Get the width of the first image in an element.
+     */
+    getImageWidth: function getImageWidth(el) {
+        if (el.tagName !== 'IMG') {
+            el = $(el).find('img')[0];
+            if (!el) {
+                return -1;
+            }
+        }
+        return el.clientWidth;
+    },
+
+    encodeForBrowser: function encodeForBrowser(str) {
+        return str
+            .replace(/&amp;/g, '&')
+            .replace(/&gt;/g, '>')
+            .replace(/&lt;/g, '<')
+            .replace(/^\n*/, '')
+            .replace(/\n*$/, '')
+            .replace(/\n/g, '<br>');
+    },
+
+    encodeForServer: function encodeForServer(str) {
+        return str
+            .replace(/^(<br[^>]*>)*/, '')
+            .replace(/(<br[^>]*>)*$/, '')
+            .replace(/<br[^>]*>/g, "\n");
+    },
+
+    httpError: function httpError(xhr) {
+        notie.alert(3, "HTTP Fehler " + xhr.status + ":\n<pre style='text-align: left'>" + xhr.responseText + "</pre>");
+        WaitingAnimation.stop();
+    },
+};
+
+var WaitingAnimation = {
+    start: function() {
+        $("#dropzone").addClass('hidden');
+        $("#waiting-animation").removeClass('hidden');
+        var keys = Object.keys(UISettings['special-chars']);
+        window.waitingAnimation = setInterval(function() {
+            perRound = 50;
+            while (perRound-- > 0) {
+                var randGlyph = UISettings['special-chars'][keys[parseInt(Math.random() * keys.length)]];
+                var $el = $("#waiting-animation" +
+                    " tr:nth-child(" + parseInt(Math.random() * 20) + ")" +
+                    " td:nth-child(" + parseInt(Math.random() * 20) + ")"
+                ).html(randGlyph.sample);
+            }
+        }, 100);
+    },
+    stop: function() {
+        $("#waiting-animation").addClass('hidden');
+        clearInterval(window.waitingAnimation);
+    },
+};
+
+function OcrLocation(id) {
+    this.id = id;
+    this.loaded = false;
+    this.changed = false;
+    this.event = $("<div>");
+};
+
+OcrLocation.prototype.toJSON = function toJSON() {
+    return {
+        id: this.id,
+        ids: this.ids,
+        url: this.url,
+    };
+};
+
+OcrLocation.prototype.updateCommentButtonColor = function() {
+    $(".line").each(function() {
+        var $line = (this);
+        var $lineComment = $(".line-comment div[contenteditable]", $line);
+        var lineCommentId = $(".line-comment", $line).attr('id');
+        if ($lineComment.text().match(/\S/)) {
+            $(".show-line-comment[data-target='#" + lineCommentId + "']").removeClass('btn-default').addClass('btn-info');
+        } else {
+            $(".show-line-comment[data-target='#" + lineCommentId + "']").addClass('btn-default').removeClass('btn-info');
+        }
+    });
+};
+
+OcrLocation.prototype.render = function() {
+    var self = this;
+    self.renderLines();
+    self.renderPageList();
+    // event listeners
+    $("#save_button").off('click').on("click", function() {
+        self.save();
+    });
+    // show new document
+    $("#file-correction").removeClass("hidden");
+    $("ul.navbar-nav li").removeClass("disabled");
+    onScroll();
+    WaitingAnimation.stop();
+    self.updateCommentButtonColor();
+    this.event.trigger('rendered');
+};
+
+OcrLocation.prototype.renderPageList = function() {
+    // append list of pages
+    // TODO
+    $.each(window.currentPage.pages, function(index, pageObj) {
+        $('#page-index').append('<li><a href="#' + pageObj.url + '">' + pageObj.page + '</a></li>');
+    });
+};
+
+OcrLocation.prototype.renderLines = function() {
+    var self = this;
+    $("#file-correction").empty();
+    $("#raw-html table").each(function(curLine) {
+        var $this = $(this);
+        var line = {
+            "id": curLine,
+            "title": $this.find("td")[0].innerHTML,
+            "imgSrc": $this.find("img")[0].getAttribute('src'),
+            "transcription": Utils.encodeForBrowser($this.find("td")[2].innerHTML),
+            "comment": Utils.encodeForBrowser(self.lineComments[curLine]),
+        };
+        var $line = $(Templates.line(line));
+        $(":checkbox", $line).on('click', function(e) {
+            $(this).closest('.row').toggleClass('selected');
+            e.stopPropagation();
+        });
+        $(".select-col", $line).on('click', function(e) {
+            $(this).find(':checkbox').click();
+        });
+        $(".transcription div[contenteditable]", $line).on('keydown', function(e) {
+            if (e.keyCode == 13) {
+                e.preventDefault();
+            }
+        });
+        $("div[contenteditable]", $line).on('blur', function(e) {
+            $(this).html(Utils.encodeForBrowser(Utils.encodeForServer($(this).html())));
+        });
+        $("#file-correction").append($line);
+    });
+    $("#right-sidebar").html(Templates.rightSidebar(self));
+    $(".show-line-comment").on('click', toggleLineComment);
+    $(".hide-line-comment").on('click', toggleLineComment);
+    $(".add-comment").on('click', addComment);
+    this.updateCommentButtonColor();
+    reduceViewToSelectors(UISettings.defaultViews);
+    this.event.trigger('rendered-lines');
+};
+
+OcrLocation.prototype.load = function() {
+    var self = this;
+    $.ajax({
+        type: 'GET',
+        url: UISettings.cgiUrl + '?action=create&imageUrl=' + self.id,
+        error: function(xhr) {
+            self.event.trigger('error');
+            Utils.httpError(xht);
+        },
+        success: function(obj) {
+            self.ids = obj.ids;
+            self.url = obj.url;
+            $("#raw-html").load(
+                Utils.uncachedURL(self.url['correction-url']),
+                function handleCorrectionAjax(response, status, xhr) {
+                    $.ajax({
+                        type: 'GET',
+                        url: Utils.uncachedURL(self.url['comment-url']),
+                        error: Utils.httpError,
+                        success: function(response, status, xhr) {
+                            Utils.parseLineComments(response, self);
+                            self.loaded = true;
+                            self.event.trigger('loaded');
+                        }
+                    });
+                }
+            );
+        }
+    });
+};
+
+OcrLocation.prototype.save = function() {
+    var self = this;
+    if (!self.changed) {
+        notie.alert(2, "Nothing changed.", 1);
+        return;
+    }
+    $("#wait_save").addClass("wait").removeClass("hidden");
+    $("#disk").addClass("hidden");
+    self.transcriptions = $('li.transcription div').map(function() {
+        return Utils.encodeForServer($(this).html());
+    }).get();
+    self.lineComments = $("li.line-comment div").map(function() {
+        return Utils.encodeForServer($(this).html());
+    }).get();
+    self.pageComment = Utils.encodeForServer($("#page-comment div").html());
+    // console.log(self.pageComment);
+    // console.log(self.transcriptions);
+    // console.log(self.lineComments);
+
+    $.ajax({
+        type: 'POST',
+        url: UISettings.cgiUrl + '?action=save',
+        data: self.toJSON(),
+        success: function() {
+            self.changed = false;
+            self.event.trigger('saved');
+        },
+        error: Utils.httpError,
+    });
+};
+
+/**
+ * Mark the current page as 'changed'.
+ */
+OcrLocation.prototype.markChanged = function() {
+    this.changed = true;
+    $("#save_button").removeClass("disabled");
+    this.updateCommentButtonColor();
+    this.event.trigger('changed');
+};
+
+/**
+ * Mark the current page as 'saved'.
+ */
+OcrLocation.prototype.markSaved = function() {
+    this.changed = false;
+    $("#wait_save").removeClass("wait").addClass("hidden");
+    $("#disk").removeClass("hidden");
+    $("#save_button").addClass("disabled");
+    $(".line div[contenteditable]").each(function() {
+        $(this).html(Utils.encodeForBrowser(Utils.encodeForServer($(this).html())));
+    });
+    notie.alert(1, "Gespeichert", 1);
+};
+
+/**
+ * Increase image zoom by UISettings.zoomInFactor
+ */
+function zoomIn(e) {
+    e.stopPropagation();
+    $('#file-correction img').each(function() {
+        Utils.scaleHeight(this, UISettings.zoomInFactor);
+    });
+}
+
+/**
+ * Decrease image zoom by UISettings.zoomOutFactor
+ */
+function zoomOut(e) {
+    e.stopPropagation();
+    $('#file-correction img').each(function() {
+        Utils.scaleHeight(this, UISettings.zoomOutFactor);
+    });
+}
+
+/**
+ * Reset all images to their original size
+ */
+function zoomReset(e) {
+    e.stopPropagation();
+    $('#file-correction img').each(function() {
+        Utils.scaleHeight(this, 1);
+    });
+}
+
+/**
+ * Show/hide the line comments for a particular line
+ */
+function toggleLineComment() {
+    var target = $(this).attr('data-target');
+    $(target).toggleClass("view-hidden");
+    $("*[data-target='#" + target + "']").toggleClass("hidden");
+}
+
+function addMultiComment() {
+    var tag = '#' + $(this).attr('data-tag');
+    $('.selected .line-comment').each(function() {
+        addTagToElement($("div[contenteditable]", $(this)), tag);
+    });
+}
+
+function addComment() {
+    var target = $($(this).attr('data-target')).find('div[contenteditable]');
+    var tag = '#' + $(this).attr('data-tag');
+    addTagToElement($(target), tag);
+}
+
+function addTagToElement($target, tag) {
+    $target.html($target.html().trim());
+    if ($target.html().indexOf(tag) == -1) {
+        if ($target.html().match(/\S/)) {
+            $target.append('\n');
+        }
+        $target.append(tag);
+        $target.append('\n');
+        $target.parent().removeClass("hidden");
+        markChanged();
+    }
+}
+
+/**
+ * Sort the rows by image width
+ *
+ * @param {number} order Sort descending (-1) or ascending (1, default)
+ */
+function sortRowsByWidth(order) {
+    var order = order || 1;
+    $("#file-correction").append(
+        $("#file-correction .row").sort(function(a, b) {
+            var aWidth = Utils.getImageWidth(a);
+            var bWidth = Utils.getImageWidth(b);
+            return (aWidth - bWidth) * order;
+        }).detach()
+    );
+}
+
+/**
+ * Sort the rows by line number
+ *
+ * @param {number} order Sort descending (-1) or ascending (1, default)
+ */
+function sortRowsByLine(order) {
+    var order = order || 1;
+    $("#file-correction").append(
+        $("#file-correction .row").sort(function(a, b) {
+            var aLine = $(a).attr('id').replace(/[^\d]/g, '');
+            var bLine = $(b).attr('id').replace(/[^\d]/g, '');
+            return (aLine - bLine) * order;
+        }).detach()
+    );
+}
+
+function changeSelection(action) {
+    $('.select-col').each(function() {
+        var $this = $(this);
+        var isSelected = $this.closest('.row').hasClass('selected');
+        if (action === 'select' && !isSelected) {
+            $this.trigger('click');
+        } else if (action === 'unselect' && isSelected) {
+            $this.trigger('click');
+        } else if (action === 'toggle') {
+            $this.trigger('click');
+        }
+    });
+}
+
+function reduceViewToSelectors(selectors) {
+    $(".lines-col .panel *").addClass('view-hidden');
+    for (var i = 0; i < selectors.length; i++) {
+        $(selectors[i])
+            .removeClass('view-hidden')
+            .parents().removeClass('view-hidden');
+    }
+}
+
+/******************/
+/* Event handlers */
+/******************/
+
+function confirmExit(e) {
+    if (window.currentPage && window.currentPage.changed) {
+        // if (e) e.preventDefault();
+        notie.alert(2, "Ungesicherte Inhalte vorhanden, bitte zuerst speichern!", 5);
+        return "Ungesicherte Inhalte vorhanden, bitte zuerst speichern!";
+    }
+}
+
+function onHashChange() {
+    var cHash = window.location.hash;
+
+    if (window.currentPage && window.currentPage.changed) {
+        confirmExit();
+    } else if (cHash !== '') {
+        window.currentPage = new OcrLocation(cHash.substring(1));
+        window.currentPage.event.on('loaded', function() {
+            window.currentPage.render();
+        });
+        window.currentPage.load();
+    }
+}
+
+function onScroll() {
+    var done = false;
+    var cur = 0;
+    var total = 0;
+    $("table").each(function() {
+        total += 1;
+        if (done) {
+            return;
+        }
+        if (Utils.isElementInViewport(this)) {
+            cur = 1 + parseInt(this.getAttribute('data-line-number'));
+            done = true;
+        }
+    });
+    $("#currentLine").html(cur + ' / ' + total);
+}
+
+function setupDragAndDrop() {
+    // Prevent the default browser drop action
+    $(document).bind('drop dragover', function(e) {
+        e.preventDefault();
+    });
+    // Show the drop zone on as soon as something is dragged
+    $(document)
+        .bind('dragenter', function onDragEnter(e) {
+            e.preventDefault();
+            $("#file-correction").addClass('hidden');
+            $("#dropzone").removeClass('hidden');
+        })
+        .bind('dragend', function onDragEnd(e) {
+            e.preventDefault();
+            $("#file-correction").removeClass('hidden');
+            $("#dropzone").addClass('hidden');
+        });
+    $("#dropzone")
+        .bind('dragover dragenter', function onDragOver(e) {
+            e.preventDefault();
+            $("#dropzone").addClass('droppable').removeClass('hidden');
+        })
+        .bind('dragenter', function onDragEnterDropZone(e) {
+            e.stopPropagation();
+        })
+        .bind('dragleave', function onDragLeaveDropZone(e) {
+            e.preventDefault();
+            $("#dropzone").removeClass('droppable').addClass('hidden');
+        })
+        .bind('drop', function onDrop(e) {
+            e.preventDefault();
+
+            if (window.currentPage && window.currentPage.changed) {
+                notie.alert(2, "Ungesicherte Inhalte vorhanden, bitte zuerst speichern!", 2);
+            } else {
+                var url = Utils.getUrlFromDragEvent(e);
+                if (url) {
+                    loadGtEditLocation(url);
+                } else {
+                    notie.alert(3, "Konnte keine URL erkennen.");
+                }
+            }
+        });
+}
+
+function toggleSelectMode() {
+    $(".selected").toggleClass('selected');
+    $(".select-col").toggleClass('hidden');
+    $(".button-col").toggleClass('hidden');
+    $("#select-bar").toggleClass('hidden');
+}
+
+function onPageLoaded() {
+    window.onhashchange = onHashChange;
+    window.onbeforeunload = confirmExit;
+    window.onscroll = onScroll;
+    // Setup event handlers for drag and drop
+    setupDragAndDrop();
+
+    // Handle zooming
+    $("#zoom-in").on("click", zoomIn);
+    $("#zoom-out").on("click", zoomOut);
+    $("#zoom-reset").on("click", zoomReset);
+
+    // Notice changed input and make save button available
+    $("#file-correction").on('input', function() { window.currentPage.markChanged(); });
+    $("#right-sidebar").on('input', function() { window.currentPage.markChanged(); });
+
+    // Open history modal
+    $('button[data-target="#history-modal"]').on('click', function() {
+        $.ajax({
+            url: UISettings.cgiUrl + '?action=history&mine=true',
+            dataType: "json",
+            success: function(data) {
+                for (var i = 0; i < data.length ; i++) {
+                    $("#history-modal tbody").append(Templates.historyItem(data[i]));
+                }
+            },
+            error: Utils.httpError,
+        });
+    });
+
+    // Open cheatsheet modal
+    $('button[data-target="#cheatsheet-modal"]').on('click', function() {
+        var keys = Object.keys(UISettings['special-chars']);
+        $("#cheatsheet-modal .cheatsheet").empty();
+        for (var i = 0; i < keys.length; i++) {
+            var key = keys[i];
+            $("#cheatsheet-modal .cheatsheet").append(
+                Templates.cheatsheetEntry(UISettings['special-chars'][key])
+            );
+        }
+    });
+
+    // Select Mode
+    $("#toggle-select").on('click', toggleSelectMode);
+    $('.add-multi-comment').on('click', addMultiComment);
+    $(".set-view").on('click', function() {
+        reduceViewToSelectors($(this).attr('data-target').split(/\s*,\s*/));
+    });
+
+    $("#sort-line").on('click', function() { sortRowsByLine(1); });
+    $("#sort-line-desc").on('click', function() { sortRowsByLine(-1); });
+    $("#sort-width").on('click', function() { sortRowsByWidth(1); });
+    $("#sort-width-desc").on('click', function() { sortRowsByWidth(-1); });
+
+    $("#load-image button").on('click', function() {
+        window.location.hash = '#' + $("#load-image input").val();
+    });
+    $(".select-all").on('click', function() { changeSelection('select'); });
+    $(".select-none").on('click', function() { changeSelection('unselect'); });
+    $(".select-toggle").on('click', function() { changeSelection('toggle'); });
+
+    new Clipboard('.code');
+    // Trigger hash change
+    onHashChange();
+}
+
+$(function() {
+    $.ajax({
+        type: 'GET',
+        url: 'special-chars.json',
+        dataType: "json",
+        error: Utils.httpError,
+        success: function(specialChars) {
+            UISettings['special-chars'] = specialChars;
+            $.ajax({
+                type: 'GET',
+                url: 'error-tags.json',
+                dataType: "json",
+                error: Utils.httpError,
+                success: function(errorTags) {
+                    UISettings['error-tags'] = errorTags;
+                    onPageLoaded();
+                },
+            });
+        },
+    });
+});
+
+// vim: sw=4 ts=4 fmr={,} :

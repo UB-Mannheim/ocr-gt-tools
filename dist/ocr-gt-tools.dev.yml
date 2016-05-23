@@ -1,0 +1,65 @@
+defaults:
+  path-prefix:         '<OCR_GT_BASEDIR>/../example'
+  correction-root:     '/ocr-corrections'
+  images-root:         '/fileadmin'
+  correction-filename: 'correction.html'
+  comments-filename:   'anmerkungen.txt'
+  debuglog:            '/tmp/ocr-gt.log'
+  hostname:            'http://localhost:9090'
+  url_prefix:          'http://localhost:9090'
+
+pattern:
+  - |
+    ^
+    (?<hostname>https?://[^/]+)
+    /fileadmin
+    /(?<collection>[^/]+)
+    /(?<work>[^/]+)
+    /[^\/]+
+    /[^_]+_(?<page>\d+)
+    .*
+    $
+  - |
+    /(?<collection>[^/]+)
+    /(?<work>[^/]+)
+    /gt
+    /(?<page>[^/]+)
+    /[^/]+
+    $
+  - |
+    /(?<collection>[^/]+)
+    /(?<work>[^/]+)
+    /(?<page>[^/]+)
+    $
+
+
+# in this order
+template:
+  url:
+    thumb-url:      '<hostname><images-root>/<collection>/<work>/thumbs/<work>_<page>.jpg'
+    hires-url:      '<hostname><images-root>/<collection>/<work>/max/<work>_<page>.jpg'
+    alto-url:       '<hostname><images-root>/<collection>/<work>/alto/<work>_<page>.alto'
+    correction-url: '<url_prefix><correction-root>/<collection>/<work>/gt/<page>/<correction-filename>'
+    comment-url:    '<url_prefix><correction-root>/<collection>/<work>/gt/<page>/<comments-filename>'
+    landing-page-url: 'http://digi.bib.uni-mannheim.de/en/suchergebnis/?tx_dlf[query]=<work>'
+  path:
+    correction-dir:        '<path-prefix><correction-root>/<collection>/<work>/gt/<page>'
+    correction-file:       '<path-prefix><correction-root>/<collection>/<work>/gt/<page>/<correction-filename>'
+    comment-file:          '<path-prefix><correction-root>/<collection>/<work>/gt/<page>/<comments-filename>'
+    hocr-file:             '<path-prefix><images-root>/<collection>/<work>/hocr/<work>_<page>.hocr'
+    hires-dir:             '<path-prefix><images-root>/<collection>/<work>/max'
+    hires-file:            '<path-prefix><images-root>/<collection>/<work>/max/<work>_<page>.jpg'
+  command:
+    find-corrections-for-work:
+      - 'find'
+      - '<path-prefix><correction-root>/<collection>/<work>'
+      - '-type'
+      - 'f'
+      - '-name'
+      - '<correction-filename>'
+    build-correction-html:
+      - '<OCR_GT_BASEDIR>/ocropus-gtedit-wrapper.sh'
+      - '<hocr-file>'
+      - '<hires-dir>'
+      - '<correction-file>'
+      - '<comment-file>'
