@@ -200,8 +200,9 @@ sub processCountAll {
 
                 print "====>PAGE: " .$aktPage->{'page'} . "\n";
                 print $ERRORLOG __LINE__ . " ====>PAGE: " . $aktPage->{'page'} . "\n";
-                my $aktAnmerk = $aktPage->{'path'} . '/' . 'anmerkungen.txt';
-                my $correctionHtml = $aktPage->{'path'} . '/' . 'correction.html';
+                my $aktAnmerk = $aktPage->{'path'} . '/' . $config->{'commentsFilename'}; # 'anmerkungen.txt';
+                my $correctionHtml = $aktPage->{'path'} . '/' . $config->{'correctionHtml_basename'}; # 'correction.html';
+
 
                 if (-e $correctionHtml) {
                     open( my $CORRECTION, "<:utf8", $correctionHtml);
@@ -215,35 +216,49 @@ sub processCountAll {
                         chomp $aktZeile;
 
                         if ($aktZeile eq '<table>') {
+                            # start new iteration
                             $nZeile = 0;
+
                         } elsif (($aktZeile =~ m/^\<tr\>\<td(.*?)$/) and ($nZeile == 0)) {
+                            #--------------------------------------------------------------------------------------------------------
+                            # Dateinamen für Grafik ermitteln
+                            #--------------------------------------------------------------------------------------------------------
                             $aktZeile =~ m/^\<tr\>\<td([^\>]*?)\>(?<imagename>.*?)\<\/td\>\<\/tr\>$/;
                             my $cTempName = $+{imagename};
                             $cTempName =~ m/^(\d{4})\/line-(?<lineNumber>\d{3})\.png/;
                             $imageNumber = $+{lineNumber};
                             $imageName = 'line-' . $+{lineNumber} . '.png';
 
-
-
                             $nZeile++;
+
                         } elsif (($aktZeile =~ m/^<tr><td><img alt\='line' src\='data:image\/png;base64,([^']*?)'(.*?)$/) and ($nZeile == 1)) {
-                            my $imageData = $1;
-                            my $decoded=MIME::Base64::decode_base64($imageData);
-                            my $imageFullName = $aktPage->{'path'} . '/' . $imageName;
-                            open my $fh, '>', $imageFullName or die $!;
-                            binmode $fh;
-                            print $fh $decoded;
-                            close $fh;
-                            # zeile mit den Image-Daten
+                            #--------------------------------------------------------------------------------------------------------
+                            # die in der HTML-Datei gespeicherten Grafiken als Dateien speichern
+                            #--------------------------------------------------------------------------------------------------------
+                            if (!$config->{'lCreateNoFiles'}) {
+                                my $imageData = $1;
+                                my $decoded=MIME::Base64::decode_base64($imageData);
+                                my $imageFullName = $aktPage->{'path'} . '/' . $imageName;
+                                open my $fh, '>', $imageFullName or die $!;
+                                binmode $fh;
+                                print $fh $decoded;
+                                close $fh;
+                            }
+
                             $nZeile++;
+
                         } elsif (($aktZeile =~ m/^\<tr\>\<td([^\>]*?)\>(?<userinput>.*?)\<\/td\>\<\/tr\>$/) and ($nZeile == 2)) {
-                            # Zeile mit den Texteingaben des Benutzers
+                            #-------------------------------------------------------------------------------------
+                            # Zeile mit den Texteingaben des Benutzers speichern
+                            #-------------------------------------------------------------------------------------
                             $userInput = $+{userinput};
 
-                            my $inputFileName = $aktPage->{'path'} . '/' . 'line-' . $imageNumber . '.txt';
-                            open my $fh, '>', $inputFileName or die $!;
-                            print $fh $userInput;
-                            close $fh;
+                            if (!$config->{'lCreateNoFiles'}) {
+                                my $inputFileName = $aktPage->{'path'} . '/' . 'line-' . $imageNumber . '.txt';
+                                open my $fh, '>:utf8', $inputFileName or die $!;
+                                print $fh $userInput;
+                                close $fh;
+                            }
 
                             $nZeile++;
                         }
@@ -254,24 +269,69 @@ sub processCountAll {
 
                 if (-e $aktAnmerk) {
                     my $aktNr = '000';
+                    my $NewCommentFileName = '';
+                    my $fh;
+
                     open( ANMERK, "<:utf8", $aktAnmerk);
                     while (<ANMERK>) {
-                        #print $_ . "\n";
-                        # Trennen von Nr und Inhalt
+
+
                         my $aktZeile = $_;
                         $Auswertung{'Zeilen'}++;
                         chomp $aktZeile;
+
+                        # Trennen von Nr und Inhalt
                         if ($aktZeile =~ m/^(\d{1,3}):(.*?)$/) {
                             my $nr = $1;
-                            $aktNr = $nr;
                             my $rest = $2;
+
+                            # mit printf für 3 stellen sorgen
+                            $aktNr = sprintf "%03d", $nr;
+
+                            $NewCommentFileName = $aktPage->{'path'} . '/' . 'line-' . $aktNr . '-comments.txt';
+                            if (!$config->{'lCreateNoFiles'}) {
+                                if ($fh) {
+                                    close $fh;
+                                }
+                                open $fh, '>', $NewCommentFileName or die $!;
+                            }
 
                             if ($rest eq ' ' || $rest eq '') {
                                 $Auswertung{'leereZeile'}++;
                             } else {
                                 $Auswertung{'ZeileMitInhalt'}++;
+
+
+                                #-------------------------------------------------------------------------------------
+                                # Inhalt bearbeiten und korrigieren
+                                #-------------------------------------------------------------------------------------
+                                # Verschiedene Formen von br mit und ohne klasse
+                                $rest =~ s/&lt;br class=\"\"&gt;/<br>/g;
+                                $rest =~ s/<br class=\"\">/<br>/g;
+                                $rest =~ s/^(.*?)<br>$/$1/g;
+                                $rest =~ s/^<br>(.*?)$/$1/g;
+                                $rest =~ s/<br>/\n/g;
+
+                                # &nbsp; irgendwo im Text ersetzen
+                                if ($rest =~ m/&nbsp;/m) {
+                                    $rest =~ s/&nbsp;/ /gm;
+                                    while ($rest =~ m/\s\s/m) {
+                                        $rest =~ s/\s\s/ /gm;
+                                    }
+                                }
+
+                                # Leerzeichen am Anfang
+                                $rest =~ s/^\s(.*?)$/$1/gm;
+                                # Leerzeichen am Ende
+                                $rest =~ s/^(.*?)\s$/$1/gm;
+
+
+
                                 print $nr . "\t" . $rest . "\n";
                                 print $ERRORLOG __LINE__ . " " . $nr . "\t'" . $rest . "'\n";
+                                if (!$config->{'lCreateNoFiles'}) {
+                                    print $fh $rest . "\n";
+                                }
 
                                 if ($nr eq '000' || $nr eq '00' || $nr eq '0') {
                                     $Auswertung{'Seitenkommentare'}++;
@@ -285,16 +345,21 @@ sub processCountAll {
                             } else {
                                 $Auswertung{'FolgezeileMitInhalt'}++;
                                 print $ERRORLOG __LINE__ . " zu $aktNr \t'" . $aktZeile . "'\n";
+                                if (!$config->{'lCreateNoFiles'}) {
+                                    print $fh $aktZeile . "\n";
+                                }
                             }
                         }
-
                     }
                     close ANMERK;
+                    if (!$config->{'lCreateNoFiles'}) {
+                        if ($fh) {
+                            close $fh;
+                        }
+                    }
                 }
             }
-
         }
-
     }
 
     foreach my $aktAuswertung (sort( keys(%Auswertung))) {
@@ -488,6 +553,15 @@ sub getPpnsDirs {
 }
 
 
+my $lCreateNoFiles = 0;
+
+GetOptions( "createNoFiles|erzeugeKeineDateien" => \$lCreateNoFiles,
+                 );
+
+
 my $config = loadConfig();
+
+$config->{'lCreateNoFiles'} = $lCreateNoFiles;
+
 processRequest($config);
 
