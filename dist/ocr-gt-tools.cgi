@@ -334,11 +334,14 @@ Save transcriptions and comments passed via POST params.
 sub processSaveRequest
 {
     my $imageUrl = $cgi->param('url[thumb-url]');
+    my $location = parse($imageUrl);
     my $pageComment = $cgi->param('pageComment');
     my @lineComments = $cgi->multi_param('lineComments[]');
     my @transcriptions = $cgi->multi_param('transcriptions[]');
-    my $location = parse($imageUrl);
     for (my $i = 0; $i < length(@{ $location->{'transcriptions'} }); $i++) {
+        my $transcriptionFile = join('/'
+            , $config->{'path'}->{'correction-dir'}
+            , sprintf("line-%04d.txt", $i);
         open my $COMMENTS, ">", $commentsTxt or httpError(500, "Could not write to '%s': %s\n", $commentsTxt, $!);
     }
     printf $COMMENTS "000:%s\n", $pageComment;

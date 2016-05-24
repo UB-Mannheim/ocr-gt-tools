@@ -335,20 +335,34 @@ sub processSaveRequest
 {
     my $imageUrl = $cgi->param('url[thumb-url]');
     my $location = parse($imageUrl);
-    my $pageComment = $cgi->param('pageComment');
-    my @lineComments = $cgi->multi_param('lineComments[]');
+    my $pageComment = $cgi->param('page-comment');
+    my @lineComments = $cgi->multi_param('line-comments[]');
     my @transcriptions = $cgi->multi_param('transcriptions[]');
-    for (my $i = 0; $i < length(@{ $location->{'transcriptions'} }); $i++) {
-        open my $COMMENTS, ">", $commentsTxt or httpError(500, "Could not write to '%s': %s\n", $commentsTxt, $!);
+    # Save line coments and transcriptions
+    for (my $i = 0; $i < scalar(@transcriptions); $i++) {
+        my $transcriptionFile = join('/'
+            , $config->{'path'}->{'correction-dir'}
+            , sprintf("line-%04d.txt", $i));
+        open (my $TRANSCRIPTION, ">", $transcriptionFile) or httpError(
+            500, "Could not write to '%s': %s\n", $transcriptionFile, $!);
+        print $TRANSCRIPTION $transcriptions[$i];
+        close $TRANSCRIPTION;
+        my $commentFile = join('/'
+            , $config->{'path'}->{'correction-dir'}
+            , sprintf("comment-line-%04d.txt", $i));
+        open(my $COMMENT, ">", $commentFile) or httpError(
+            500, "Could not write to '%s': %s\n", $commentFile, $!);
+        print $COMMENT $lineComments[$i];
+        close $COMMENT;
     }
-    printf $COMMENTS "000:%s\n", $pageComment;
-    my $i = 0;
-    for (@{$lineComments}) {
-        printf $COMMENTS "%03d:%s\n", ($i++ +1), $_;
-    }
-    close $COMMENTS;
-    saveTranscription($location->{'path'}->{'correction-file'}, $transcriptions);
-    saveComments($location->{'path'}->{'comment-file'}, $pageComment, $lineComments);
+    # Save page comment
+    my $pageCommentFile = join('/'
+            , $config->{'path'}->{'correction-dir'}
+            , 'comment-page.txt');
+    open(my $PAGE_COMMENT, ">", $pageCommentFile) or httpError(
+        500, "Could not write to '%s': %s\n", $pageCommentFile, $!);
+    print $PAGE_COMMENT $pageComment;
+    close $PAGE_COMMENT;
     return httpJSON({ result => 1 });
 }
 
