@@ -284,30 +284,6 @@ sub executeCommand
 
 =head2
 
-Save transcriptions.
-
-=cut
-
-sub saveTranscription
-{
-    my($correctionHtml, $transcriptions) = @_;
-    my $temp = "$correctionHtml.new.html";
-    open my $CORR_IN, "<", $correctionHtml or httpError(500, "Could not read from '%s': %s\n", $correctionHtml, $!);
-    open my $CORR_OUT, ">", $temp or httpError(500, "Could not writeTo '%s': %s\n", $temp, $!);
-    my $i = 0;
-    while (<$CORR_IN>) {
-        if (m/(spellcheck='true'>).*?<\/td/) {
-            my $transcription = $transcriptions->[ $i++ ];
-            my $leftOfClosingTag = $1;
-            s/\Q$&\E/$leftOfClosingTag$transcription<\/td/;
-        }
-        print $CORR_OUT $_;
-    }
-    rename $temp, $correctionHtml;
-}
-
-=head2
-
 Save comments.
 
 =cut
@@ -359,9 +335,18 @@ sub processSaveRequest
 {
     my $imageUrl = $cgi->param('url[thumb-url]');
     my $pageComment = $cgi->param('pageComment');
-    my $lineComments = [$cgi->multi_param('lineComments[]')];
-    my $transcriptions = [$cgi->multi_param('transcriptions[]')];
+    my @lineComments = $cgi->multi_param('lineComments[]');
+    my @transcriptions = $cgi->multi_param('transcriptions[]');
     my $location = parse($imageUrl);
+    for (my $i = 0; $i < length(@{ $location->{'transcriptions'} }); $i++) {
+        open my $COMMENTS, ">", $commentsTxt or httpError(500, "Could not write to '%s': %s\n", $commentsTxt, $!);
+    }
+    printf $COMMENTS "000:%s\n", $pageComment;
+    my $i = 0;
+    for (@{$lineComments}) {
+        printf $COMMENTS "%03d:%s\n", ($i++ +1), $_;
+    }
+    close $COMMENTS;
     saveTranscription($location->{'path'}->{'correction-file'}, $transcriptions);
     saveComments($location->{'path'}->{'comment-file'}, $pageComment, $lineComments);
     return httpJSON({ result => 1 });
