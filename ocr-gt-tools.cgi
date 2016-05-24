@@ -64,20 +64,6 @@ sub debug
 }
 
 
-=head2 debugStandout
-
-Log a short message with a timestamp and lots of noise to make it stand out.
-
-=cut
-
-sub debugStandout
-{
-    my $msg = sprintf(shift(), @_);
-    my $asterisks = '*' x 20;
-    debug("%s %s %s", $asterisks, $msg, $asterisks);
-}
-
-
 =head2 logRequest
 
 Log the IP and scan URL to request.log
@@ -115,7 +101,7 @@ sub httpError
     my $status = shift;
     my $msg = sprintf(shift(), @_);
     print $cgi->header(-type   => 'text/plain', -status => $status);
-    debugStandout("ERROR $status - $msg");
+    debug("********* ERROR $status - $msg *********");
     print $msg;
     exit 1;
 }
@@ -279,25 +265,6 @@ sub executeCommand
 }
 
 
-=head2
-
-Save comments.
-
-=cut
-
-sub saveComments
-{
-    my($commentsTxt, $pageComment, $lineComments) = @_;
-    open my $COMMENTS, ">", $commentsTxt or httpError(500, "Could not write to '%s': %s\n", $commentsTxt, $!);
-    printf $COMMENTS "000:%s\n", $pageComment;
-    my $i = 0;
-    for (@{$lineComments}) {
-        printf $COMMENTS "%03d:%s\n", ($i++ +1), $_;
-    }
-    close $COMMENTS;
-}
-
-
 =head2 processCreateRequest
 
 Create process to create the files necessary
@@ -440,9 +407,9 @@ sub processRequest
 # MAIN
 #
 setupLogging();
-debugStandout('START REQUEST');
+debug('********* START REQUEST *********');
 processRequest();
 logRequest();
-debugStandout('END REQUEST');
+debug('********* END REQUEST *********');
 
 # vim: sw=4 ts=4 :
