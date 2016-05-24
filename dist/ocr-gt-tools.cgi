@@ -9,6 +9,7 @@ my $TIME_FORMAT = "%H:%M:%S";
 use CGI;
 use CGI::Carp qw(carpout);
 use Cwd qw(abs_path);
+use Hash::Merge;
 use File::Basename qw(dirname);
 use File::Path qw(make_path);
 use IPC::Run qw(run);
@@ -19,7 +20,6 @@ use YAML::XS qw(LoadFile Dump);
 
 # Directory containing the CGI script
 my $OCR_GT_BASEDIR = dirname(abs_path($0));
-my $REQUESTLOG_FILENAME = "$OCR_GT_BASEDIR/log/request.log";
 my $cgi = CGI->new;
 my $config = loadConfig();
 
@@ -33,15 +33,19 @@ Setup logging
 
 sub setupLogging
 {
-
-    if (! -d "$OCR_GT_BASEDIR/log") {
-        make_path "$OCR_GT_BASEDIR/log", {mode => oct(777)};
+    my $logdir = $config->{'logging'}->{'logdir'};
+    if (! -d "$logdir") {
+        make_path "$logdir", {mode => oct(777)};
     }
-    open( $DEBUGLOG, ">>", "$OCR_GT_BASEDIR/log/ocr-gt-tools.log" )
-        or die "Cannot write to log file '$OCR_GT_BASEDIR/log/ocr-gt-tools.log': $!\n";
+    if ($config->{'logging'}->{'stderr'}) {
+        $DEBUGLOG = *STDERR;
+    } else {
+        open($DEBUGLOG, ">>", "$logdir/ocr-gt-tools.log")
+            or die "Cannot write to log file '$logdir/ocr-gt-tools.log': $!\n";
+    }
     carpout(*$DEBUGLOG);
-    open( $REQUESTLOG, ">>", $REQUESTLOG_FILENAME )
-        or die "Cannot write to log file '$OCR_GT_BASEDIR/log/request.log': $!\n";
+    open($REQUESTLOG, ">>", "$logdir/request.log")
+        or die "Cannot write to log file '$logdir/request.log': $!\n";
 }
 
 =head2 debug
@@ -151,13 +155,14 @@ Load the configuration from the YAML file
 
 sub loadConfig
 {
-    my $ymlFile = "$OCR_GT_BASEDIR/ocr-gt-tools.yml";
-
-    # load development config if it exists instead
-    if (-e "$OCR_GT_BASEDIR/ocr-gt-tools.dev.yml") {
-        $ymlFile = "$OCR_GT_BASEDIR/ocr-gt-tools.dev.yml";
-    }
+    my $ymlFile = "$OCR_GT_BASEDIR/ocr-gt-tools.default.yml";
     my $config = LoadFile($ymlFile);
+
+    # Merge with non-default config
+    if (-e "$OCR_GT_BASEDIR/ocr-gt-tools.yml") {
+        my $merge = Hash::Merge->new('RIGHT_PRECEDENT');
+        $config = $merge->merge($config, LoadFile("$OCR_GT_BASEDIR/ocr-gt-tools.yml"));
+    }
 
     # Compile all 'pattern' as regexes
     for (my $i = 0; $i < scalar @{$config->{'pattern'}}; $i++) {
@@ -172,6 +177,9 @@ sub loadConfig
             $config->{'template'}->{$category}->{$k} = $v;
         }
     }
+    
+    # Replace <OCR_GT_BASEDIR> in logging->logdir
+    $config->{'logging'}->{'logdir'} =~ s/<OCR_GT_BASEDIR>/$OCR_GT_BASEDIR/g;
 
     return $config;
 }
@@ -263,8 +271,12 @@ sub executeCommand
     # Seiten in Bildzeilen und Textzeilen aufteilen
     debug("About to execute '%s'", join(' ', @{$cmd}));
     run $cmd, '>', \my $stdout, '2>', \my $stderr;
+    debug($stdout);
+    debug($stderr);
     if($?) {
         return httpError(500, "'$cmd' returned non-zero exit code '$?':\n\t$stdout\n$stderr")
+    } else {
+        debug("Successfully run '$cmd': " . substr($stdout, 0, 100));
     }
     return $stdout;
 }
@@ -391,7 +403,7 @@ sub processHistoryRequest
 {
     my $query = $cgi->param('q');
     my $mine = defined $cgi->param('mine');
-    open my $RL, "<", $REQUESTLOG_FILENAME;
+    open my $RL, "<", $config->{'logging'}->{'logdir'} . '/request.log';
     my $n = 100;
     my @lines;
     my $ip = $ENV{REMOTE_ADDR};

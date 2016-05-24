@@ -18,11 +18,11 @@ To get the tool up and running in a docker container:
 ```
 git clone https://github.com/UB-Mannheim/ocr-gt-tools
 cd ocr-gt-tools
-./run-docker.sh <path-to-images> <path-to-corrections>
+./dev/run-docker.sh <path-to-images> <path-to-corrections>
 ```
 
 The first time you run this, it will download the [docker
-image](http://dockerhub.com/kbai/ocr-gt-tools) and run an Apache server in the
+image](http://dockerhub.com/ubma/ocr-gt-tools) and run an Apache server in the
 container with all the configuration taken care of.
 
 Navigate to http://localhost:8888/ocr-gt to use it.
@@ -38,7 +38,7 @@ make apt-get
 Install current Git revisions of hocr-tools and ocropus:
 
 ```
-make vendor
+make dist/vendor
 ```
 
 ## Create configuration
