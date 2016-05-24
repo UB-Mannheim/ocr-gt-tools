@@ -1,11 +1,6 @@
 #!/usr/bin/perl
 use strict;
 use warnings;
-my $DEBUGLOG;
-my $REQUESTLOG;
-my $DATE_FORMAT = "%Y-%m-%d";
-my $TIME_FORMAT = "%H:%M:%S";
-
 use CGI;
 use CGI::Carp qw(carpout);
 use Cwd qw(abs_path);
@@ -18,12 +13,14 @@ use POSIX qw(strftime);
 use Time::HiRes qw(time);
 use YAML::XS qw(LoadFile Dump);
 
+my $DEBUGLOG;
+my $DATE_FORMAT = "%Y-%m-%d";
+my $TIME_FORMAT = "%H:%M:%S";
+
 # Directory containing the CGI script
 my $OCR_GT_BASEDIR = dirname(abs_path($0));
 my $cgi = CGI->new;
 my $config = loadConfig();
-
-=head1 METHODS
 
 =head2 setupLogging
 
@@ -44,8 +41,6 @@ sub setupLogging
             or die "Cannot write to log file '$logdir/ocr-gt-tools.log': $!\n";
     }
     carpout(*$DEBUGLOG);
-    open($REQUESTLOG, ">>", "$logdir/request.log")
-        or die "Cannot write to log file '$logdir/request.log': $!\n";
 }
 
 =head2 debug
@@ -86,7 +81,10 @@ sub logRequest
         url => $url,
         ip => $ENV{REMOTE_ADDR}
     });
+    open(my $REQUESTLOG, ">>", "$logdir/request.log")
+        or httpError(500, "Cannot write to log file '$logdir/request.log': $!\n");
     print $REQUESTLOG $json . "\n";
+    close $REQUESTLOG;
 }
 
 
@@ -283,7 +281,6 @@ sub processCreateRequest
     $location->{pages} = [
         map {parse($_)} split /\n/, executeCommand($location->{'command'}->{'find-corrections-for-work'})
     ];
-    # ensureCommentsTxt($location);
     # Send JSON response
     httpJSON($location);
 }
@@ -297,7 +294,7 @@ Save transcriptions and comments passed via POST params.
 
 sub processSaveRequest
 {
-    my $body = JSON->new->utf8->decode($cgi->param('POSTDATA'));
+    my $body = JSON->new->utf8->decode($cgi->param('POSTDATA')) or httpError(400, "Could not parse POST body");
     my $location = parse($body->{'url'}->{'thumb-url'});
     my %saveMap = (
         'line-transcriptions' => 'line-%03d.txt',
@@ -370,45 +367,26 @@ sub processHistoryRequest
     }
     @lines = ($n >= @lines ? @lines : @lines[-$n .. -1]);
     print $cgi->header( -type => 'application/json', -charset => 'utf-8');
-    print "[";
-    print join(',', reverse @lines);
-    print "]";
+    print "[%s]", join(',', reverse @lines);
 }
 
 
-=head2 processRequest
-
-Start processing CGI request
-
-=cut
-
-sub processRequest
-{
-    my $action = $cgi->url_param('action');
-    debug "CGI Params: %s", Dump($cgi->{param});
-    if (! $action) {
-        return httpError(400, "URL parameter 'action' missing.");
-    }
-    if ($action eq 'create') {
-        processCreateRequest();
-    } elsif ($action eq 'save') {
-        processSaveRequest();
-    } elsif ($action eq 'list') {
-        processListRequest();
-    } elsif ($action eq 'history') {
-        processHistoryRequest();
-    } else {
-        httpError(400, "URL parameter 'action' must be 'create', 'save', 'list' or 'history'. Not %s", $action);
-    }
-}
-
-
-#
-# MAIN
-#
 setupLogging();
 debug('********* START REQUEST *********');
-processRequest();
+my $action = $cgi->url_param('action');
+# debug "CGI Params: %s", Dump($cgi->{param});
+httpError(400, "URL parameter 'action' missing.") unless $action;
+if ($action eq 'create') {
+    processCreateRequest();
+} elsif ($action eq 'save') {
+    processSaveRequest();
+} elsif ($action eq 'list') {
+    processListRequest();
+} elsif ($action eq 'history') {
+    processHistoryRequest();
+} else {
+    httpError(400, "URL parameter 'action' must be 'create', 'save', 'list' or 'history'. Not %s", $action);
+}
 logRequest();
 debug('********* END REQUEST *********');
 
