@@ -31,7 +31,7 @@ BEGIN {
     # die Datei muss fuer OTHER schreibbar sein!
     #-----------------------------------------------
     use CGI::Carp qw(carpout);
-    open( $ERRORLOG, ">>", "$OCR_GT_BASEDIR/log/ocr-gt-migration.log" )
+    open( $ERRORLOG, ">:utf8", "$OCR_GT_BASEDIR/log/ocr-gt-migration.log" )
       or die "Cannot write to log file '$OCR_GT_BASEDIR/log/ocr-gt-migration.log': $!\n";
     carpout(*$ERRORLOG);
 }
@@ -174,6 +174,7 @@ sub processCountAll {
     my ($config) = @_;
 
     my %Auswertung = ();
+    my %HtmlAuswertung = ();
 
     my $Data = processGetCollections($config);
 
@@ -225,9 +226,24 @@ sub processCountAll {
                             #--------------------------------------------------------------------------------------------------------
                             $aktZeile =~ m/^\<tr\>\<td([^\>]*?)\>(?<imagename>.*?)\<\/td\>\<\/tr\>$/;
                             my $cTempName = $+{imagename};
-                            $cTempName =~ m/^(\d{4})\/line-(?<lineNumber>\d{3})\.png/;
-                            $imageNumber = $+{lineNumber};
-                            $imageName = 'line-' . $+{lineNumber} . '.png';
+
+                            #-----------------------------------------
+                            # Zwei Versionen des Dateinamens
+                            #-----------------------------------------
+                            # Version 1 mit Unterverzeichnis
+                            #-----------------------------------------
+                            if ($cTempName =~ m/^(\d{4})\/line-(?<lineNumber>\d{3})\.png/) {
+                                $cTempName =~ m/^(\d{4})\/line-(?<lineNumber>\d{3})\.png/;
+                                $imageNumber = $+{lineNumber};
+                            #-----------------------------------------
+                            # Version 2 ohne Unterverzeichnis
+                            #-----------------------------------------
+                            } elsif ($cTempName =~ m/^line-(?<lineNumber>\d{3})\.png/) {
+                                $cTempName =~ m/^line-(?<lineNumber>\d{3})\.png/;
+                                $imageNumber = $+{lineNumber};
+                            }
+                            $imageName = 'line-' . $imageNumber . '.png';
+                            #print __LINE__ . " " . $imageName . "\n";
 
                             $nZeile++;
 
@@ -252,6 +268,20 @@ sub processCountAll {
                             # Zeile mit den Texteingaben des Benutzers speichern
                             #-------------------------------------------------------------------------------------
                             $userInput = $+{userinput};
+
+                            $HtmlAuswertung{'ppns'}{$aktPPN->{'ppn'}}{$aktPage->{'page'}}{'ppn'} = $aktPPN->{'ppn'};
+                            $HtmlAuswertung{'ppns'}{$aktPPN->{'ppn'}}{$aktPage->{'page'}}{'page'} = $aktPage->{'page'};
+                            $HtmlAuswertung{'ppns'}{$aktPPN->{'ppn'}}{$aktPage->{'page'}}{'lines'}++;
+
+
+                            $HtmlAuswertung{'Lines'}++;
+                            if ($userInput ne '') {
+                                $HtmlAuswertung{'UserInput'}++;
+                                $HtmlAuswertung{'ppns'}{$aktPPN->{'ppn'}}{$aktPage->{'page'}}{'linesUserInput'}++;
+                            } else {
+                                $HtmlAuswertung{'UserInputEmpty'}++;
+                                $HtmlAuswertung{'ppns'}{$aktPPN->{'ppn'}}{$aktPage->{'page'}}{'linesUserInputEmpty'}++;
+                            }
 
                             if (!$config->{'lCreateNoFiles'}) {
                                 my $inputFileName = $aktPage->{'path'} . '/' . 'line-' . $imageNumber . '.txt';
@@ -324,7 +354,14 @@ sub processCountAll {
                                 $rest =~ s/^\s(.*?)$/$1/gm;
                                 # Leerzeichen am Ende
                                 $rest =~ s/^(.*?)\s$/$1/gm;
+                                # ; am Ende
+                                $rest =~ s/;$//gm;
 
+
+                                # Spezielle Ersetzungen
+                                $rest =~ s/# text-blocked/#text-blocked/gm;
+                                $rest =~ s/kursiv/#text-italic/gm;
+                                $rest =~ s/Kursiv/#text-italic/gm;
 
 
                                 print $nr . "\t" . $rest . "\n";
@@ -336,7 +373,34 @@ sub processCountAll {
                                 if ($nr eq '000' || $nr eq '00' || $nr eq '0') {
                                     $Auswertung{'Seitenkommentare'}++;
                                 }
-                                $Auswertung{'varianten'}{$rest}++;
+
+                                # Aufteilen von mehrzeiligen Kommentaren
+                                # Ein mehrzeiliger Kommentar enthält mindestens eine "\n"
+                                if ($rest =~ m/\n/m) {
+                                    # Zeilen zerlegen
+                                    my @aLines = split("\n", $rest);
+                                    foreach my $aRest (@aLines) {
+
+                                        # Leerzeichen am Anfang
+                                        $aRest =~ s/^\s(.*?)$/$1/g;
+                                        # Leerzeichen am Ende
+                                        $aRest =~ s/^(.*?)\s$/$1/g;
+                                        # ; am Ende
+                                        $aRest =~ s/^(.*?);$/$1/g;
+
+                                        if ($aRest eq '') {
+                                            $Auswertung{'leereZeile'}++;
+                                        } else {
+                                            $Auswertung{'varianten'}{$aRest}++;
+                                        }
+                                    }
+                                } else {
+                                    if ($rest eq '') {
+                                        $Auswertung{'leereZeile'}++;
+                                    } else {
+                                        $Auswertung{'varianten'}{$rest}++;
+                                    }
+                                  }
                             }
                         } else {
                             $Auswertung{'Folgezeilen'}++;
@@ -381,8 +445,37 @@ sub processCountAll {
     foreach my $aktAuswertung (sort {$Auswertung{'varianten'}{$b} <=> $Auswertung{'varianten'}{$a}||
                                      $a cmp $b}( keys (%{$Auswertung{'varianten'}}))) {
         print $aktAuswertung . "\t" . $Auswertung{'varianten'}{$aktAuswertung} . "\n";
-        print $ERRORLOG $aktAuswertung . "\t" . $Auswertung{'varianten'}{$aktAuswertung} . "\n";
+        print $ERRORLOG "'" . $aktAuswertung . "'\t" . $Auswertung{'varianten'}{$aktAuswertung} . "\n";
     }
+
+    print $ERRORLOG "\n"x3 . "correction User Imput\n" . "="x60 . "\n";
+
+    print $ERRORLOG "Zeilen: " . $HtmlAuswertung{'Lines'} . "\n";
+    print $ERRORLOG "\tEingaben: " . $HtmlAuswertung{'UserInput'} . "\n";
+    print $ERRORLOG "\t   keine: " . $HtmlAuswertung{'UserInputEmpty'} . "\n";
+
+
+    foreach my $aktPPN (sort( keys ( %{$HtmlAuswertung{'ppns'}}))) {
+        print $ERRORLOG "\n" . "-"x50 . "\n" . $aktPPN . "\n" . "-"x50 . "\n";
+        foreach my $aktSeite (sort( keys( %{$HtmlAuswertung{'ppns'}{$aktPPN}}))) {
+
+            print $ERRORLOG $aktSeite . "\n" . "-"x30 . "\n";
+
+            print $ERRORLOG "Zeilen:" . "\t" . $HtmlAuswertung{'ppns'}{$aktPPN}{$aktSeite}{'lines'} . "\n";
+            if (exists($HtmlAuswertung{'ppns'}{$aktPPN}{$aktSeite}{'linesUserInput'})) {
+                print $ERRORLOG "\t" . "Zeilen  mit:" . "\t" . $HtmlAuswertung{'ppns'}{$aktPPN}{$aktSeite}{'linesUserInput'} . "\n";
+            } else {
+                print $ERRORLOG "\t" . "Zeilen  mit:" . "\t0\n";
+            }
+
+            if (exists($HtmlAuswertung{'ppns'}{$aktPPN}{$aktSeite}{'linesUserInputEmpty'})) {
+                print $ERRORLOG "\t" . "Zeilen ohne:" . "\t" . $HtmlAuswertung{'ppns'}{$aktPPN}{$aktSeite}{'linesUserInputEmpty'} . "\n";
+            } else {
+                print $ERRORLOG "\t" . "Zeilen ohne:" . "\t0\n";
+            }
+        }
+    }
+
 }
 
 
