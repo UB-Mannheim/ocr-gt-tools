@@ -30,6 +30,8 @@ such representation currently exists and the server has all the required assets
 as JSON to the client:
 
 ```yaml
+ids:
+  page: 'page1'
 url:
   thumb-url: http://ocr-gt/image/page1_thumb.png
   hires-url: http://ocr-gt/image/page1_max.png
