@@ -114,10 +114,7 @@ sub httpError
 {
     my $status = shift;
     my $msg = sprintf(shift(), @_);
-    print $cgi->header(
-        -type   => 'text/plain',
-        -status => $status
-    );
+    print $cgi->header(-type   => 'text/plain', -status => $status);
     debugStandout("ERROR $status - $msg");
     print $msg;
     exit 1;
@@ -333,26 +330,26 @@ Save transcriptions and comments passed via POST params.
 
 sub processSaveRequest
 {
-    my $imageUrl = $cgi->param('url[thumb-url]');
-    my $location = parse($imageUrl);
-    my $pageComment = $cgi->param('pageComment');
-    my @lineComments = $cgi->multi_param('lineComments[]');
-    my @transcriptions = $cgi->multi_param('transcriptions[]');
-    for (my $i = 0; $i < length(@{ $location->{'transcriptions'} }); $i++) {
-        my $transcriptionFile = join('/'
-            , $config->{'path'}->{'correction-dir'}
-            , sprintf("line-%04d.txt", $i);
-        open my $COMMENTS, ">", $commentsTxt or httpError(500, "Could not write to '%s': %s\n", $commentsTxt, $!);
+    my $body = JSON->new->utf8->decode($cgi->param('POSTDATA'));
+    my $location = parse($body->{'url'}->{'thumb-url'});
+    my %saveMap = (
+        'line-transcriptions' => 'line-%03d.txt',
+        'line-comments'       => 'comment-line-%03d.txt',
+    );
+    # Save line coments and transcriptions
+    for (my $i = 0; $i < scalar @{ $body->{'line-comments'}}; $i++) {
+        while (my ($key, $fname_pat) = each(%saveMap)) {
+            my $fname = join('/', $config->{'path'}->{'correction-dir'}, sprintf($fname_pat, $i));
+            open my $fh, ">", $fname or httpError(500, "Could not write to '%s': %s\n", $fname, $!);
+            print $fh $body->{$key}->[$i];
+            close $fh;
+        }
     }
-    printf $COMMENTS "000:%s\n", $pageComment;
-    my $i = 0;
-    for (@{$lineComments}) {
-        printf $COMMENTS "%03d:%s\n", ($i++ +1), $_;
-    }
-    close $COMMENTS;
-    saveTranscription($location->{'path'}->{'correction-file'}, $transcriptions);
-    saveComments($location->{'path'}->{'comment-file'}, $pageComment, $lineComments);
-    return httpJSON({ result => 1 });
+    # Save page comment
+    my $pageCommentFile = join('/', $config->{'path'}->{'correction-dir'}, 'comment-page.txt');
+    print $fh $body->{'page-comment'};
+    close $fh;
+    print $cgi->header(-type   => 'text/plain', -status => 200);
 }
 
 =head2 processListRequest

@@ -114,10 +114,7 @@ sub httpError
 {
     my $status = shift;
     my $msg = sprintf(shift(), @_);
-    print $cgi->header(
-        -type   => 'text/plain',
-        -status => $status
-    );
+    print $cgi->header(-type   => 'text/plain', -status => $status);
     debugStandout("ERROR $status - $msg");
     print $msg;
     exit 1;
@@ -333,37 +330,26 @@ Save transcriptions and comments passed via POST params.
 
 sub processSaveRequest
 {
-    my $imageUrl = $cgi->param('url[thumb-url]');
-    my $location = parse($imageUrl);
-    my $pageComment = $cgi->param('page-comment');
-    my @lineComments = $cgi->multi_param('line-comments[]');
-    my @transcriptions = $cgi->multi_param('transcriptions[]');
+    my $body = JSON->new->utf8->decode($cgi->param('POSTDATA'));
+    my $location = parse($body->{'url'}->{'thumb-url'});
+    my %saveMap = (
+        'line-transcriptions' => 'line-%03d.txt',
+        'line-comments'       => 'comment-line-%03d.txt',
+    );
     # Save line coments and transcriptions
-    for (my $i = 0; $i < scalar(@transcriptions); $i++) {
-        my $transcriptionFile = join('/'
-            , $config->{'path'}->{'correction-dir'}
-            , sprintf("line-%04d.txt", $i));
-        open (my $TRANSCRIPTION, ">", $transcriptionFile) or httpError(
-            500, "Could not write to '%s': %s\n", $transcriptionFile, $!);
-        print $TRANSCRIPTION $transcriptions[$i];
-        close $TRANSCRIPTION;
-        my $commentFile = join('/'
-            , $config->{'path'}->{'correction-dir'}
-            , sprintf("comment-line-%04d.txt", $i));
-        open(my $COMMENT, ">", $commentFile) or httpError(
-            500, "Could not write to '%s': %s\n", $commentFile, $!);
-        print $COMMENT $lineComments[$i];
-        close $COMMENT;
+    for (my $i = 0; $i < scalar @{ $body->{'line-comments'}}; $i++) {
+        while (my ($key, $fname_pat) = each(%saveMap)) {
+            my $fname = join('/', $config->{'path'}->{'correction-dir'}, sprintf($fname_pat, $i));
+            open my $fh, ">", $fname or httpError(500, "Could not write to '%s': %s\n", $fname, $!);
+            print $fh $body->{$key}->[$i];
+            close $fh;
+        }
     }
     # Save page comment
-    my $pageCommentFile = join('/'
-            , $config->{'path'}->{'correction-dir'}
-            , 'comment-page.txt');
-    open(my $PAGE_COMMENT, ">", $pageCommentFile) or httpError(
-        500, "Could not write to '%s': %s\n", $pageCommentFile, $!);
-    print $PAGE_COMMENT $pageComment;
-    close $PAGE_COMMENT;
-    return httpJSON({ result => 1 });
+    my $pageCommentFile = join('/', $config->{'path'}->{'correction-dir'}, 'comment-page.txt');
+    print $fh $body->{'page-comment'};
+    close $fh;
+    print $cgi->header(-type   => 'text/plain', -status => 200);
 }
 
 =head2 processListRequest
