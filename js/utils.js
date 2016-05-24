@@ -73,6 +73,9 @@ Utils.getImageWidth = function getImageWidth(el) {
 };
 
 Utils.encodeForBrowser = function encodeForBrowser(str) {
+    if (typeof str === 'undefined') {
+        return '';
+    }
     return str
         .replace(/&amp;/g, '&')
         .replace(/&gt;/g, '>')
@@ -83,6 +86,9 @@ Utils.encodeForBrowser = function encodeForBrowser(str) {
 };
 
 Utils.encodeForServer = function encodeForServer(str) {
+    if (typeof str === 'undefined') {
+        return '';
+    }
     return str
         .replace(/^(<br[^>]*>)*/, '')
         .replace(/(<br[^>]*>)*$/, '')
