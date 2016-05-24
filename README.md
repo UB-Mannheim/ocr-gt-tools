@@ -3,11 +3,17 @@ ocr-gt-tools
 
 A web interface for creating ground truth for evaluating and training OCR.
 
-<img src="./doc/screenshots/screenshot.png" height="300"/>
+[![Docker Stars](https://img.shields.io/docker/stars/ubma/ocr-gt-tools.svg)](https://hub.docker.com/r/ubma/ocr-gt-tools/)
+[![Docker Pulls](https://img.shields.io/docker/pulls/ubma/ocr-gt-tools.svg)](https://hub.docker.com/r/ubma/ocr-gt-tools/)
+[![license](https://img.shields.io/github/license/UB-Mannheim/ocr-gt-tools.svg)](https://github.com/UB-Mannheim/ocr-gt-tools/blob/master/LICENSE)
+[![label](https://img.shields.io/github/issues/UB-Mannheim/ocr-gt-tools.svg)](https://github.com/UB-Mannheim/ocr-gt-tools/issues)
+[![Travis](https://img.shields.io/travis/kba/ocr-gt-tools.svg?maxAge=2592000)](https://travis-ci.org/UB-Mannheim/ocr-gt-tools)
+[![GitHub stars](https://img.shields.io/github/stars/UB-Mannheim/ocr-gt-tools.svg?style=social&label=Star)](https://github.com/UB-Mannheim/ocr-gt-tools/stargazers)
 
 ## Table of Contents
 
 * [Summary](#summary)
+	* [Screenshot](#screenshot)
 	* [Features](#features)
 	* [Installation](#installation)
 	* [About the code](#about-the-code)
@@ -24,6 +30,10 @@ ocr-gt-tools allows editing
 such as those produced by the
 [tesseract](https://github.com/tesseract-ocr/tesseract) or
 [ocropy](https://github.com/tmbdev/ocropy) OCR frameworks.
+
+### Screenshot
+
+<img src="./doc/screenshots/screenshot.png" height="300"/>
 
 ### Features
 
