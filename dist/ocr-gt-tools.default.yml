@@ -1,5 +1,5 @@
 defaults:
-  path-prefix:         '<OCR_GT_BASEDIR>/../example'
+  path-prefix:         '<OCR_GT_BASEDIR>/example'
   correction-root:     '/ocr-corrections'
   images-root:         '/fileadmin'
   correction-filename: 'correction.html'
@@ -7,6 +7,10 @@ defaults:
   debuglog:            '/tmp/ocr-gt.log'
   hostname:            'http://localhost:9090'
   url_prefix:          'http://localhost:9090'
+
+logging:
+  logdir: '<OCR_GT_BASEDIR>/log'
+  stderr: false
 
 pattern:
   - |
