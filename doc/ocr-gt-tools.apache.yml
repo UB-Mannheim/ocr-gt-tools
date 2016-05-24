@@ -1,0 +1,9 @@
+defaults:
+  path-prefix:         '/var/www/html'
+  correction-root:     '/ocr-corrections'
+  images-root:         '/fileadmin'
+  hostname:            'http://localhost'
+  url_prefix:          'http://localhost'
+
+logging:
+  stderr: false
