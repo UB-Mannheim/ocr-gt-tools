@@ -59,6 +59,12 @@ line-comments:  ["I like this line. It is nice.", …]
 
 Server merges this with its representation of the location and stores it.
 
+Formats
+-------
+
+* Clients should be able to load a full representation (e.g. zipped folder of
+  transcriptions, comments, images, hocr and full size)
+
 Storage
 -------
 
