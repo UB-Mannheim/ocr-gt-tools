@@ -30,17 +30,20 @@ such representation currently exists and the server has all the required assets
 as JSON to the client:
 
 ```yaml
-ids:
-  page: 'page1'
+title: '1'
 url:
   thumb-url: http://ocr-gt/image/page1_thumb.png
   hires-url: http://ocr-gt/image/page1_max.png
   hocr-url:  http://ocr-gt/hocr/page1.hocr
+  landing-page-url: http://some.where/kitodo/1
 line-images:    ["http://ocr-gt/image/page1/line-001.png", …]
 transcriptions: ["…", …]
 page-comment:   "…"
 line-comments:  ["…", …]
 ```
+
+All these fields are **required** (client must not check), except for 'title'
+(fall back to url.thumb-url) and page-comment (fall back to empty string).
 
 Client edits transcriptions/comments as needed and sends back representation as JSON:
 

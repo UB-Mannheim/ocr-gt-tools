@@ -47,12 +47,12 @@ template:
     comment-url:    '<url_prefix><correction-root>/<collection>/<work>/gt/<page>/<comments-filename>'
     landing-page-url: 'http://digi.bib.uni-mannheim.de/en/suchergebnis/?tx_dlf[query]=<work>'
   path:
-    correction-dir:        '<path-prefix><correction-root>/<collection>/<work>/gt/<page>'
-    correction-file:       '<path-prefix><correction-root>/<collection>/<work>/gt/<page>/<correction-filename>'
-    comment-file:          '<path-prefix><correction-root>/<collection>/<work>/gt/<page>/<comments-filename>'
-    hocr-file:             '<path-prefix><images-root>/<collection>/<work>/hocr/<work>_<page>.hocr'
-    hires-dir:             '<path-prefix><images-root>/<collection>/<work>/max'
-    hires-file:            '<path-prefix><images-root>/<collection>/<work>/max/<work>_<page>.jpg'
+    correction-dir:  '<path-prefix><correction-root>/<collection>/<work>/gt/<page>'
+    correction-file: '<path-prefix><correction-root>/<collection>/<work>/gt/<page>/<correction-filename>'
+    comment-file:    '<path-prefix><correction-root>/<collection>/<work>/gt/<page>/<comments-filename>'
+    hocr-file:       '<path-prefix><images-root>/<collection>/<work>/hocr/<work>_<page>.hocr'
+    hires-dir:       '<path-prefix><images-root>/<collection>/<work>/max'
+    hires-file:      '<path-prefix><images-root>/<collection>/<work>/max/<work>_<page>.jpg'
   command:
     find-corrections-for-work:
       - 'find'
