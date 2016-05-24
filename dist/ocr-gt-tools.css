@@ -169,12 +169,20 @@ div[contenteditable] {
 }
 #select-bar {
   position: fixed;
-  background-color: #ff0;
-  border: 2px solid #00f;
+  background-color: #eee;
+  border-radius: 0 0 10px 10px;
+  border-left: 2px solid #00f;
+  border-right: 2px solid #00f;
+  border-bottom: 2px solid #00f;
   top: 0;
   left: 200px;
-  height: 48px;
   z-index: 1001;
+}
+#select-bar .close {
+  opacity: 0.5;
+  display: inline-block;
+  padding-right: 5px;
+  font-size: xx-large;
 }
 #cheatsheet-modal {
   -webkit-touch-callout: none;
@@ -184,21 +192,37 @@ div[contenteditable] {
   -ms-user-select: none;
   user-select: none;
 }
+#cheatsheet-modal h4 {
+  float: left;
+}
+#cheatsheet-modal .cheatsheet-entry {
+  float: left;
+  margin-left: 25%;
+  font-size: 200%;
+  max-width: 64px;
+}
 #cheatsheet-modal img {
   height: 64px;
 }
 #cheatsheet-modal th {
   font-weight: bold;
 }
+#cheatsheet-modal td:nth-child(1) {
+  width: 40%;
+}
 #cheatsheet-modal td {
   vertical-align: middle;
   font-size: 120%;
 }
 #cheatsheet-modal td button.code {
+  width: 100%;
   font-family: monospace;
   font-size: 48px;
   height: 64px;
-  width: 100%;
+}
+#cheatsheet-modal td .clipboard {
+  float: left;
+  font-size: 50%;
 }
 .select-col {
   padding-left: 20px;

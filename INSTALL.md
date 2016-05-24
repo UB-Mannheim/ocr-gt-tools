@@ -1,5 +1,6 @@
 # Installation Instructions
 
+* [Docker Quickstart](#docker-quickstart)
 * [Install dependencies](#install-dependencies)
 * [Create configuration](#create-configuration)
 * [Deploy on a server](#deploy-on-a-server)
@@ -9,6 +10,22 @@
 * [Developing the frontend](#developing-the-frontend)
 	* [Perl](#perl)
 	* [Log-Files / Error-Log-Files](#log-files--error-log-files)
+
+## Docker Quickstart
+
+To get the tool up and running in a docker container:
+
+```
+git clone https://github.com/UB-Mannheim/ocr-gt-tools
+cd ocr-gt-tools
+./dev/run-docker.sh <path-to-images> <path-to-corrections>
+```
+
+The first time you run this, it will download the [docker
+image](http://dockerhub.com/ubma/ocr-gt-tools) and run an Apache server in the
+container with all the configuration taken care of.
+
+Navigate to http://localhost:8888/ocr-gt to use it.
 
 ## Install dependencies
 
@@ -21,7 +38,7 @@ make apt-get
 Install current Git revisions of hocr-tools and ocropus:
 
 ```
-make vendor
+make dist/vendor
 ```
 
 ## Create configuration
@@ -29,7 +46,7 @@ make vendor
 Copy the configuration template and edit as needed:
 
 ```
-cp dist/ocr-gt-tools.dev.ini dist/ocr-gt-tools.ini
+cp dist/ocr-gt-tools.dev.yml dist/ocr-gt-tools.yml
 ```
 
 ## Deploy on a server
@@ -72,8 +89,8 @@ sudo $EDITOR /etc/apache2/sites-available/000-default.conf
 * Copy the configuration:
 
 ```
-sudo -u www-data cp dist/ocr-gt-tools.dev.ini $APACHE_DIR/$APACHE_BASEURL/ocr-gt-tools.ini
-# "sudo $EDITOR $APACHE_DIR/$APACHE_BASEURL/ocr-gt-tools.ini" as needed
+sudo -u www-data cp dist/ocr-gt-tools.dev.yml $APACHE_DIR/$APACHE_BASEURL/ocr-gt-tools.yml
+# "sudo $EDITOR $APACHE_DIR/$APACHE_BASEURL/ocr-gt-tools.yml" as needed
 ```
 
 * Restart apache 
@@ -83,6 +100,13 @@ sudo systemctl restart apache2
 ```
 
 The web application will be available under [http://localhost/ocr-gt-tools](http://localhost/ocr-gt-tools).
+
+### Docker
+
+    docker run -t -p kbai/ocr-gt-tools
+
+The server is available on port 9090.
+
 
 ### Bundled standalone server
 

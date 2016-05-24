@@ -19,7 +19,7 @@ builder {
     enable(
         "Plack::Middleware::Static",
         path => qr{^/(fileadmin|ocr-corrections)},
-        root => './example/'
+        root => './dist/example/'
     );
     enable(
         "Plack::Middleware::Static",
