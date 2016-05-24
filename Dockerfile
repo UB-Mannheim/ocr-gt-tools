@@ -1,31 +1,31 @@
 FROM httpd:2.4
 
 # Install dependencies
-ADD Makefile Makefile
-RUN apt-get update && apt-get install make && make SUDO="" apt-get
+ADD dev/debian.mk debian.mk
+RUN apt-get update && apt-get install make && make -f debian.mk apt-get
+# Enable CGI in Apache
+# Enable .htaccess support
+RUN sed -i \
+    -e 's/#LoadModule cgid_module/LoadModule cgid_module/' \
+    -e 's/^\s*Options.*/\0 ExecCGI/' \
+    -e 's/^\s*#AddHandler cgi-script/AddHandler cgi-script/' \
+    -e 's/AllowOverride None/AllowOverride All/' \
+    /usr/local/apache2/conf/httpd.conf
 # Set up a data volume
 RUN mkdir /data && chown daemon:www-data /data && ln -s /data/fileadmin /data/ocr-corrections /usr/local/apache2/htdocs/
 VOLUME ["/data"]
-# Enable CGI in Apache
-RUN sed -i 's/#LoadModule cgid_module/LoadModule cgid_module/' /usr/local/apache2/conf/httpd.conf
-RUN sed -i 's/^\s*Options.*/\0 ExecCGI/' /usr/local/apache2/conf/httpd.conf
-RUN sed -i 's/^\s*#AddHandler cgi-script/AddHandler cgi-script/' /usr/local/apache2/conf/httpd.conf
-# Enable .htaccess support
-RUN sed -i 's/AllowOverride None/AllowOverride All/' /usr/local/apache2/conf/httpd.conf
+ADD dev/apache.mk apache.mk
 # Add dist folder
 ADD dist dist
 # Create configuration
-RUN cat dist/ocr-gt-tools.dev.ini \
-    | sed 's,^doc-root.*,doc-root=/data,' \
-    > dist/ocr-gt-tools.ini
-RUN make \
-    SUDO="" \
+# RUN cat dist/ocr-gt-tools.dev.yml \
+#     | sed 's,path-prefix:.*,path-prefix: "/data",' \
+#     | sed 's,stderr:.*,stderr: true,' \
+#     > dist/ocr-gt-tools.yml
+RUN make -f apache.mk \
     SUDO_APACHE="" \
-    APACHE_DIR="/usr/local/apache2/htdocs/ocr-gt" \
+    APACHE_DIR="/usr/local/apache2/htdocs" \
+    APACHE_BASEURL="ocr-gt" \
     APACHE_USER="daemon" \
     APACHE_GROUP="www-data" \
     deploy
-
-# Add samples
-# RUN apt-get update && apt-get install -y vim
-# CMD ["bash"]

@@ -1,15 +1,12 @@
-# Port of the dev server
-PORT = 9090
-APACHE_USER = www-data
-APACHE_GROUP = www-data
-APACHE_DIR = /var/www/html/ocr-gt
-
-SUDO = sudo
-
 # Add node_modules/.bin to $PATH so the CLI tools 
 # installed locally by npm can be used
 export PATH := $(PWD)/node_modules/.bin:$(PATH)
 
+include \
+	dev/apache.mk \
+	dev/debian.mk \
+	dev/docker.mk \
+	dev/plackup.mk
 #
 # Define all the CLI tools to use
 #
@@ -20,56 +17,21 @@ RM    = rm -rf
 CP    = cp -r
 # cURL to download files
 CURL          = curl -s
-# Git clone, by default do a shallow clone, only last commit
-GIT_CLONE     = git clone --depth 1
-# Install debian packages, non-interactively
-APT_GET_OPTS  = -y
-APT_GET       = $(SUDO) apt-get $(APT_GET_OPTS)
-# NPM is NodeJS' package manager
-NPM_OPTS      =
-NPM           = npm $(NPM_OPTS)
-# "Plackup is a command line utility to run PSGI applications from the command line"
-# https://en.wikipedia.org/wiki/Plack_(software)
-PLACKUP_OPTS  = --port $(PORT) -R
-PLACKUP       = plackup $(PLACKUP_OPTS)
-# Bower is a front-end asset manager with packages of JS/CSS for many well-known projects
-BOWER         = bower
 # clean-css is a CSS minifier and optimizer
 CLEANCSS      = cleancss
 # UglifyJS minifies, merges and optimizes Javascript
 UGLIFYJS      = uglifyjs
 # webfont-dl is a tool to download web fonts from the Google Fonts API
-WEBFONTDL_OPTS = --eot=omit
-WEBFONTDL     = webfont-dl $(WEBFONTDL_OPTS)
+WEBFONTDL     = webfont-dl  --eot=omit
 # Jade is a templating engine
-JADE_OPTS     = --pretty
-JADE          = jade $(JADE_OPTS)
+JADE          = jade --pretty
 # Stylus is a CSS compiler
-#
 STYLUS  = stylus
-# Chokidar is a file system change watcher (think: inotify)
-# https://github.com/kimmobrunfeldt/chokidar-cli
-CHOKIDAR_OPTS = --verbose --polling --initial --debounce 100
-CHOKIDAR      = chokidar $(CHOKIDAR_OPTS)
 
 #
 # Define lists of assets
 #
 
-# Debian packages required for running the backend
-DEBIAN_PACKAGES = \
-	git \
-	libjson-perl \
-	libipc-run-perl \
-	python-numpy \
-	python-scipy \
-	python-matplotlib
-# Debian packages required for running the dev-server and rebuild the frontend
-DEV_DEBIAN_PACKAGES = \
-	npm \
-	nodejs-legacy \
-	libplack-perl \
-	curl
 # URLs of Web Fonts to embed
 FONT_URLS = https://fonts.googleapis.com/css?family=EB+Garamond&subset=latin,latin-ext
 # Font files (eot, ttf, woff...) to bundle
@@ -92,20 +54,13 @@ JS_FILES    = bower_components/jquery/dist/jquery.js \
               bower_components/notie/dist/notie.js
 # The HTML files, described in the Jade shorthand / templating language
 JADE_FILES  = ocr-gt-tools.jade
-# The files to watch for changes for to trigger a rebuild
-WATCH_FILES = Makefile ocr-gt-tools.* ${JADE_FILES} *.json js/**/*.js js/*.js
 
 #
 # Define the list of targets that will "always fail", i.e. the CLI api
 #
 # clean-js clean-html clean-fonts clean-css \
 
-.PHONY: debug \
-        clean \
-        deps apt-get \
-        dev-deps dev-apt-get \
-        dev-server dist-watch \
-        deploy
+.PHONY: debug clean vendor
 
 #
 # Debugging
@@ -125,11 +80,6 @@ debug:
 # Dependencies to execute ocropy / hocr-tools in a CGI environment
 #
 
-deps: apt-get vendor
-
-apt-get:
-	$(APT_GET) install $(DEBIAN_PACKAGES)
-
 vendor: dist/vendor/hocr-tools dist/vendor/ocropy
 
 dist/vendor/hocr-tools:
@@ -139,37 +89,6 @@ dist/vendor/hocr-tools:
 dist/vendor/ocropy:
 	$(MKDIR) dist/vendor
 	$(GIT_CLONE) https://github.com/tmbdev/ocropy $@
-
-log/ocr-gt-tools.log:
-	touch $@
-
-log/request.log:
-	touch $@
-
-#
-# Options for development
-#
-
-node_modules: package.json
-	$(NPM) $(NPM_OPTS) install
-
-bower_components: bower.json
-	$(BOWER) install
-
-dev-apt-get:
-	$(APT_GET) install $(DEV_DEBIAN_PACKAGES)
-
-dev-deps: dev-apt-get bower_components node_modules
-
-#
-# Run the development standalone server on port 9090
-#
-
-dev-server:
-	$(PLACKUP) app.psgi
-
-dev-browser:
-	xdg-open http://localhost:9090/dist/index.html
 
 #
 # Set up dist folder
@@ -235,29 +154,6 @@ dist/vendor.js: ${JS_FILES}
 dist/index.html: ${JADE_FILES}
 	$(MKDIR) dist
 	$(JADE) < $< > $@
-
-#
-# Automatically rebuild on file change
-#
-dist-watch:
-	$(CHOKIDAR) $(WATCH_FILES) -c 'time $(MAKE) --no-print-directory dist'
-
-#
-# Deploy on apache
-#
-
-deploy:
-	sudo -u $(APACHE_USER) $(MKDIR) $(APACHE_DIR)/$(APACHE_BASEURL)
-	sudo -u $(APACHE_USER) $(CP) dist/* dist/.htaccess $(APACHE_DIR)/$(APACHE_BASEURL)
-	sudo -u $(APACHE_USER) find $(APACHE_DIR)/$(APACHE_BASEURL) -exec chmod u+w -R {} \;
-	sudo -u $(APACHE_USER) $(RM) $(APACHE_DIR)/$(APACHE_BASEURL)/ocr-gt-tools.dev.yml
-
-
-#
-# Docker related
-#
-docker:
-	docker build -t 'ocr-gt-tools' .
 
 #
 # Clean up, delete files
