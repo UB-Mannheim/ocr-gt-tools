@@ -300,6 +300,7 @@ sub processCountAll {
                 if (-e $aktAnmerk) {
                     my $aktNr = '000';
                     my $NewCommentFileName = '';
+                    my $NewCommentPageFileName = '';
                     my $fh;
 
                     open( ANMERK, "<:utf8", $aktAnmerk);
@@ -316,14 +317,19 @@ sub processCountAll {
                             my $rest = $2;
 
                             # mit printf für 3 stellen sorgen
-                            $aktNr = sprintf "%03d", $nr;
+                            $aktNr = sprintf "%04d", $nr;
 
-                            $NewCommentFileName = $aktPage->{'path'} . '/' . 'line-' . $aktNr . '-comments.txt';
+                            $NewCommentFileName = $aktPage->{'path'} . '/comment-' . 'line-' . $aktNr . '.txt';
+                            $NewCommentPageFileName = $aktPage->{'path'} . '/comment-page.txt';
                             if (!$config->{'lCreateNoFiles'}) {
                                 if ($fh) {
                                     close $fh;
                                 }
-                                open $fh, '>', $NewCommentFileName or die $!;
+                                if ($nr eq '000' || $nr eq '00' || $nr eq '0') {
+                                  open $fh, '>', $NewCommentPageFileName or die $!;
+                                } else {
+                                  open $fh, '>', $NewCommentFileName or die $!;
+                                }
                             }
 
                             if ($rest eq ' ' || $rest eq '') {
