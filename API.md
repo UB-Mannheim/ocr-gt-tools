@@ -63,9 +63,9 @@ relevant for this particular implementation.
 All generated data lives in one directory that can be uniquely mapped to a
 page, e.g.  `/path/to/work1/page1/`.
 
-* Every line image is saved in a file `line-XXX.png`
-* Every line transcription is saved in a file `line-XXX.txt`
-* Every line comment is saved in a file `comment-line-XXX.txt`
+* Every line image is saved in a file `line-XXXX.png`
+* Every line transcription is saved in a file `line-XXXX.txt`
+* Every line comment is saved in a file `comment-line-XXXX.txt`
 * Page transcription is saved in a file `comment-page.txt`
 
 `XXX` is a zero-padded positive integer, e.g. `023`.
@@ -74,6 +74,6 @@ page, e.g.  `/path/to/work1/page1/`.
 and represents the position of the line in the document order of the original
 document
 
-* For every `line-XXX.txt` there must be one `comment-line-XXX.txt`.
-* For every `comment-line-XXX.txt` there must be one `line-XXX.txt`.
-* For every `line-XXX.png` there must be one `line-XXX.txt`
+* For every `line-XXXX.txt` there must be one `comment-line-XXXX.txt`.
+* For every `comment-line-XXXX.txt` there must be one `line-XXXX.txt`.
+* For every `line-XXXX.png` there must be one `line-XXXX.txt`
