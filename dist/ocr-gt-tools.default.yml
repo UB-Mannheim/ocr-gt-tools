@@ -56,9 +56,9 @@ template:
       - 'f'
       - '-name'
       - '<page-comment-filename>'
-    cat-page-comment: ['cat', '<correction-dir>/<page-comment-filename>']
-    cat-line-transcriptions: ['find', '<correction-dir>', '-name', 'line-*.txt', '-exec', 'cat', '{}', ';']
-    cat-line-comments: ['find', '<correction-dir>', '-name', 'comment-line-*.txt', '-exec', 'cat', '{}', ';']
+    # cat-page-comment: ['cat', '<correction-dir>/<page-comment-filename>']
+    # cat-line-transcriptions: ['find', '<correction-dir>', '-name', 'line-*.txt', '-exec', 'cat', '{}', ';']
+    # cat-line-comments: ['find', '<correction-dir>', '-name', 'comment-line-*.txt', '-exec', 'cat', '{}', ';']
     extract-images:
       - '<OCR_GT_BASEDIR>/ocropus-gtedit-wrapper.sh'
       - '<hocr-file>'

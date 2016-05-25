@@ -24,7 +24,7 @@ fi
 # Make sure the 'correction-dir' exists
 mkdir -p "$correctionDir"
 cd "$correctionDir"
-"$ocrBaseDir/vendor/hocr-tools/hocr-extract-images" -b "$imageDir" "$hocr"
+"$ocrBaseDir/vendor/hocr-tools/hocr-extract-images" -b "$imageDir" -p 'line-%04d.png' "$hocr"
 for i in line-*.txt;do
   echo -ne "\n" >> "$i"
   echo -e " " > "comment-$i"

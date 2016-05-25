@@ -305,6 +305,42 @@ function Page(urlOrOpts) {
 }
 
 Page.prototype.save = function(cb) {
+    if (!this.changed) {
+        notie.alert(2, "Nothing changed.", 1);
+        return;
+    }
+    $("#wait_save").addClass("wait").removeClass("hidden");
+    $("#disk").addClass("hidden");
+    this['line-transcriptions'] = $('li.transcription div').map(function() {
+        return Utils.encodeForServer($(this).html());
+    }).get();
+    this['line-comments'] = $("li.line-comment div").map(function() {
+        return Utils.encodeForServer($(this).html());
+    }).get();
+    this['page-comment'] = Utils.encodeForServer($("#page-comment div").html());
+    // console.log(window.app.currentPage.pageComment);
+    // console.log(window.app.currentPage.transcriptions);
+    // console.log(window.app.currentPage.lineComments);
+
+    $.ajax({
+        type: 'POST',
+        url: 'ocr-gt-tools.cgi?action=save',
+        data: this.toJSON(),
+        error: cb,
+        success: function() {
+            cb();
+        },
+    });
+};
+
+Page.prototype.toJSON = function() {
+    var ret = {};
+    ret.ids                    = this.ids;
+    ret.url                    = this.url;
+    ret['line-comments']       = this['line-comments'];
+    ret['page-comment']        = this['page-comment'];
+    ret['line-transcriptions'] = this['line-transcriptions'];
+    return ret;
 };
 
 Page.prototype.load = function(cb) {
@@ -314,6 +350,7 @@ Page.prototype.load = function(cb) {
         url: 'ocr-gt-tools.cgi?action=create&imageUrl=' + this.imageUrl,
         error: cb,
         success: function(res) {
+            console.log(res);
             for (key in res) { self[key] = res[key]; }
             cb();
         },
@@ -361,29 +398,6 @@ HistoryView.prototype.render = function() {
     }
 };
 
-function WaitingAnimation(opts) {
-    for (key in opts) { this[key] = opts[key]; }
-    this.$el = $(this.el);
-}
-WaitingAnimation.prototype.stop = function stopWaitingAnimation() {
-    this.$el.addClass('hidden');
-    clearInterval(this._id);
-};
-WaitingAnimation.prototype.start = function startWaitingAnimation() {
-    var self = this;
-    this.$el.removeClass('hidden');
-    var items = self.model.items;
-    this._id = setInterval(function() {
-        perRound = 5;
-        while (perRound-- > 0) {
-            var randGlyph = items[parseInt(Math.random() * items.length)];
-            $(self.el +
-              " tr:nth-child(" + parseInt(Math.random() * 20) + ")" +
-              " td:nth-child(" + parseInt(Math.random() * 20) + ")"
-             ).html(randGlyph.sample);
-        }
-    }, 300);
-};
 function CheatsheetView(opts) {
     for (key in opts) { this[key] = opts[key]; }
     this.$el = $(this.el);
@@ -420,6 +434,29 @@ CheatsheetView.prototype.render = function render() {
         $(this).val('');
     });
     return self;
+};
+function WaitingAnimation(opts) {
+    for (key in opts) { this[key] = opts[key]; }
+    this.$el = $(this.el);
+}
+WaitingAnimation.prototype.stop = function stopWaitingAnimation() {
+    this.$el.addClass('hidden');
+    clearInterval(this._id);
+};
+WaitingAnimation.prototype.start = function startWaitingAnimation() {
+    var self = this;
+    this.$el.removeClass('hidden');
+    var items = self.model.items;
+    this._id = setInterval(function() {
+        perRound = 5;
+        while (perRound-- > 0) {
+            var randGlyph = items[parseInt(Math.random() * items.length)];
+            $(self.el +
+              " tr:nth-child(" + parseInt(Math.random() * 20) + ")" +
+              " td:nth-child(" + parseInt(Math.random() * 20) + ")"
+             ).html(randGlyph.sample);
+        }
+    }, 300);
 };
 // Name: ocr-gt-tools.js
 

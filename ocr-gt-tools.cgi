@@ -13,6 +13,8 @@ use POSIX qw(strftime);
 use Time::HiRes qw(time);
 use YAML::XS qw(LoadFile Dump);
 
+# binmode STDOUT, ":encoding(UTF-8)";
+
 my $DEBUGLOG;
 my $DATE_FORMAT = "%Y-%m-%d";
 my $TIME_FORMAT = "%H:%M:%S";
@@ -280,10 +282,23 @@ sub processCreateRequest
     my $location = parse($url);
     if (! -e $location->{'path'}->{'correction-dir'}) {
         executeCommand($location->{'command'}->{'extract-images'});
+        $location->{'line-comments'} = [];
+        $location->{'line-transcriptions'} = [];
+        $location->{'page-comment'} = "";
     }
-    $location->{'line-comments'} = [executeCommand($location->{'command'}->{'cat-line-comments'})];
-    $location->{'line-transcriptions'} = [executeCommand($location->{'command'}->{'cat-line-transcriptions'})];
-    $location->{'page-comment'} = join '\n', executeCommand($location->{'command'}->{'cat-page-comment'});
+    chdir($location->{'path'}->{'correction-dir'});
+    for my $fname (glob '*.txt') {
+        open my $fh, "<", $fname or httpError(500, "Could not open file %s", $fname);
+        my $line = <$fh>;
+        close $fh;
+        my ($basename, $idx) = $fname =~ m/^((?:comment-)?line)-(\d{4})/smx;
+        if ($basename) {
+            $location->{'line-' . ($basename eq 'line' ? 'transcriptions' : 'comments')}->[-1+$idx] = $line;
+        } elsif ($fname eq 'comment-page.txt') {
+            $location->{'page-comment'} = $line;
+        } else {
+            return httpError(500, "Unknown file: '$fname'"); }
+    }
     $location->{'pages'} = [ map {parse($_)} executeCommand($location->{'command'}->{'find-corrections-for-work'}) ];
     # Send JSON response
     httpJSON($location);
@@ -303,8 +318,8 @@ sub processSaveRequest
     # Save line coments and transcriptions
     for (my $i = 0; $i < scalar @{ $body->{'line-comments'}}; $i++) {
         my %saveMap = (
-            'line-transcriptions' , 'line-%03d.txt',
-            'line-comments'       , 'comment-line-%03d.txt',
+            'line-transcriptions' , 'line-%04d.txt',
+            'line-comments'       , 'comment-line-%04d.txt',
         );
         while (my ($key, $fname_pat) = each(%saveMap)) {
             my $fname = join('/', $config->{'path'}->{'correction-dir'}, sprintf($fname_pat, $i));
