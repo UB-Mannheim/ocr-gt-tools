@@ -1,11 +1,6 @@
 #!/usr/bin/perl
 use strict;
 use warnings;
-my $DEBUGLOG;
-my $REQUESTLOG;
-my $DATE_FORMAT = "%Y-%m-%d";
-my $TIME_FORMAT = "%H:%M:%S";
-
 use CGI;
 use CGI::Carp qw(carpout);
 use Cwd qw(abs_path);
@@ -17,6 +12,10 @@ use JSON;
 use POSIX qw(strftime);
 use Time::HiRes qw(time);
 use YAML::XS qw(LoadFile Dump);
+
+my $DEBUGLOG;
+my $DATE_FORMAT = "%Y-%m-%d";
+my $TIME_FORMAT = "%H:%M:%S";
 
 # Directory containing the CGI script
 my $OCR_GT_BASEDIR = dirname(abs_path($0));
@@ -42,8 +41,6 @@ sub setupLogging
             or die "Cannot write to log file '$logdir/ocr-gt-tools.log': $!\n";
     }
     carpout(*$DEBUGLOG);
-    open($REQUESTLOG, ">>", "$logdir/request.log")
-        or die "Cannot write to log file '$logdir/request.log': $!\n";
 }
 
 =head2 debug
@@ -84,7 +81,11 @@ sub logRequest
         url => $url,
         ip => $ENV{REMOTE_ADDR}
     });
+    my $logdir = $config->{'logging'}->{'logdir'};
+    open(my $REQUESTLOG, ">>", "$logdir/request.log")
+        or httpError(500, "Cannot write to log file '$logdir/request.log': $!\n");
     print $REQUESTLOG $json . "\n";
+    close $REQUESTLOG;
 }
 
 
@@ -296,13 +297,12 @@ sub processSaveRequest
 {
     my $body = JSON->new->utf8->decode($cgi->param('POSTDATA')) or httpError(400, "Could not parse POST body");
     my $location = parse($body->{'url'}->{'thumb-url'});
-    my %saveMap = (
-        'line-transcriptions' => 'line-%03d.txt',
-        'line-comments'       => 'comment-line-%03d.txt',
-    );
     # Save line coments and transcriptions
     for (my $i = 0; $i < scalar @{ $body->{'line-comments'}}; $i++) {
-        while (my ($key, $fname_pat) = each(%saveMap)) {
+        while (my ($key, $fname_pat) = each(
+                'line-transcriptions' => 'line-%03d.txt',
+                'line-comments'       => 'comment-line-%03d.txt',
+            )) {
             my $fname = join('/', $config->{'path'}->{'correction-dir'}, sprintf($fname_pat, $i));
             open my $fh, ">", $fname or httpError(500, "Could not write to '%s': %s\n", $fname, $!);
             print $fh $body->{$key}->[$i];
@@ -311,6 +311,7 @@ sub processSaveRequest
     }
     # Save page comment
     my $pageCommentFile = join('/', $config->{'path'}->{'correction-dir'}, 'comment-page.txt');
+    open my $fh, ">", $pageCommentFile or httpError(500, "Could not write to '%s': %s\n", $pageCommentFile, $!);
     print $fh $body->{'page-comment'};
     close $fh;
     print $cgi->header(-type   => 'text/plain', -status => 200);
@@ -367,7 +368,7 @@ sub processHistoryRequest
     }
     @lines = ($n >= @lines ? @lines : @lines[-$n .. -1]);
     print $cgi->header( -type => 'application/json', -charset => 'utf-8');
-    print "[%s]", join(',', reverse @lines);
+    printf("[%s]", join(',', reverse @lines));
 }
 
 

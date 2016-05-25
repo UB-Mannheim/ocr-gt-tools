@@ -1,28 +1,9 @@
 // Name: ocr-gt-tools.js
 
-var UISettings = {
-    zoomInFactor: 1.4,
-    zoomOutFactor: 0.8,
-    cgiUrl: 'ocr-gt-tools.cgi',
-    defaultViews: ['.transcription','img']
-};
-
 function httpError(xhr) {
     notie.alert(3, "HTTP Fehler " + xhr.status + ":\n<pre style='text-align: left'>" + xhr.responseText + "</pre>");
-    WaitingAnimation.stop();
+    window.app.waitingAnimation.stop();
 };
-
-/**
- * Compile the Handlebars templates
- */
-function compileTemplates() {
-    window.templates = {};
-    $("*[id^='tpl-']").each(function() {
-        var $this = $(this);
-        var tplId = $this.attr('id').replace(/^tpl-/, '');
-        window.templates[tplId] = Handlebars.compile($this.html());
-    });
-}
 
 /*******************************/
 /* Client-Server communication */
@@ -45,31 +26,32 @@ function loadGtEditLocation(url) {
         beforeSend: function(xhr) {
             // to instantly see when a new document has been retrieved
             $("#file-correction").addClass("hidden");
-            WaitingAnimation.start();
+            $("#dropzone").addClass('hidden');
+            window.app.waitingAnimation.start();
         },
         success: function(res) {
             // file correction will be loaded
             $("#dropzone").addClass('hidden');
-            window.ocrGtLocation = res;
-            console.log(window.ocrGtLocation);
-            window.location.hash = window.ocrGtLocation.url['thumb-url'];
+            window.app.currentPage = res;
+            console.log(window.app.currentPage);
+            window.location.hash = window.app.currentPage.url['thumb-url'];
             window.setTimeout(function() {
                 // ajax
                 $("#raw-html").load(
-                    Utils.uncachedURL(window.ocrGtLocation.url['correction-url']),
+                    Utils.uncachedURL(window.app.currentPage.url['correction-url']),
                     function handleCorrectionAjax(response, status, xhr) {
                         $.ajax({
                             type: 'GET',
-                            url: Utils.uncachedURL(window.ocrGtLocation.url['comment-url']),
+                            url: Utils.uncachedURL(window.app.currentPage.url['comment-url']),
                             error: httpError,
                             success: function(response, status, xhr) {
-                                Utils.parseLineComments(response, window.ocrGtLocation);
+                                Utils.parseLineComments(response, window.app.currentPage);
                                 addCommentFields();
                                 // show new document
                                 $("#file-correction").removeClass("hidden");
                                 $("ul.navbar-nav li").removeClass("disabled");
                                 onScroll();
-                                WaitingAnimation.stop();
+                                window.app.waitingAnimation.stop();
                             }
                         });
                     }
@@ -91,28 +73,28 @@ function loadGtEditLocation(url) {
  */
 function saveGtEditLocation() {
 
-    if (!window.ocrGtLocation.changed) {
+    if (!window.app.currentPage.changed) {
         notie.alert(2, "Nothing changed.", 1);
         return;
     }
 
     $("#wait_save").addClass("wait").removeClass("hidden");
     $("#disk").addClass("hidden");
-    window.ocrGtLocation.transcriptions = $('li.transcription div').map(function() {
+    window.app.currentPage.transcriptions = $('li.transcription div').map(function() {
         return Utils.encodeForServer($(this).html());
     }).get();
-    window.ocrGtLocation.lineComments = $("li.line-comment div").map(function() {
+    window.app.currentPage.lineComments = $("li.line-comment div").map(function() {
         return Utils.encodeForServer($(this).html());
     }).get();
-    window.ocrGtLocation.pageComment = Utils.encodeForServer($("#page-comment div").html());
-    // console.log(window.ocrGtLocation.pageComment);
-    // console.log(window.ocrGtLocation.transcriptions);
-    // console.log(window.ocrGtLocation.lineComments);
+    window.app.currentPage.pageComment = Utils.encodeForServer($("#page-comment div").html());
+    // console.log(window.app.currentPage.pageComment);
+    // console.log(window.app.currentPage.transcriptions);
+    // console.log(window.app.currentPage.lineComments);
 
     $.ajax({
         type: 'POST',
         url: UISettings.cgiUrl + '?action=save',
-        data: window.ocrGtLocation,
+        data: window.app.currentPage,
         success: markSaved,
         error: httpError,
     });
@@ -127,7 +109,7 @@ function saveGtEditLocation() {
  * Mark the current page as 'changed'.
  */
 function markChanged() {
-    window.ocrGtLocation.changed = true;
+    window.app.currentPage.changed = true;
     $("#save_button").removeClass("disabled");
     updateCommentButtonColor();
 }
@@ -136,7 +118,7 @@ function markChanged() {
  * Mark the current page as 'saved'.
  */
 function markSaved() {
-    window.ocrGtLocation.changed = false;
+    window.app.currentPage.changed = false;
     $("#wait_save").removeClass("wait").addClass("hidden");
     $("#disk").removeClass("hidden");
     $("#save_button").addClass("disabled");
@@ -158,9 +140,9 @@ function addCommentFields() {
             "title": $this.find("td")[0].innerHTML,
             "imgSrc": $this.find("img")[0].getAttribute('src'),
             "transcription": Utils.encodeForBrowser($this.find("td")[2].innerHTML),
-            "comment": Utils.encodeForBrowser(window.ocrGtLocation.lineComments[curLine]),
+            "comment": Utils.encodeForBrowser(window.app.currentPage.lineComments[curLine]),
         };
-        var $line = $(window.templates.line(line));
+        var $line = $(window.app.templates.line(line));
         $(":checkbox", $line).on('click', function(e) {
             $(this).closest('.row').toggleClass('selected');
             e.stopPropagation();
@@ -178,7 +160,7 @@ function addCommentFields() {
         });
         $("#file-correction").append($line);
     });
-    $("#right-sidebar").html(window.templates.rightSidebar(window.ocrGtLocation));
+    $("#right-sidebar").html(window.app.templates.rightSidebar(window.app.currentPage));
     $(".show-line-comment").on('click', toggleLineComment);
     $(".hide-line-comment").on('click', toggleLineComment);
     $(".add-comment").on('click', addComment);
@@ -328,7 +310,7 @@ function reduceViewToSelectors(selectors) {
 /******************/
 
 function confirmExit(e) {
-    if (window.ocrGtLocation && window.ocrGtLocation.changed) {
+    if (window.app.currentPage && window.app.currentPage.changed) {
         // if (e) e.preventDefault();
         notie.alert(2, "Ungesicherte Inhalte vorhanden, bitte zuerst speichern!", 5);
         return "Ungesicherte Inhalte vorhanden, bitte zuerst speichern!";
@@ -338,7 +320,7 @@ function confirmExit(e) {
 function onHashChange() {
     var cHash = window.location.hash;
 
-    if (window.ocrGtLocation && window.ocrGtLocation.changed) {
+    if (window.app.currentPage && window.app.currentPage.changed) {
         confirmExit();
     } else {
         if (cHash !== '') {
@@ -396,7 +378,7 @@ function setupDragAndDrop() {
         .bind('drop', function onDrop(e) {
             e.preventDefault();
 
-            if (window.ocrGtLocation && window.ocrGtLocation.changed) {
+            if (window.app.currentPage && window.app.currentPage.changed) {
                 notie.alert(2, "Ungesicherte Inhalte vorhanden, bitte zuerst speichern!", 2);
             } else {
                 var url = Utils.getUrlFromDragEvent(e);
@@ -416,13 +398,39 @@ function toggleSelectMode() {
     $("#select-bar").toggleClass('hidden');
 }
 
-function onPageLoaded() {
-    compileTemplates();
-    window.onhashchange = onHashChange;
-    window.onbeforeunload = confirmExit;
-    window.onscroll = onScroll;
-    // Setup event handlers for drag and drop
-    setupDragAndDrop();
+function App() {
+    this.$el = $("<div>");
+    this.templates = compileTemplates();
+
+    // Set up models
+    this.history = new History();
+    this.errorTags = new ErrorTags();
+    this.cheatsheet = new Cheatsheet();
+
+    // Set up views
+    this.pageView = new PageView({
+        'el': 'body'
+    });
+    this.historyView = new HistoryView({
+        'el': "#history-modal",
+        'model': this.history,
+        'tpl': this.templates.historyItem,
+    });
+    this.cheatsheetView = new CheatsheetView({
+        'el': "#cheatsheet-modal",
+        'model': this.cheatsheet,
+        'tpl': this.templates.cheatsheetEntry,
+    });
+    this.waitingAnimation = new WaitingAnimation({
+        'el': "#waiting-animation",
+        'model': this.cheatsheet,
+    });
+    this.dropzone = new Dropzone({
+        'el': '#dropzone'
+    });
+}
+
+App.prototype.render = function() {
     // event listeners
     $("#save_button").on("click", saveGtEditLocation);
 
@@ -437,20 +445,12 @@ function onPageLoaded() {
 
     // Open history modal
     $('button[data-target="#history-modal"]').on('click', function() {
-        $.ajax({
-            url: UISettings.cgiUrl + '?action=history&mine=true',
-            dataType: "json",
-            success: function(data) {
-                for (var i = 0; i < data.length ; i++) {
-                    $("#history-modal tbody").append(window.templates.historyItem(data[i]));
-                }
-            },
-            error: httpError
+        app.history.load(function(err) {
+            if (err) { return httpError(err); }
+            console.log(app);
+            app.historyView.render();
         });
     });
-
-    window.cheatsheetView = new CheatsheetView($("#cheatsheet-modal"), UISettings['special-chars']);
-    window.cheatsheetView.render();
 
     // Select Mode
     $("#toggle-select").on('click', toggleSelectMode);
@@ -471,34 +471,48 @@ function onPageLoaded() {
     $(".select-all").on('click', function() { changeSelection('select'); });
     $(".select-none").on('click', function() { changeSelection('unselect'); });
     $(".select-toggle").on('click', function() { changeSelection('toggle'); });
+};
 
-    new Clipboard('.code');
-    // Trigger hash change
-    onHashChange();
-}
-
-$(function() {
-    $.ajax({
-        type: 'GET',
-        url: 'special-chars.json',
-        dataType: "json",
-        error: httpError,
-        success: function(specialChars) {
-            $.ajax({
-                type: 'GET',
-                url: 'error-tags.json',
-                dataType: "json",
-                error: function() {
-                    Utils.httpE(x);
-                },
-                success: function(errorTags) {
-                    UISettings['special-chars'] = specialChars;
-                    UISettings['error-tags'] = errorTags;
-                    onPageLoaded();
-                },
-            });
-        },
+App.prototype.init = function() {
+    var self = this;
+    async.each([this.cheatsheet, this.errorTags], function(model, done) {
+        model.load(done);
+    }, function(err) {
+        if (err) { return httpError(err); }
+        self.$el.trigger('app:initialized');
     });
+};
+
+// TODO
+App.prototype.loadPage = function(url) {
+    var self = this;
+    this.$el.trigger('app:before-load');
+    this.currentPage = new Page(url);
+    this.currentPage.load(function(err) {
+        if (err) { return httpError(err); }
+        self.pageView.model = self.currentPage;
+        self.pageView.render();
+        this.$el.trigger('app:after-load');
+    });
+};
+
+$(function onPageLoaded() {
+    var app = window.app = new App();
+    window.onhashchange = onHashChange;
+    window.onbeforeunload = confirmExit;
+    window.onscroll = onScroll;
+
+    // Setup event handlers for drag and drop
+    setupDragAndDrop();
+    // Trigger hash change
+    app.$el.on('app:initialized', function() {
+        notie.alert(1, "App geladen", 1);
+        app.render();
+        onHashChange();
+    });
+    app.init();
 });
+
+
 
 // vim: sw=4 ts=4 fmr={,} :

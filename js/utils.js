@@ -107,3 +107,15 @@ Utils.getUrlFromDragEvent = function getUrlFromDragEvent(e) {
     return url;
 };
 
+/**
+ * Compile the Handlebars templates
+ */
+function compileTemplates() {
+    var templates = {};
+    $("*[id^='tpl-']").each(function() {
+        var $this = $(this);
+        var tplId = $this.attr('id').replace(/^tpl-/, '');
+        templates[tplId] = Handlebars.compile($this.html());
+    });
+    return templates;
+}
