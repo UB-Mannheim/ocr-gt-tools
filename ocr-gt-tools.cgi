@@ -188,7 +188,7 @@ sub parse
                 renderTemplates(%+),
             }
         }
-        debug("No match: $str =~ $pat");
+        # debug("No match: $str =~ $pat");
     }
     httpError(400, "Could not match '$str' to any known pattern");
 }
@@ -236,7 +236,7 @@ sub renderTemplates
             }
         }
     }
-    debug( "Rendered object: %s", Dump(\%obj));
+    # debug( "Rendered object: %s", Dump(\%obj));
     return %obj;
 }
 
@@ -256,11 +256,11 @@ sub executeCommand
     debug($stdout);
     debug($stderr);
     if($?) {
-        return httpError(500, "'$cmd' returned non-zero exit code '$?':\n\t$stdout\n$stderr")
+        return httpError(500, "'%s' returned non-zero exit code '$?':\n\t%s\n%s", join(' ', @{$cmd}), $stdout, $stderr);
     } else {
-        debug("Successfully run '$cmd': " . substr($stdout, 0, 100));
+        debug("Successfully run '%s': %s" , join(' ', @{$cmd}), substr($stdout, 0, 100));
     }
-    return $stdout;
+    return split /\n/, $stdout;
 }
 
 
@@ -278,10 +278,13 @@ sub processCreateRequest
     }
     # Create file object
     my $location = parse($url);
-    executeCommand($location->{'command'}->{'build-correction-html'});
-    $location->{pages} = [
-        map {parse($_)} split /\n/, executeCommand($location->{'command'}->{'find-corrections-for-work'})
-    ];
+    if (! -e $location->{'path'}->{'correction-dir'}) {
+        executeCommand($location->{'command'}->{'extract-images'});
+    }
+    $location->{'line-comments'} = [executeCommand($location->{'command'}->{'cat-line-comments'})];
+    $location->{'line-transcriptions'} = [executeCommand($location->{'command'}->{'cat-line-transcriptions'})];
+    $location->{'page-comment'} = join '\n', executeCommand($location->{'command'}->{'cat-page-comment'});
+    $location->{'pages'} = [ map {parse($_)} executeCommand($location->{'command'}->{'find-corrections-for-work'}) ];
     # Send JSON response
     httpJSON($location);
 }
@@ -299,20 +302,21 @@ sub processSaveRequest
     my $location = parse($body->{'url'}->{'thumb-url'});
     # Save line coments and transcriptions
     for (my $i = 0; $i < scalar @{ $body->{'line-comments'}}; $i++) {
-        while (my ($key, $fname_pat) = each(
-                'line-transcriptions' => 'line-%03d.txt',
-                'line-comments'       => 'comment-line-%03d.txt',
-            )) {
+        my %saveMap = (
+            'line-transcriptions' , 'line-%03d.txt',
+            'line-comments'       , 'comment-line-%03d.txt',
+        );
+        while (my ($key, $fname_pat) = each(%saveMap)) {
             my $fname = join('/', $config->{'path'}->{'correction-dir'}, sprintf($fname_pat, $i));
             open my $fh, ">", $fname or httpError(500, "Could not write to '%s': %s\n", $fname, $!);
-            print $fh $body->{$key}->[$i];
+            print $fh $body->{$key}->[$i] . "\n";
             close $fh;
         }
     }
     # Save page comment
     my $pageCommentFile = join('/', $config->{'path'}->{'correction-dir'}, 'comment-page.txt');
     open my $fh, ">", $pageCommentFile or httpError(500, "Could not write to '%s': %s\n", $pageCommentFile, $!);
-    print $fh $body->{'page-comment'};
+    print $fh $body->{'page-comment'} . "\n";
     close $fh;
     print $cgi->header(-type   => 'text/plain', -status => 200);
 }
@@ -337,8 +341,7 @@ sub processListRequest
     }
     my $cmd = $queryLocation->{'command'}->{'find-' . $queryName};
     debug(Dump($cmd));
-    my $ret = executeCommand($cmd);
-    my @locations = map { parse($_) } split(/\n/, $ret);
+    my @locations = map { parse($_) } executeCommand($cmd);
     return httpJSON(\@locations);
 }
 

@@ -1,201 +1,3 @@
-function History() { }
-History.prototype.url = 'ocr-gt-tools.cgi?action=history&mine=true';
-History.prototype.load = function(cb) {
-    var self = this;
-    $.ajax({
-        url: this.url,
-        dataType: "json",
-        error: cb,
-        success: function(data) {
-            notie.alert(1, "History geladen", 1);
-            self.items = data;
-            cb(null, self);
-        },
-    });
-};
-
-
-function ErrorTags() {
-    this.items = [];
-}
-ErrorTags.prototype.url = 'error-tags.json';
-ErrorTags.prototype.load = function(cb) {
-    var self = this;
-    $.ajax({
-        url: this.url,
-        dataType: "json",
-        error: cb,
-        success: function(data) {
-            self.items = [];
-            var keys = Object.keys(data);
-            for (var i = 0; i < keys.length; i++) {
-                self.items.push(data[keys[i]]);
-            }
-            cb();
-        },
-    });
-};
-var UISettings = {
-    zoomInFactor: 1.4,
-    zoomOutFactor: 0.8,
-    cgiUrl: 'ocr-gt-tools.cgi',
-    defaultViews: ['.transcription','img']
-};
-
-
-function Cheatsheet() {
-    this.items = [];
-}
-Cheatsheet.prototype.url = 'special-chars.json';
-Cheatsheet.prototype.load = function(cb) {
-    var self = this;
-    $.ajax({
-        url: this.url,
-        dataType: "json",
-        error: cb,
-        success: function(data) {
-            self.items = [];
-            var keys = Object.keys(data);
-            for (var i = 0; i < keys.length; i++) {
-                self.items.push(data[keys[i]]);
-            }
-            cb();
-        },
-    });
-};
-
-function Page(imageUrl, opts) {
-    this.imageUrl = imageUrl;
-    for (key in opts) { this[key] = opts[key]; }
-}
-
-Page.prototype.save = function(cb) {
-};
-
-Page.prototype.load = function(cb) {
-    $.ajax({
-        type: 'GET',
-        url: 'ocr-gt-tools.cgi?action=create&imageUrl=' + this.imageUrl,
-        error: cb,
-        beforeSend: function(xhr) {
-            // to instantly see when a new document has been retrieved
-            $("#file-correction").addClass("hidden");
-            $("#dropzone").addClass('hidden');
-            window.app.waitingAnimation.start();
-        },
-        success: function(res) {
-            // file correction will be loaded
-            $("#dropzone").addClass('hidden');
-            window.app.currentPage = res;
-            console.log(window.app.currentPage);
-            window.location.hash = window.app.currentPage.url['thumb-url'];
-            window.setTimeout(function() {
-                // ajax
-                $("#raw-html").load(
-                    Utils.uncachedURL(window.app.currentPage.url['correction-url']),
-                    function handleCorrectionAjax(response, status, xhr) {
-                        $.ajax({
-                            type: 'GET',
-                            url: Utils.uncachedURL(window.app.currentPage.url['comment-url']),
-                            error: httpError,
-                            success: function(response, status, xhr) {
-                                Utils.parseLineComments(response, window.app.currentPage);
-                                addCommentFields();
-                                // show new document
-                                $("#file-correction").removeClass("hidden");
-                                $("ul.navbar-nav li").removeClass("disabled");
-                                onScroll();
-                                window.app.waitingAnimation.stop();
-                            }
-                        });
-                    }
-                );
-            }, 1);
-            // Zoom buttons only for non-IE
-            $("#zoom-in").removeClass("hidden");
-            $("#zoom-out").removeClass("hidden");
-            $("#save_button").removeClass("hidden");
-            // activate button if #file-correction is changed
-        },
-    });
-};
-function PageView(opts) {
-    for (key in opts) { this[key] = opts[key]; }
-    this.$el = $(this.el);
-}
-function Dropzone() {
-}
-function HistoryView(opts) {
-    for (key in opts) { this[key] = opts[key]; }
-    this.$el = $(this.el);
-}
-HistoryView.prototype.render = function() {
-    this.$el.find("tbody").empty();
-    for (var i = 0; i < this.model.items.length ; i++) {
-        this.$el.find("tbody").append(this.tpl(this.model.items[i]));
-    }
-};
-
-function WaitingAnimation(opts) {
-    for (key in opts) { this[key] = opts[key]; }
-    this.$el = $(this.el);
-}
-WaitingAnimation.prototype.stop = function stopWaitingAnimation() {
-    this.$el.addClass('hidden');
-    clearInterval(this._id);
-};
-WaitingAnimation.prototype.start = function startWaitingAnimation() {
-    var self = this;
-    this.$el.removeClass('hidden');
-    var items = self.model.items;
-    this._id = setInterval(function() {
-        perRound = 5;
-        while (perRound-- > 0) {
-            var randGlyph = items[parseInt(Math.random() * items.length)];
-            $(self.el +
-              " tr:nth-child(" + parseInt(Math.random() * 20) + ")" +
-              " td:nth-child(" + parseInt(Math.random() * 20) + ")"
-             ).html(randGlyph.sample);
-        }
-    }, 300);
-};
-function CheatsheetView(opts) {
-    for (key in opts) { this[key] = opts[key]; }
-    this.$el = $(this.el);
-    // Setup clipboard
-    new Clipboard('.code');
-}
-
-CheatsheetView.prototype.applyFilter = function applyFilter() {
-    var self = this;
-    $.each(self.model.items, function(id, desc) {
-        if (self.filter &&
-            self.filter !== "" &&
-            desc.baseLetter.indexOf(self.filter) === -1 &&
-            desc.baseLetter.indexOf(self.filter.toLowerCase()) === -1) {
-            $("#cheatsheet-" + desc.id).addClass('hidden');
-        } else {
-            $("#cheatsheet-" + desc.id).removeClass('hidden');
-        }
-    });
-};
-
-CheatsheetView.prototype.render = function render() {
-    var self = this;
-    self.$el.find(".cheatsheet").empty();
-    $.each(self.model.items, function(idx, model) {
-        self.$el.find('.cheatsheet').append(self.tpl(model));
-    });
-    self.$el.find('button').on('click', function() {
-        notie.alert(1, "In Zwischenablage kopiert: '" + $(this).attr('data-clipboard-text') + "'");
-    });
-    self.$el.find('input[type="text"]').on('keydown', function(e) {
-        self.filter = (e.keyCode < 32 || e.ctrlKey || e.altKey) ?  null : String.fromCharCode(e.keyCode);
-        self.applyFilter();
-        $(this).val('');
-    });
-    return self;
-};
 /********************/
 /* Utiliy functions */
 /********************/
@@ -317,6 +119,308 @@ function compileTemplates() {
     });
     return templates;
 }
+function App() {
+    this.$el = $("<div>");
+    this.templates = compileTemplates();
+
+    // Set up models
+    this.history = new History();
+    this.errorTags = new ErrorTags();
+    this.cheatsheet = new Cheatsheet();
+
+    // Set up views
+    this.pageView = new PageView({
+        'el': "#file-correction",
+        'tpl': this.templates.line,
+    });
+    this.historyView = new HistoryView({
+        'el': "#history-modal",
+        'model': this.history,
+        'tpl': this.templates.historyItem,
+    });
+    this.cheatsheetView = new CheatsheetView({
+        'el': "#cheatsheet-modal",
+        'model': this.cheatsheet,
+        'tpl': this.templates.cheatsheetEntry,
+    });
+    this.waitingAnimation = new WaitingAnimation({
+        'el': "#waiting-animation",
+        'model': this.cheatsheet,
+    });
+    this.dropzone = new Dropzone({
+        'el': '#dropzone'
+    });
+}
+
+App.prototype.render = function() {
+    // event listeners
+    $("#save_button").on("click", saveGtEditLocation);
+
+    // Handle zooming
+    $("#zoom-in").on("click", zoomIn);
+    $("#zoom-out").on("click", zoomOut);
+    $("#zoom-reset").on("click", zoomReset);
+
+    // Notice changed input and make save button available
+    $("#file-correction").on('input', markChanged);
+    $("#right-sidebar").on('input', markChanged);
+
+    // Open history modal
+    $('button[data-target="#history-modal"]').on('click', function() {
+        app.history.load(function(err) {
+            if (err) { return httpError(err); }
+            console.log(app);
+            app.historyView.render();
+        });
+    });
+
+    // Select Mode
+    $("#toggle-select").on('click', toggleSelectMode);
+    $("#select-bar .close").on('click', toggleSelectMode);
+    $('.add-multi-comment').on('click', addMultiComment);
+    $(".set-view").on('click', function() {
+        reduceViewToSelectors($(this).attr('data-target').split(/\s*,\s*/));
+    });
+
+    $("#sort-line").on('click', function() { sortRowsByLine(1); });
+    $("#sort-line-desc").on('click', function() { sortRowsByLine(-1); });
+    $("#sort-width").on('click', function() { sortRowsByWidth(1); });
+    $("#sort-width-desc").on('click', function() { sortRowsByWidth(-1); });
+
+    $("#load-image button").on('click', function() {
+        window.location.hash = '#' + $("#load-image input").val();
+    });
+    $(".select-all").on('click', function() { changeSelection('select'); });
+    $(".select-none").on('click', function() { changeSelection('unselect'); });
+    $(".select-toggle").on('click', function() { changeSelection('toggle'); });
+};
+
+App.prototype.init = function() {
+    var self = this;
+    async.each([this.cheatsheet, this.errorTags], function(model, done) {
+        model.load(done);
+    }, function(err) {
+        if (err) { return httpError(err); }
+        self.$el.trigger('app:initialized');
+    });
+};
+
+// TODO
+App.prototype.loadPage = function(url) {
+    var self = this;
+    this.$el.trigger('app:before-load');
+
+    // to instantly see when a new document has been retrieved
+    $("#file-correction").addClass("hidden");
+    window.app.waitingAnimation.start();
+    // file correction will be loaded
+    $("#dropzone").addClass('hidden');
+
+    this.currentPage = new Page(url);
+    this.currentPage.load(function(err) {
+        if (err) { return httpError(err); }
+        self.pageView.model = self.currentPage;
+        self.pageView.render();
+        self.waitingAnimation.stop();
+        $("#file-correction").removeClass("hidden");
+        // activate button if #file-correction is changed
+        self.$el.trigger('app:after-load');
+    });
+};
+
+function History() { }
+History.prototype.url = 'ocr-gt-tools.cgi?action=history&mine=true';
+History.prototype.load = function(cb) {
+    var self = this;
+    $.ajax({
+        url: this.url,
+        dataType: "json",
+        error: cb,
+        success: function(data) {
+            notie.alert(1, "History geladen", 1);
+            self.items = data;
+            cb(null, self);
+        },
+    });
+};
+
+
+function ErrorTags() {
+    this.items = [];
+}
+ErrorTags.prototype.url = 'error-tags.json';
+ErrorTags.prototype.load = function(cb) {
+    var self = this;
+    $.ajax({
+        url: this.url,
+        dataType: "json",
+        error: cb,
+        success: function(data) {
+            self.items = [];
+            var keys = Object.keys(data);
+            for (var i = 0; i < keys.length; i++) {
+                self.items.push(data[keys[i]]);
+            }
+            cb();
+        },
+    });
+};
+var UISettings = {
+    zoomInFactor: 1.4,
+    zoomOutFactor: 0.8,
+    cgiUrl: 'ocr-gt-tools.cgi',
+    defaultViews: ['.transcription','img']
+};
+
+
+function Cheatsheet() {
+    this.items = [];
+}
+Cheatsheet.prototype.url = 'special-chars.json';
+Cheatsheet.prototype.load = function(cb) {
+    var self = this;
+    $.ajax({
+        url: this.url,
+        dataType: "json",
+        error: cb,
+        success: function(data) {
+            self.items = [];
+            var keys = Object.keys(data);
+            for (var i = 0; i < keys.length; i++) {
+                self.items.push(data[keys[i]]);
+            }
+            cb();
+        },
+    });
+};
+
+function Page(urlOrOpts) {
+    if (typeof urlOrOpts === 'string') {
+        this.imageUrl = urlOrOpts;
+    } else {
+        this.imageUrl = urlOrOpts.imageUrl;
+        for (key in urlOrOpts) { this[key] = urlOrOpts[key]; }
+    }
+    this.changed = false;
+}
+
+Page.prototype.save = function(cb) {
+};
+
+Page.prototype.load = function(cb) {
+    var self = this;
+    $.ajax({
+        type: 'GET',
+        url: 'ocr-gt-tools.cgi?action=create&imageUrl=' + this.imageUrl,
+        error: cb,
+        success: function(res) {
+            for (key in res) { self[key] = res[key]; }
+            cb();
+        },
+    });
+};
+function PageView(opts) {
+    for (key in opts) { this[key] = opts[key]; }
+    this.$el = $(this.el);
+}
+PageView.prototype.render = function() {
+    console.log(this.model);
+    for (var i = 0; i < this.model['line-transcriptions'].length; i++)  {
+        var line = {
+            transcription: this.model['line-transcriptions']
+        };
+        var $line = $(this.tpl(line));
+        $line.find(":checkbox").on('click', function(e) {
+            $(this).closest('.row').toggleClass('selected');
+            e.stopPropagation();
+        });
+        $line.find(".select-col").on('click', function(e) {
+            $(this).find(':checkbox').click();
+        });
+        $line.find(".transcription div[contenteditable]").on('keydown', function(e) {
+            if (e.keyCode == 13) {
+                e.preventDefault();
+            }
+        });
+        $line.find("div[contenteditable]").on('blur', function(e) {
+            $(this).html(Utils.encodeForBrowser(Utils.encodeForServer($(this).html())));
+        });
+        this.$el.append($line);
+    }
+};
+function Dropzone() {
+}
+function HistoryView(opts) {
+    for (key in opts) { this[key] = opts[key]; }
+    this.$el = $(this.el);
+}
+HistoryView.prototype.render = function() {
+    this.$el.find("tbody").empty();
+    for (var i = 0; i < this.model.items.length ; i++) {
+        this.$el.find("tbody").append(this.tpl(this.model.items[i]));
+    }
+};
+
+function WaitingAnimation(opts) {
+    for (key in opts) { this[key] = opts[key]; }
+    this.$el = $(this.el);
+}
+WaitingAnimation.prototype.stop = function stopWaitingAnimation() {
+    this.$el.addClass('hidden');
+    clearInterval(this._id);
+};
+WaitingAnimation.prototype.start = function startWaitingAnimation() {
+    var self = this;
+    this.$el.removeClass('hidden');
+    var items = self.model.items;
+    this._id = setInterval(function() {
+        perRound = 5;
+        while (perRound-- > 0) {
+            var randGlyph = items[parseInt(Math.random() * items.length)];
+            $(self.el +
+              " tr:nth-child(" + parseInt(Math.random() * 20) + ")" +
+              " td:nth-child(" + parseInt(Math.random() * 20) + ")"
+             ).html(randGlyph.sample);
+        }
+    }, 300);
+};
+function CheatsheetView(opts) {
+    for (key in opts) { this[key] = opts[key]; }
+    this.$el = $(this.el);
+    // Setup clipboard
+    new Clipboard('.code');
+}
+
+CheatsheetView.prototype.applyFilter = function applyFilter() {
+    var self = this;
+    $.each(self.model.items, function(id, desc) {
+        if (self.filter &&
+            self.filter !== "" &&
+            desc.baseLetter.indexOf(self.filter) === -1 &&
+            desc.baseLetter.indexOf(self.filter.toLowerCase()) === -1) {
+            $("#cheatsheet-" + desc.id).addClass('hidden');
+        } else {
+            $("#cheatsheet-" + desc.id).removeClass('hidden');
+        }
+    });
+};
+
+CheatsheetView.prototype.render = function render() {
+    var self = this;
+    self.$el.find(".cheatsheet").empty();
+    $.each(self.model.items, function(idx, model) {
+        self.$el.find('.cheatsheet').append(self.tpl(model));
+    });
+    self.$el.find('button').on('click', function() {
+        notie.alert(1, "In Zwischenablage kopiert: '" + $(this).attr('data-clipboard-text') + "'");
+    });
+    self.$el.find('input[type="text"]').on('keydown', function(e) {
+        self.filter = (e.keyCode < 32 || e.ctrlKey || e.altKey) ?  null : String.fromCharCode(e.keyCode);
+        self.applyFilter();
+        $(this).val('');
+    });
+    return self;
+};
 // Name: ocr-gt-tools.js
 
 function httpError(xhr) {
@@ -641,11 +745,10 @@ function onHashChange() {
 
     if (window.app.currentPage && window.app.currentPage.changed) {
         confirmExit();
-    } else {
-        if (cHash !== '') {
-            loadGtEditLocation(cHash.substring(1));
-        }
+    } else if (cHash === '') {
+        return;
     }
+    window.app.loadPage(cHash.substring(1));
 }
 
 function onScroll() {
@@ -716,104 +819,6 @@ function toggleSelectMode() {
     $(".button-col").toggleClass('hidden');
     $("#select-bar").toggleClass('hidden');
 }
-
-function App() {
-    this.$el = $("<div>");
-    this.templates = compileTemplates();
-
-    // Set up models
-    this.history = new History();
-    this.errorTags = new ErrorTags();
-    this.cheatsheet = new Cheatsheet();
-
-    // Set up views
-    this.pageView = new PageView({
-        'el': 'body'
-    });
-    this.historyView = new HistoryView({
-        'el': "#history-modal",
-        'model': this.history,
-        'tpl': this.templates.historyItem,
-    });
-    this.cheatsheetView = new CheatsheetView({
-        'el': "#cheatsheet-modal",
-        'model': this.cheatsheet,
-        'tpl': this.templates.cheatsheetEntry,
-    });
-    this.waitingAnimation = new WaitingAnimation({
-        'el': "#waiting-animation",
-        'model': this.cheatsheet,
-    });
-    this.dropzone = new Dropzone({
-        'el': '#dropzone'
-    });
-}
-
-App.prototype.render = function() {
-    // event listeners
-    $("#save_button").on("click", saveGtEditLocation);
-
-    // Handle zooming
-    $("#zoom-in").on("click", zoomIn);
-    $("#zoom-out").on("click", zoomOut);
-    $("#zoom-reset").on("click", zoomReset);
-
-    // Notice changed input and make save button available
-    $("#file-correction").on('input', markChanged);
-    $("#right-sidebar").on('input', markChanged);
-
-    // Open history modal
-    $('button[data-target="#history-modal"]').on('click', function() {
-        app.history.load(function(err) {
-            if (err) { return httpError(err); }
-            console.log(app);
-            app.historyView.render();
-        });
-    });
-
-    // Select Mode
-    $("#toggle-select").on('click', toggleSelectMode);
-    $("#select-bar .close").on('click', toggleSelectMode);
-    $('.add-multi-comment').on('click', addMultiComment);
-    $(".set-view").on('click', function() {
-        reduceViewToSelectors($(this).attr('data-target').split(/\s*,\s*/));
-    });
-
-    $("#sort-line").on('click', function() { sortRowsByLine(1); });
-    $("#sort-line-desc").on('click', function() { sortRowsByLine(-1); });
-    $("#sort-width").on('click', function() { sortRowsByWidth(1); });
-    $("#sort-width-desc").on('click', function() { sortRowsByWidth(-1); });
-
-    $("#load-image button").on('click', function() {
-        window.location.hash = '#' + $("#load-image input").val();
-    });
-    $(".select-all").on('click', function() { changeSelection('select'); });
-    $(".select-none").on('click', function() { changeSelection('unselect'); });
-    $(".select-toggle").on('click', function() { changeSelection('toggle'); });
-};
-
-App.prototype.init = function() {
-    var self = this;
-    async.each([this.cheatsheet, this.errorTags], function(model, done) {
-        model.load(done);
-    }, function(err) {
-        if (err) { return httpError(err); }
-        self.$el.trigger('app:initialized');
-    });
-};
-
-// TODO
-App.prototype.loadPage = function(url) {
-    var self = this;
-    this.$el.trigger('app:before-load');
-    this.currentPage = new Page(url);
-    this.currentPage.load(function(err) {
-        if (err) { return httpError(err); }
-        self.pageView.model = self.currentPage;
-        self.pageView.render();
-        this.$el.trigger('app:after-load');
-    });
-};
 
 $(function onPageLoaded() {
     var app = window.app = new App();

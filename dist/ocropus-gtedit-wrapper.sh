@@ -1,36 +1,32 @@
 #!/bin/bash
+
+set -ex
+
 ocrBaseDir="$(dirname "$(readlink -f "$0")")"
 
 hocr="$1"
 imageDir="$2"
-html="$3"
-comments="$4"
+correctionDir="$3"
 
-if [[ -e "$html" ]];then
-    echo "$html already exists!" >&2
-    exit 0
+if [[ ! -e "$hocr" ]];then
+  echo "hocr '$hocr' does not exist"
+  exit 1
+fi
+if [[ ! -d "$imageDir" ]];then
+  echo "imageDir '$imageDir' is not a directory"
+  exit 1
+fi
+if [[ -z "$correctionDir" ]];then
+  echo "correctionDir not given"
+  exit 1
 fi
 
 # Make sure the 'correction-dir' exists
-mkdir -p "$(dirname "$html")"
-tempdir=$(mktemp -d)
-cd "$tempdir"
-
-
+mkdir -p "$correctionDir"
+cd "$correctionDir"
 "$ocrBaseDir/vendor/hocr-tools/hocr-extract-images" -b "$imageDir" "$hocr"
-"$ocrBaseDir/vendor/ocropy/ocropus-gtedit" html -x xxx line*.png
-mv -v correction.html "$html"
-
-
-touch anmerkungen.txt
-nrLines=$(find "$tempdir" -name '*.txt'|wc -l)
-lineIdx=0
-while ((lineIdx <= nrLines));do
-    printf "%03d: \n" >> anmerkungen.txt
-    lineIdx=$((lineIdx + 1))
+for i in line-*.txt;do
+  echo -ne "\n" >> "$i"
+  echo -e " " > "comment-$i"
 done
-
-mv anmerkungen.txt "$comments"
-
-
-rm -rf "$tempdir"
+echo -e " " > "comment-page.txt"

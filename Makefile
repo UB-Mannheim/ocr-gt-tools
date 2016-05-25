@@ -54,7 +54,7 @@ VENDOR_JS_FILES  = bower_components/jquery/dist/jquery.js \
 				   bower_components/clipboard/dist/clipboard.js \
 				   bower_components/notie/dist/notie.js
 		   
-JS_FILES = js/**/*.js js/*.js ocr-gt-tools.js ocr-gt-tools.js
+JS_FILES = js/*.js js/**/*.js ocr-gt-tools.js ocr-gt-tools.js
 # The HTML files, described in the Jade shorthand / templating language
 JADE_FILES  = ocr-gt-tools.jade
 
