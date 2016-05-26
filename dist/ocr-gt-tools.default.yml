@@ -42,6 +42,7 @@ template:
     thumb-url:      '<hostname><images-root>/<collection>/<work>/thumbs/<work>_<page>.jpg'
     hires-url:      '<hostname><images-root>/<collection>/<work>/max/<work>_<page>.jpg'
     hocr-url:       '<hostname><images-root>/<collection>/<work>/hocr/<work>_<page>.hocr'
+    line-image-url: '<url_prefix><correction-root>/<collection>/<work>/gt/<page>/line-%04d.png'
     landing-page-url: 'http://digi.bib.uni-mannheim.de/en/suchergebnis/?tx_dlf[query]=<work>'
   path:
     correction-dir:  '<path-prefix><correction-root>/<collection>/<work>/gt/<page>'
@@ -56,9 +57,6 @@ template:
       - 'f'
       - '-name'
       - '<page-comment-filename>'
-    cat-page-comment: ['cat', '<correction-dir>/<page-comment-filename>']
-    cat-line-transcriptions: ['find', '<correction-dir>', '-name', 'line-*.txt', '-exec', 'cat', '{}', ';']
-    cat-line-comments: ['find', '<correction-dir>', '-name', 'comment-line-*.txt', '-exec', 'cat', '{}', ';']
     extract-images:
       - '<OCR_GT_BASEDIR>/ocropus-gtedit-wrapper.sh'
       - '<hocr-file>'
