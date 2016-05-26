@@ -12,7 +12,9 @@ Cheatsheet.prototype.load = function(cb) {
             self.items = [];
             var keys = Object.keys(data);
             for (var i = 0; i < keys.length; i++) {
-                self.items.push(data[keys[i]]);
+                var cheatsheetEntry = data[keys[i]];
+                // console.log(cheatsheetEntry.id, cheatsheetEntry.recognition);
+                self.items.push(cheatsheetEntry);
             }
             cb();
         },
