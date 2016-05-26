@@ -83,23 +83,6 @@ Utils.fitHeight = function expandTextarea(selector) {
             .height(this.scrollHeight);
     });
 };
-
-/**
- * Fist, for all descendants of `parent`, run fn1
- * Seoncd, For all descendants of `parent` that match `selectors` as well as their parents and descendants: run fn1
- *
- * First go is to mark something (like add a class 'hidden').
- * Second fn then unmarks that for the matching selectors.
- */
-Utils.runOnSubtreeAndParents = function addClassToTree(parent, selectors, fn1, fn2) {
-    $(parent)
-        .find("*").each(fn1).addBack()
-        .find(selectors)
-            .each(fn2)
-            .find('*').each(fn2)
-            .addBack()
-            .parents('*').each(fn2);
-};
 // TODO
 
 function addMultiComment() {
@@ -556,15 +539,12 @@ PageView.prototype.sortRowsByLine = function sortRowsByLine(order) {
 
 
 PageView.prototype.render = function() {
-    this.$el.empty();
     // render lines
     for (var i = 0; i < this.model.lines.length; i++)  {
         var lineModel = this.model.lines[i];
         var lineEl = $(window.app.templates.lineContainer(lineModel)).appendTo(this.$el);
         new LineView({"$el": lineEl, "model": lineModel}).render();
     }
-    window.app.on('app:loaded', function fitTextareaSize() { Utils.fitHeight('textarea'); });
-    window.app.on('app:changed', function fitTextareaSize() { Utils.fitHeight('textarea'); });
 };
 function LineView(opts) {
     for (key in opts) { this[key] = opts[key]; }
@@ -582,32 +562,32 @@ function addComment() {
  * Update the color of the comment toggle button depending on whether line has
  * comments or not.
  */
-LineView.prototype.updateCommentButtonColor = function updateCommentButtonColor() {
-    var toggler = this.$el.find(".toggle-line-comment");
-    if (this.model.comment.length > 0)
-        toggler.removeClass('btn-default').addClass('btn-info');
-    else
-        toggler.addClass('btn-default').removeClass('btn-info');
+LineView.prototype.renderCommentToggler = function renderCommentToggler() {
+    var hasComment = this.model.comment.length > 0;
+    var isVisible = this.$el.find('.line-comment').is(':visible');
+    var $toggler = this.$el.find(".toggle-line-comment");
+    $toggler.find(".show-line-comment").toggleClass('hidden', isVisible);
+    $toggler.find(".hide-line-comment").toggleClass('hidden', !isVisible);
+    $toggler.toggleClass('btn-default', !hasComment).toggleClass('btn-info', hasComment);
 };
 
 LineView.prototype.render = function() {
     var self = this;
     // Build from template
-    this.$el.empty().html($(window.app.templates.line(this.model)));
-
-    // updateCommentButtonColor
-    window.app.on('app:changed', this.updateCommentButtonColor.bind(this));
-    this.updateCommentButtonColor();
+    this.$el.find("*").off().addBack().off().html($(window.app.templates.line(this.model)));
 
     this.$el.find(".toggle-line-comment").on('click', function() {
-        self.$el.find(".line-comment").toggleClass("view-hidden");
-        self.$el.find(".toggle-line-comment").toggleClass("hidden");
+        var commentField = self.$el.find('.line-comment');
+        commentField.toggleClass('hidden', commentField.is(':visible')).removeClass('view-hidden');
+        self.renderCommentToggler();
     });
 
     // data binding
     this.$el.find("input,textarea").on('input', function(e) {
         self.model.comment = self.$el.find('.line-comment textarea').val().trim();
         self.model.transcription = self.$el.find('.line-transcription input').val().trim();
+        self.renderCommentToggler();
+        Utils.fitHeight(this);
         window.app.emit('app:changed');
     });
 
@@ -616,20 +596,32 @@ LineView.prototype.render = function() {
         var tag = $(this).attr('data-tag');
         if (self.model.addTag(tag)) {
             self.$el.removeClass('hidden');
+            self.$el.removeClass('hidden');
             self.render();
             window.app.emit('app:changed');
         }
     });
 
+    // Click handler for multi-select
     this.$el.find(":checkbox").on('click', function(e) {
         if (!window.app.selectMode) return;
         $(this).closest('.row').toggleClass('selected');
         e.stopPropagation();
     });
+
+    // Click handler for multi-select
     this.$el.on('click', function(e) {
         if (!window.app.selectMode) return;
         $(this).find(':checkbox').click();
     });
+
+    // Adapt the textarea height
+    Utils.fitHeight(this.$el.find('textarea'));
+
+    // Highlight button w/ comments
+    window.app.on('app:filter-view', this.renderCommentToggler.bind(this));
+    this.renderCommentToggler();
+
     return this;
 };
 function HistoryView(opts) {
@@ -703,9 +695,10 @@ Toolbar.prototype.render = function() {
 
     // Handle view filtering by selectors
     this.$el.find(".set-view").on('click', function reduceView() {
-        Utils.runOnSubtreeAndParents(".lines-col", $(this).attr('data-target'),
-                                     function() { $(this).addClass('view-hidden'); },
-                                     function() { $(this).removeClass('view-hidden'); });
+        $(".view-hidden").removeClass("view-hidden");
+        $("ul.list-group > *").addClass('view-hidden');
+        $("ul.list-group > " + $(this).attr('data-target')).removeClass('view-hidden');
+        app.emit('app:filter-view');
     });
 
     // Handle sorting

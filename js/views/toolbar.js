@@ -50,9 +50,10 @@ Toolbar.prototype.render = function() {
 
     // Handle view filtering by selectors
     this.$el.find(".set-view").on('click', function reduceView() {
-        Utils.runOnSubtreeAndParents(".line", $(this).attr('data-target'),
-                                     function() { $(this).addClass('view-hidden'); },
-                                     function() { $(this).removeClass('view-hidden'); });
+        $(".view-hidden").removeClass("view-hidden");
+        $("ul.list-group > *").addClass('view-hidden');
+        $("ul.list-group > " + $(this).attr('data-target')).removeClass('view-hidden');
+        app.emit('app:filter-view');
     });
 
     // Handle sorting

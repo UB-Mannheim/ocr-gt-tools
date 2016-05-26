@@ -69,17 +69,16 @@ html(lang='de')
 			.col-sm-1.button-col(data-target="#line-comment-{{ id }}")
 				.btn-group.btn-group-sm(role='group')
 					.btn-group(role='group')
-						a.btn.btn-default.toggle-line-comment.show-line-comment(data-target="#line-comment-{{ id }}")
-							i.fa.fa-commenting-o
-						a.btn.btn-default.toggle-line-comment.hide-line-comment.hidden(data-target="#line-comment-{{ id }}")
-							i.fa.fa-map-o
+						a.btn.btn-default.toggle-line-comment(data-target="#line-comment-{{ id }}")
+							i.show-line-comment.fa.fa-commenting-o
+							i.hide-line-comment.fa.fa-map-o.hidden
 					.btn-group(role='group')
 						button.btn.btn-default.dropdown-toggle(data-toggle="dropdown", type='button', aria-haspopup="true", aria-expanded="false", tabindex="-1")
 							i.fa.fa-exclamation
 							span.caret
 						ul.dropdown-menu
 							li
-								a.btn.btn-default.add-comment(data-target="#line-comment-{{ id }}", data-tag="text-italic")
+								a.btn.btn-default.add-comment(data-target="#line-comment-{{ id }}", data-tag="#text-italic")
 									i.fa.fa-italic
 									| Kursiv
 							li
