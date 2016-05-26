@@ -39,11 +39,9 @@ PageView.prototype.render = function() {
     this.$el.empty();
     // render lines
     for (var i = 0; i < this.model.lines.length; i++)  {
-        var lineEl = $("<div>").appendTo(this.$el);
-        new LineView({
-            "$el": lineEl,
-            "model": this.model.lines[i],
-        }).render();
+        var lineModel = this.model.lines[i];
+        var lineEl = $(window.app.templates.lineContainer(lineModel)).appendTo(this.$el);
+        new LineView({"$el": lineEl, "model": lineModel}).render();
     }
     window.app.on('app:loaded', function fitTextareaSize() { Utils.fitHeight('textarea'); });
     window.app.on('app:changed', function fitTextareaSize() { Utils.fitHeight('textarea'); });

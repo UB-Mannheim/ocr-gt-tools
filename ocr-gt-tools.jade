@@ -62,42 +62,43 @@ html(lang='de')
 		//*
 		// A line of page
 		//*
-		script#tpl-line(type='text/x-handlebars-template')
+		script#tpl-lineContainer(type='text/x-handlebars-template')
 			.row.line(id="line-{{ id }}")
 
-				.col-sm-1.button-col(data-target="#line-comment-{{ id }}")
-					.btn-group.btn-group-sm(role='group')
-						.btn-group(role='group')
-							a.btn.btn-default.toggle-line-comment.show-line-comment(data-target="#line-comment-{{ id }}")
-								i.fa.fa-commenting-o
-							a.btn.btn-default.toggle-line-comment.hide-line-comment.hidden(data-target="#line-comment-{{ id }}")
-								i.fa.fa-map-o
-						.btn-group(role='group')
-							button.btn.btn-default.dropdown-toggle(data-toggle="dropdown", type='button', aria-haspopup="true", aria-expanded="false", tabindex="-1")
-								i.fa.fa-exclamation
-								span.caret
-							ul.dropdown-menu
-								li
-									a.btn.btn-default.add-comment(data-target="#line-comment-{{ id }}", data-tag="#text-italic")
-										i.fa.fa-italic
-										| Kursiv
-								li
-									a.btn.btn-warning.add-comment(data-target="#line-comment-{{ id }}", data-tag="#wrong-image-section")
-										i.fa.fa-exclamation-circle
-										| Fehler in Vorlage
+		script#tpl-line(type='text/x-handlebars-template')
+			.col-sm-1.button-col(data-target="#line-comment-{{ id }}")
+				.btn-group.btn-group-sm(role='group')
+					.btn-group(role='group')
+						a.btn.btn-default.toggle-line-comment.show-line-comment(data-target="#line-comment-{{ id }}")
+							i.fa.fa-commenting-o
+						a.btn.btn-default.toggle-line-comment.hide-line-comment.hidden(data-target="#line-comment-{{ id }}")
+							i.fa.fa-map-o
+					.btn-group(role='group')
+						button.btn.btn-default.dropdown-toggle(data-toggle="dropdown", type='button', aria-haspopup="true", aria-expanded="false", tabindex="-1")
+							i.fa.fa-exclamation
+							span.caret
+						ul.dropdown-menu
+							li
+								a.btn.btn-default.add-comment(data-target="#line-comment-{{ id }}", data-tag="text-italic")
+									i.fa.fa-italic
+									| Kursiv
+							li
+								a.btn.btn-warning.add-comment(data-target="#line-comment-{{ id }}", data-tag="#wrong-image-section")
+									i.fa.fa-exclamation-circle
+									| Fehler in Vorlage
 
-				.col-sm-1.select-col.hidden(data-target="#line-comment-{{ id }}")
-					input(type="checkbox")
+			.col-sm-1.select-col.hidden(data-target="#line-comment-{{ id }}")
+				input(type="checkbox")
 
-				.col-sm-11.lines-col
-					.panel.panel-default
-						ul.list-group
-							li.list-group-item.image
-								img(src="{{ image }}", height="30")
-							li.list-group-item.line-transcription
-								input(type='text', value='{{ transcription }}')
-							li.list-group-item.line-comment(id="line-comment-{{ id }}")
-								textarea(placeholder="Kommentar zu dieser Zeile") {{ comment }}
+			.col-sm-11.lines-col
+				.panel.panel-default
+					ul.list-group
+						li.list-group-item.line-image
+							img(src="{{ image }}", height="30")
+						li.list-group-item.line-transcription
+							input(type='text', value='{{ transcription }}')
+						li.list-group-item.line-comment(id="line-comment-{{ id }}")
+							textarea(placeholder="Kommentar zu dieser Zeile") {{ comment }}
 
 		//*
 		// A row of history
@@ -241,11 +242,11 @@ html(lang='de')
 										i.fa.fa-commenting-o
 										i.fa.fa-align-left
 										| Vollansicht
-									button.set-view.btn.btn-default(type='button', data-target='.line-transcription,img')
+									button.set-view.btn.btn-default(type='button', data-target='.line-transcription,.line-image')
 										i.fa.fa-picture-o
 										i.fa.fa-align-left
 										| Bild + Text
-									button.set-view.btn.btn-default(type='button', data-target='.line-comment,img')
+									button.set-view.btn.btn-default(type='button', data-target='.line-comment,.line-image')
 										i.fa.fa-picture-o
 										i.fa.fa-commenting-o
 										| Bild + Kommentar
@@ -253,7 +254,7 @@ html(lang='de')
 										i.fa.fa-align-left
 										i.fa.fa-commenting-o
 										| Text + Kommentar
-									button.set-view.btn.btn-default(type='button', data-target='img')
+									button.set-view.btn.btn-default(type='button', data-target='.line-image')
 										i.fa.fa-picture-o
 										| Bild
 									button.set-view.btn.btn-default(type='button', data-target='.line-transcription')
