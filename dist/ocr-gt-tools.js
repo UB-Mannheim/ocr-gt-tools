@@ -3,23 +3,6 @@
 /********************/
 
 var Utils = {};
-/**
- * Transform text file to array of line lineComments
- *
- * @param {string} txt Contents of the text file
- * @param {object} target the object to attach 'pageComment'/'lineComments' to
- */
-Utils.parseLineComments = function parseLineComments(txt, target) {
-    var lines = txt.split(/\n/);
-    var lineComments = [];
-    for (var i = 0; i < lines.length ; i++) {
-        var lineComment = lines[i].replace(/^\d+:\s*/, '');
-        lineComment = Utils.encodeForServer(lineComment);
-        lineComments.push(lineComment);
-    }
-    target.pageComment = lineComments[0];
-    target.lineComments = lineComments.slice(1);
-};
 
 /**
  * Scale the 'height' attribute of an element by a factor,
@@ -36,27 +19,6 @@ Utils.scaleHeight = function scaleHeight(el, factor) {
     var originalHeight = el.getAttribute('data-original-height');
     var newHeight = factor == 1 ? originalHeight : curHeight * factor;
     el.setAttribute('height',  newHeight);
-};
-
-/**
- * Attach current UNIX time as a URL parameter to a URL so a GET request to it
- * won't be cached.
- *
- * @param {string} url the URL to timestamp
- */
-Utils.uncachedURL = function uncachedURL(url) {
-    return url + "?nocache=" + Date.now();
-};
-
-/**
- * Test whether element is within viewport
- * No jQuery necessary.
- * Thanks to Dan's StackOverflow answer for this:
- * http://stackoverflow.com/questions/123999/how-to-tell-if-a-dom-element-is-visible-in-the-current-viewport
-*/
-Utils.isElementInViewport = function isElementInViewport(el) {
-    var rect = el.getBoundingClientRect();
-    return (rect.top >= 0 && rect.left >= 0);
 };
 
 /**
@@ -85,16 +47,6 @@ Utils.encodeForBrowser = function encodeForBrowser(str) {
         .replace(/\n/g, '<br>');
 };
 
-Utils.encodeForServer = function encodeForServer(str) {
-    if (typeof str === 'undefined') {
-        return '';
-    }
-    return str
-        .replace(/^(<br[^>]*>)*/, '')
-        .replace(/(<br[^>]*>)*$/, '')
-        .replace(/<br[^>]*>/g, "\n");
-};
-
 Utils.getUrlFromDragEvent = function getUrlFromDragEvent(e) {
     var elem = e.originalEvent.dataTransfer.getData('text/html');
     var url = $(elem).find('img').addBack('img').attr('src');
@@ -110,7 +62,7 @@ Utils.getUrlFromDragEvent = function getUrlFromDragEvent(e) {
 /**
  * Compile the Handlebars templates
  */
-function compileTemplates() {
+Utils.compileTemplates = function compileTemplates() {
     var templates = {};
     $("*[id^='tpl-']").each(function() {
         var $this = $(this);
@@ -118,20 +70,200 @@ function compileTemplates() {
         templates[tplId] = Handlebars.compile($this.html());
     });
     return templates;
+};
+
+/**
+ * Shrink/expand a textarea to fit its contents
+ */
+Utils.fitHeight = function expandTextarea(selector) {
+    $(selector).each(function() {
+        $(this)
+            .attr('rows', 1) // Must be one for single-line textareas
+            .css({'height': 'auto', 'overflow-y': 'hidden', 'resize': 'none'})
+            .height(this.scrollHeight);
+    });
+};
+// TODO
+
+function addMultiComment() {
+    var tag = '#' + $(this).attr('data-tag');
+    $('.selected .line-comment').each(function() {
+        addTagToElement($("div[contenteditable]", $(this)), tag);
+    });
 }
+
+function changeSelection(action) {
+    $('.select-col').each(function() {
+        var $this = $(this);
+        var isSelected = $this.closest('.row').hasClass('selected');
+        if (action === 'select' && !isSelected) {
+            $this.trigger('click');
+        } else if (action === 'unselect' && isSelected) {
+            $this.trigger('click');
+        } else if (action === 'toggle') {
+            $this.trigger('click');
+        }
+    });
+}
+
+/******************/
+/* Event handlers */
+/******************/
+
+function setupDragAndDrop() {
+    // Prevent the default browser drop action
+    $(document).bind('drop dragover', function(e) {
+        e.preventDefault();
+    });
+    // Show the drop zone on as soon as something is dragged
+    $(document)
+        .bind('dragenter', function onDragEnter(e) {
+            e.preventDefault();
+            $("#file-correction").addClass('hidden');
+            $("#dropzone").removeClass('hidden');
+        })
+        .bind('dragend', function onDragEnd(e) {
+            e.preventDefault();
+            $("#file-correction").removeClass('hidden');
+            $("#dropzone").addClass('hidden');
+        });
+    $("#dropzone")
+        .bind('dragover dragenter', function onDragOver(e) {
+            e.preventDefault();
+            $("#dropzone").addClass('droppable').removeClass('hidden');
+        })
+        .bind('dragenter', function onDragEnterDropZone(e) {
+            e.stopPropagation();
+        })
+        .bind('dragleave', function onDragLeaveDropZone(e) {
+            e.preventDefault();
+            $("#dropzone").removeClass('droppable').addClass('hidden');
+        })
+        .bind('drop', function onDrop(e) {
+            e.preventDefault();
+
+            if (window.app.currentPage && window.app.currentPage.changed) {
+                notie.alert(2, "Ungesicherte Inhalte vorhanden, bitte zuerst speichern!", 2);
+            } else {
+                var url = Utils.getUrlFromDragEvent(e);
+                if (url) {
+                    window.app.loadPage(url);
+                } else {
+                    notie.alert(3, "Konnte keine URL erkennen.");
+                }
+            }
+        });
+}
+
+function toggleSelectMode() {
+    $(".selected").toggleClass('selected');
+    $(".select-col").toggleClass('hidden');
+    $(".button-col").toggleClass('hidden');
+    $("#select-bar").toggleClass('hidden');
+}
+
 function App() {
+
+    // A dummy element, just used for event emitting/listening
     this.$el = $("<div>");
-    this.templates = compileTemplates();
 
     // Set up models
+    this.settings = new Settings();
     this.history = new History();
     this.errorTags = new ErrorTags();
     this.cheatsheet = new Cheatsheet();
 
+    // Select mode initially off
+    this.selectMode = false;
+
+    // Compile templates
+    this.templates = Utils.compileTemplates();
+}
+
+App.prototype.on = function() {
+    if (this.settings.debug) console.debug('BIND', arguments[0], ' -> ', arguments[1].name || arguments[1]);
+    this.$el.on.apply(this.$el, arguments);
+};
+
+App.prototype.emit = function() {
+    if (this.settings.debug) console.debug('emit', arguments[0], arguments[1] || '');
+    var event = arguments[0];
+    if (event === 'app:saved') {
+        notie.alert(1, "Gespeichert", 1);
+    } else if (event === 'app:ajaxError') {
+        notie.alert(3, "HTTP Fehler " + xhr.status + ":\n<pre style='text-align: left'>" + xhr.responseText + "</pre>");
+    }
+    this.$el.trigger.apply(this.$el, arguments);
+};
+
+App.prototype.toggleSelectMode = function() {
+    this.selectMode = !this.selectMode;
+    this.emit('app:' + (this.selectMode ? 'enter' : 'exit') + '-select-mode');
+};
+
+App.prototype.confirmExit = function confirmExit() {
+    console.log("CONFIRM");
+    if (this.currentPage && this.currentPage.changed) {
+        notie.alert(2, "Ungesicherte Inhalte vorhanden, bitte zuerst speichern!", 5);
+        return "Ungesicherte Inhalte vorhanden, bitte zuerst speichern!";
+    }
+};
+
+App.prototype.showHistory = function() {
+    var self = this;
+    this.history.load(function(err) {
+        if (err) {
+            return self.emit('app:ajaxError', err);
+        }
+        self.historyView.render();
+    });
+};
+
+App.prototype.render = function() {
+
+    var self = this;
+
+    // Setup event handlers for drag and drop
+    // TODO
+    setupDragAndDrop();
+
+    // Render views
+    this.waitingAnimation.render();
+    this.cheatsheetView.render();
+    this.toolbar.render();
+    this.dropzone.render();
+
+    this.on('app:loading', function hidePageView() { self.pageView.$el.addClass('hidden'); });
+    this.on('app:loaded',  function showPageView() { self.pageView.$el.removeClass('hidden'); });
+
+    // Select Mode
+    // TODO
+    $("#toggle-select").on('click', toggleSelectMode);
+    $("#select-bar .close").on('click', toggleSelectMode);
+    $('.add-multi-comment').on('click', addMultiComment);
+
+    // TODO
+    $("#load-image button").on('click', function() {
+        window.location.hash = '#' + $("#load-image input").val();
+    });
+    // TODO
+    $(".select-all").on('click', function() { changeSelection('select'); });
+    $(".select-none").on('click', function() { changeSelection('unselect'); });
+    $(".select-toggle").on('click', function() { changeSelection('toggle'); });
+};
+
+App.prototype.init = function init() {
+    var self = this;
+
     // Set up views
+    this.toolbar = new Toolbar({
+        'el': '#toolbar'
+    });
+    this.sidebar = new Sidebar({
+        'el': '#right-sidebar'
+    });
     this.pageView = new PageView({
         'el': "#file-correction",
-        'tpl': this.templates.line,
     });
     this.historyView = new HistoryView({
         'el': "#history-modal",
@@ -150,84 +282,119 @@ function App() {
     this.dropzone = new Dropzone({
         'el': '#dropzone'
     });
-}
 
-App.prototype.render = function() {
-    // event listeners
-    $("#save_button").on("click", saveGtEditLocation);
-
-    // Handle zooming
-    $("#zoom-in").on("click", zoomIn);
-    $("#zoom-out").on("click", zoomOut);
-    $("#zoom-reset").on("click", zoomReset);
-
-    // Notice changed input and make save button available
-    $("#file-correction").on('input', markChanged);
-    $("#right-sidebar").on('input', markChanged);
-
-    // Open history modal
-    $('button[data-target="#history-modal"]').on('click', function() {
-        app.history.load(function(err) {
-            if (err) { return httpError(err); }
-            console.log(app);
-            app.historyView.render();
-        });
-    });
-
-    // Select Mode
-    $("#toggle-select").on('click', toggleSelectMode);
-    $("#select-bar .close").on('click', toggleSelectMode);
-    $('.add-multi-comment').on('click', addMultiComment);
-    $(".set-view").on('click', function() {
-        reduceViewToSelectors($(this).attr('data-target').split(/\s*,\s*/));
-    });
-
-    $("#sort-line").on('click', function() { sortRowsByLine(1); });
-    $("#sort-line-desc").on('click', function() { sortRowsByLine(-1); });
-    $("#sort-width").on('click', function() { sortRowsByWidth(1); });
-    $("#sort-width-desc").on('click', function() { sortRowsByWidth(-1); });
-
-    $("#load-image button").on('click', function() {
-        window.location.hash = '#' + $("#load-image input").val();
-    });
-    $(".select-all").on('click', function() { changeSelection('select'); });
-    $(".select-none").on('click', function() { changeSelection('unselect'); });
-    $(".select-toggle").on('click', function() { changeSelection('toggle'); });
-};
-
-App.prototype.init = function() {
-    var self = this;
+    // Load cheatsheet and errorTags
     async.each([this.cheatsheet, this.errorTags], function(model, done) {
         model.load(done);
     }, function(err) {
-        if (err) { return httpError(err); }
+        if (err) return self.emit('app:ajaxError', err);
+        // TODO
+        window.onhashchange = function onHashChange() {
+            var cHash = window.location.hash.substring(1);
+            if (cHash !== '') {
+                self.loadPage(cHash);
+            }
+        };
+        // TODO
+        window.onbeforeunload = self.confirmExit.bind(self);
+        self.settings.load();
+        self.render();
+        // Trigger hash change
+        $(window).trigger('hashchange');
         self.$el.trigger('app:initialized');
     });
 };
 
-// TODO
-App.prototype.loadPage = function(url) {
+App.prototype.savePage = function savePage() {
     var self = this;
-    this.$el.trigger('app:before-load');
-
-    // to instantly see when a new document has been retrieved
-    $("#file-correction").addClass("hidden");
-    window.app.waitingAnimation.start();
-    // file correction will be loaded
-    $("#dropzone").addClass('hidden');
-
-    this.currentPage = new Page(url);
-    this.currentPage.load(function(err) {
-        if (err) { return httpError(err); }
-        self.pageView.model = self.currentPage;
-        self.pageView.render();
-        self.waitingAnimation.stop();
-        $("#file-correction").removeClass("hidden");
-        // activate button if #file-correction is changed
-        self.$el.trigger('app:after-load');
+    this.emit('app:saving');
+    window.app.currentPage.save(function(err) {
+        if (err) {
+            self.emit('app:ajaxError', err);
+        } else {
+            self.emit('app:saved');
+        }
     });
 };
 
+App.prototype.loadPage = function loadPage(url) {
+    var self = this;
+    if (self.confirmExit()) {
+        return;
+    }
+    this.emit('app:loading');
+    this.currentPage = new Page(url);
+    this.currentPage.load(function(err) {
+        if (err) {
+            return self.emit('app:ajaxError', err);
+        }
+        self.pageView.model = self.currentPage;
+        self.pageView.render();
+        self.sidebar.model = self.currentPage;
+        self.sidebar.render();
+        self.emit('app:loaded');
+    });
+};
+
+function Page(urlOrOpts) {
+    this.lines = [];
+    if (typeof urlOrOpts === 'string') {
+        this.imageUrl = urlOrOpts;
+    } else {
+        this.imageUrl = urlOrOpts.imageUrl;
+        for (key in urlOrOpts) { this[key] = urlOrOpts[key]; }
+    }
+    this.changed = false;
+    window.app.on('app:changed', function setChanged() { self.changed = true; });
+    window.app.on('app:saved', function setUnChanged() { self.changed = false; });
+}
+
+Page.prototype.toJSON = function() {
+    var ret = {
+        'line-comments': [],
+        'line-transcriptions': [],
+        'page-comment': this['page-comment'],
+        'ids': this.ids,
+        'url': this.url,
+    };
+    for (var i = 0; i < this.lines.length ; i++) {
+        ret['line-comments'][i] = this.lines[i].comment.trim();
+        ret['line-transcriptions'][i] = this.lines[i].transcription.trim();
+    }
+    return ret;
+};
+
+Page.prototype.save = function savePage(cb) {
+    $.ajax({
+        type: 'POST',
+        url: 'ocr-gt-tools.cgi?action=save',
+        contentType: 'application/json; charset=UTF-8',
+        data: JSON.stringify(this.toJSON()),
+        success: function() { cb(); },
+        error: cb
+    });
+};
+
+Page.prototype.load = function(cb) {
+    var self = this;
+    $.ajax({
+        type: 'GET',
+        url: 'ocr-gt-tools.cgi?action=get&imageUrl=' + this.imageUrl,
+        error: cb,
+        success: function(res) {
+            for (key in res) { self[key] = res[key]; }
+            for (var i = 0; i < self['line-transcriptions'].length; i++)  {
+                self.lines.push(new Line({
+                    id: i,
+                    transcription: self['line-transcriptions'][i],
+                    comment: self['line-comments'][i],
+                    image: self['line-images'][i],
+                }));
+            }
+            cb();
+        },
+    });
+};
 function History() { }
 History.prototype.url = 'ocr-gt-tools.cgi?action=history&mine=true';
 History.prototype.load = function(cb) {
@@ -244,6 +411,29 @@ History.prototype.load = function(cb) {
     });
 };
 
+
+var defaultSettings = {
+    zoomInFactor: 1.4,
+    zoomOutFactor: 0.8,
+    debug: true,
+    cgiUrl: 'ocr-gt-tools.cgi',
+    defaultViews: ['.transcription','img'],
+    animationTimeout: 5000,
+    animationsPerRound: 50,
+    animationInterval: 100,
+};
+
+function Settings(opts) {
+    for (var k in defaultSettings) { this[k] = defaultSettings[k]; }
+}
+
+Settings.prototype.load = function loadSettings() {
+    console.log("NOT IMPLEMENTED");
+};
+
+Settings.prototype.save = function loadSettings() {
+    console.log("NOT IMPLEMENTED");
+};
 
 function ErrorTags() {
     this.items = [];
@@ -265,14 +455,6 @@ ErrorTags.prototype.load = function(cb) {
         },
     });
 };
-var UISettings = {
-    zoomInFactor: 1.4,
-    zoomOutFactor: 0.8,
-    cgiUrl: 'ocr-gt-tools.cgi',
-    defaultViews: ['.transcription','img']
-};
-
-
 function Cheatsheet() {
     this.items = [];
 }
@@ -287,69 +469,140 @@ Cheatsheet.prototype.load = function(cb) {
             self.items = [];
             var keys = Object.keys(data);
             for (var i = 0; i < keys.length; i++) {
-                self.items.push(data[keys[i]]);
+                var cheatsheetEntry = data[keys[i]];
+                // console.log(cheatsheetEntry.id, cheatsheetEntry.recognition);
+                self.items.push(cheatsheetEntry);
             }
             cb();
         },
     });
 };
 
-function Page(urlOrOpts) {
-    if (typeof urlOrOpts === 'string') {
-        this.imageUrl = urlOrOpts;
-    } else {
-        this.imageUrl = urlOrOpts.imageUrl;
-        for (key in urlOrOpts) { this[key] = urlOrOpts[key]; }
-    }
+function Line(opts) {
+    for (key in opts) { this[key] = opts[key]; }
     this.changed = false;
+    this.selected = false;
 }
 
-Page.prototype.save = function(cb) {
-};
-
-Page.prototype.load = function(cb) {
-    var self = this;
-    $.ajax({
-        type: 'GET',
-        url: 'ocr-gt-tools.cgi?action=create&imageUrl=' + this.imageUrl,
-        error: cb,
-        success: function(res) {
-            for (key in res) { self[key] = res[key]; }
-            cb();
-        },
-    });
-};
 function PageView(opts) {
-    for (key in opts) { this[key] = opts[key]; }
+    for (var key in opts) { this[key] = opts[key]; }
     this.$el = $(this.el);
 }
-PageView.prototype.render = function() {
-    console.log(this.model);
-    for (var i = 0; i < this.model['line-transcriptions'].length; i++)  {
-        var line = {
-            transcription: this.model['line-transcriptions']
-        };
-        var $line = $(this.tpl(line));
-        $line.find(":checkbox").on('click', function(e) {
-            $(this).closest('.row').toggleClass('selected');
-            e.stopPropagation();
-        });
-        $line.find(".select-col").on('click', function(e) {
-            $(this).find(':checkbox').click();
-        });
-        $line.find(".transcription div[contenteditable]").on('keydown', function(e) {
-            if (e.keyCode == 13) {
-                e.preventDefault();
-            }
-        });
-        $line.find("div[contenteditable]").on('blur', function(e) {
-            $(this).html(Utils.encodeForBrowser(Utils.encodeForServer($(this).html())));
-        });
-        this.$el.append($line);
-    }
+/**
+ * Sort the rows by image width
+ *
+ * @param {number} order Sort descending (-1) or ascending (1, default)
+ */
+PageView.prototype.sortRowsByWidth = function sortRowsByWidth(order) {
+    var order = order || 1;
+    this.$el.html(
+        this.$el.find(".row").sort(function(a, b) {
+            var aWidth = Utils.getImageWidth(a);
+            var bWidth = Utils.getImageWidth(b);
+            return (aWidth - bWidth) * order;
+        }).detach()
+    );
 };
-function Dropzone() {
+
+/**
+ * Sort the rows by line number
+ *
+ * @param {number} order Sort descending (-1) or ascending (1, default)
+ */
+PageView.prototype.sortRowsByLine = function sortRowsByLine(order) {
+    var order = order || 1;
+    this.$el.html(
+        this.$el.find(".row").sort(function(a, b) {
+            var aLine = $(a).attr('id').replace(/[^\d]/g, '');
+            var bLine = $(b).attr('id').replace(/[^\d]/g, '');
+            return (aLine - bLine) * order;
+        }).detach()
+    );
+};
+
+
+PageView.prototype.render = function() {
+    this.$el.empty();
+    // render lines
+    for (var i = 0; i < this.model.lines.length; i++)  {
+        var lineView = new LineView({
+            "model": this.model.lines[i],
+        });
+        lineView.render();
+        this.$el.append(lineView.$el);
+    }
+    window.app.on('app:loaded', function fitTextareaSize() { Utils.fitHeight('textarea'); });
+};
+function LineView(opts) {
+    for (key in opts) { this[key] = opts[key]; }
 }
+
+
+// TODO
+function addComment() {
+    var target = $($(this).attr('data-target')).find('div[contenteditable]');
+    var tag = '#' + $(this).attr('data-tag');
+    addTagToElement($(target), tag);
+}
+
+// TODO
+function addTagToElement($target, tag) {
+    $target.html($target.html().trim());
+    if ($target.html().indexOf(tag) == -1) {
+        if ($target.html().match(/\S/)) {
+            $target.append('\n');
+        }
+        $target.append(tag);
+        $target.append('\n');
+        $target.parent().removeClass("hidden");
+        window.app.emit('app:changed');
+    }
+}
+
+/**
+ * Update the color of the comment toggle button depending on whether line has
+ * comments or not.
+ */
+LineView.prototype.updateCommentButtonColor = function updateCommentButtonColor() {
+    var toggler = this.$el.find(".toggle-line-comment");
+    if (this.model.comment.length > 0)
+        toggler.removeClass('btn-default').addClass('btn-info');
+    else
+        toggler.addClass('btn-default').removeClass('btn-info');
+};
+
+LineView.prototype.render = function() {
+    var self = this;
+    // Build from template
+    this.$el = $(window.app.templates.line(this.model));
+
+    // updateCommentButtonColor
+    window.app.on('app:changed', this.updateCommentButtonColor.bind(this));
+    this.updateCommentButtonColor();
+
+    this.$el.find(".toggle-line-comment").on('click', function() {
+        self.$el.find(".line-comment").toggleClass("view-hidden");
+        self.$el.find(".toggle-line-comment").toggleClass("hidden");
+    });
+
+    this.$el.find("input,textarea").on('input', function(e) {
+        self.model.comment = self.$el.find('.line-comment textarea').val().trim();
+        self.model.transcription = self.$el.find('.line-transcription input').val().trim();
+        Utils.fitHeight(this);
+        window.app.emit('app:changed');
+    });
+
+    this.$el.find(":checkbox").on('click', function(e) {
+        if (!window.app.selectMode) return;
+        $(this).closest('.row').toggleClass('selected');
+        e.stopPropagation();
+    });
+    this.$el.on('click', function(e) {
+        if (!window.app.selectMode) return;
+        $(this).find(':checkbox').click();
+    });
+    return this;
+};
 function HistoryView(opts) {
     for (key in opts) { this[key] = opts[key]; }
     this.$el = $(this.el);
@@ -361,28 +614,161 @@ HistoryView.prototype.render = function() {
     }
 };
 
+function Dropzone(opts) {
+    for (var key in opts) { this[key] = opts[key]; }
+    this.$el = $(this.el);
+}
+Dropzone.prototype.render = function() {
+    var self = this;
+    window.app.on('app:loading', function hideDropzone() { self.$el.addClass('hidden'); });
+};
+function Toolbar(opts) {
+    for (key in opts) { this[key] = opts[key]; }
+    this.$el = $(this.el);
+}
+/**
+ * Increase image zoom by UISettings.zoomInFactor
+ */
+Toolbar.prototype.zoomIn = function(e) {
+    e.stopPropagation();
+    $('#file-correction img').each(function() {
+        Utils.scaleHeight(this, UISettings.zoomInFactor);
+    });
+};
+
+/**
+ * Decrease image zoom by UISettings.zoomOutFactor
+ */
+Toolbar.prototype.zoomOut = function zoomOut(e) {
+    e.stopPropagation();
+    $('#file-correction img').each(function() {
+        Utils.scaleHeight(this, UISettings.zoomOutFactor);
+    });
+};
+
+/**
+ * Reset all images to their original size
+ */
+Toolbar.prototype.zoomReset = function zoomReset(e) {
+    e.stopPropagation();
+    $('#file-correction img').each(function() {
+        Utils.scaleHeight(this, 1);
+    });
+};
+
+Toolbar.prototype.reduceViewToSelectors = function reduceViewToSelectors(selectors) {
+    $(".lines-col .panel *").addClass('view-hidden');
+    for (var i = 0; i < selectors.length; i++) {
+        $(selectors[i])
+            .removeClass('view-hidden')
+            .parents().removeClass('view-hidden');
+    }
+};
+
+
+Toolbar.prototype.render = function() {
+    var self = this;
+    var app = window.app;
+
+    // Save current page
+    $("#save_button").on("click", app.savePage.bind(app));
+
+    // Open history modal
+    $('button[data-target="#history-modal"]').on('click', app.showHistory.bind(app));
+
+    // Handle zooming
+    $("#zoom-in").on("click", this.zoomIn);
+    $("#zoom-out").on("click", this.zoomOut);
+    $("#zoom-reset").on("click", this.zoomReset);
+
+    // Handle view filtering by selectors
+    $(".set-view").on('click', function() {
+        self.reduceViewToSelectors($(this).attr('data-target').split(/\s*,\s*/));
+    });
+
+    // Handle sorting
+    $("#sort-line").on('click', function() { app.pageView.sortRowsByLine(1); });
+    $("#sort-line-desc").on('click', function() { app.pageView.sortRowsByLine(-1); });
+    $("#sort-width").on('click', function() { app.pageView.sortRowsByWidth(1); });
+    $("#sort-width-desc").on('click', function() { app.pageView.sortRowsByWidth(-1); });
+
+    // Select Mode
+    $("#toggle-select").on('click', app.toggleSelectMode.bind(app));
+    $("#select-bar .close").on('click', app.toggleSelectMode.bind(app));
+
+    //
+    // React to events
+    //
+    app.on('app:changed', function enableSaveButton() {
+        $("#save_button").removeClass("disabled");
+    });
+
+    app.on('app:loaded', function disableSaveButton() {
+        self.$el.find(".disabled").removeClass('disabled');
+        $("#save_button").addClass("disabled");
+    });
+
+    app.on('app:saving', function startSaveSpinner() {
+        $("#wait_save").addClass("wait").removeClass("hidden");
+        $("#disk").addClass("hidden");
+    });
+
+    app.on('app:saved', function stopSaveSpinner() {
+        $("#wait_save").removeClass("wait").addClass("hidden");
+        $("#disk").removeClass("hidden");
+        $("#save_button").addClass("disabled");
+    });
+};
+function Sidebar(opts) {
+    for (var key in opts) { this[key] = opts[key]; }
+    this.$el = $(this.el);
+}
+
+Sidebar.prototype.render = function renderSidebar() {
+    this.$el.empty().html(window.app.templates.rightSidebar(this.model));
+};
 function WaitingAnimation(opts) {
     for (key in opts) { this[key] = opts[key]; }
     this.$el = $(this.el);
 }
+WaitingAnimation.prototype.render = function() {
+    window.app.on('app:loading', this.start.bind(this));
+    window.app.on('app:loaded', this.stop.bind(this));
+    window.app.on('app:ajaxError', this.stop.bind(this));
+    this.glyphs = [];
+    for (var i = 0; i <  this.model.items.length; i++) {
+        for (var j = 0 ; j < this.model.items[i].sample.length; j++) {
+            this.glyphs.push(this.model.items[i].sample[j]);
+        }
+    }
+};
+
 WaitingAnimation.prototype.stop = function stopWaitingAnimation() {
     this.$el.addClass('hidden');
-    clearInterval(this._id);
+    this.$el.empty();
+    clearInterval(this.animationId);
+    clearTimeout(this.timeoutId);
 };
+
 WaitingAnimation.prototype.start = function startWaitingAnimation() {
     var self = this;
     this.$el.removeClass('hidden');
-    var items = self.model.items;
-    this._id = setInterval(function() {
-        perRound = 5;
+    this.animationId = setInterval(function() {
+        perRound = window.app.settings.animationsPerRound;
         while (perRound-- > 0) {
-            var randGlyph = items[parseInt(Math.random() * items.length)];
-            $(self.el +
-              " tr:nth-child(" + parseInt(Math.random() * 20) + ")" +
-              " td:nth-child(" + parseInt(Math.random() * 20) + ")"
-             ).html(randGlyph.sample);
+            $(self.glyphs[parseInt(Math.random() * self.glyphs.length)])
+                .css('top', parseInt(Math.random() * 100) + "vh")
+                .css('left', parseInt(Math.random() * 100) + "vw")
+                .appendTo(self.$el) ;
         }
-    }, 300);
+    }, window.app.settings.animationInterval);
+    this.timeoutId = setTimeout(function timeoutAnimation() {
+        console.error("Animation ran too long, stopping it");
+        notie.alert(3, "Loading took more than " +
+                    (window.app.settings.animationTimeout / 1000) +
+                    " seconds. Please see the console for possible errors");
+        clearInterval(self.animationId);
+    }, window.app.settings.animationTimeout);
 };
 function CheatsheetView(opts) {
     for (key in opts) { this[key] = opts[key]; }
@@ -423,420 +809,10 @@ CheatsheetView.prototype.render = function render() {
 };
 // Name: ocr-gt-tools.js
 
-function httpError(xhr) {
-    notie.alert(3, "HTTP Fehler " + xhr.status + ":\n<pre style='text-align: left'>" + xhr.responseText + "</pre>");
-    window.app.waitingAnimation.stop();
-};
-
-/*******************************/
-/* Client-Server communication */
-/*******************************/
-
-/**
- * Loads a URL for editing.
- *
- * @param {string} url The image URL to load
- */
-function loadGtEditLocation(url) {
-
-    if (!url) {
-        return;
-    }
-
-    $.ajax({
-        type: 'GET',
-        url: UISettings.cgiUrl + '?action=create&imageUrl=' + url,
-        beforeSend: function(xhr) {
-            // to instantly see when a new document has been retrieved
-            $("#file-correction").addClass("hidden");
-            $("#dropzone").addClass('hidden');
-            window.app.waitingAnimation.start();
-        },
-        success: function(res) {
-            // file correction will be loaded
-            $("#dropzone").addClass('hidden');
-            window.app.currentPage = res;
-            console.log(window.app.currentPage);
-            window.location.hash = window.app.currentPage.url['thumb-url'];
-            window.setTimeout(function() {
-                // ajax
-                $("#raw-html").load(
-                    Utils.uncachedURL(window.app.currentPage.url['correction-url']),
-                    function handleCorrectionAjax(response, status, xhr) {
-                        $.ajax({
-                            type: 'GET',
-                            url: Utils.uncachedURL(window.app.currentPage.url['comment-url']),
-                            error: httpError,
-                            success: function(response, status, xhr) {
-                                Utils.parseLineComments(response, window.app.currentPage);
-                                addCommentFields();
-                                // show new document
-                                $("#file-correction").removeClass("hidden");
-                                $("ul.navbar-nav li").removeClass("disabled");
-                                onScroll();
-                                window.app.waitingAnimation.stop();
-                            }
-                        });
-                    }
-                );
-            }, 1);
-            // Zoom buttons only for non-IE
-            $("#zoom-in").removeClass("hidden");
-            $("#zoom-out").removeClass("hidden");
-            $("#save_button").removeClass("hidden");
-            // activate button if #file-correction is changed
-        },
-        error: httpError,
-    });
-}
-
-/**
- * When the document should be saved back to the server.
- *
- */
-function saveGtEditLocation() {
-
-    if (!window.app.currentPage.changed) {
-        notie.alert(2, "Nothing changed.", 1);
-        return;
-    }
-
-    $("#wait_save").addClass("wait").removeClass("hidden");
-    $("#disk").addClass("hidden");
-    window.app.currentPage.transcriptions = $('li.transcription div').map(function() {
-        return Utils.encodeForServer($(this).html());
-    }).get();
-    window.app.currentPage.lineComments = $("li.line-comment div").map(function() {
-        return Utils.encodeForServer($(this).html());
-    }).get();
-    window.app.currentPage.pageComment = Utils.encodeForServer($("#page-comment div").html());
-    // console.log(window.app.currentPage.pageComment);
-    // console.log(window.app.currentPage.transcriptions);
-    // console.log(window.app.currentPage.lineComments);
-
-    $.ajax({
-        type: 'POST',
-        url: UISettings.cgiUrl + '?action=save',
-        data: window.app.currentPage,
-        success: markSaved,
-        error: httpError,
-    });
-}
-
-/********************/
-/* DOM manipulation */
-/********************/
-
-
-/**
- * Mark the current page as 'changed'.
- */
-function markChanged() {
-    window.app.currentPage.changed = true;
-    $("#save_button").removeClass("disabled");
-    updateCommentButtonColor();
-}
-
-/**
- * Mark the current page as 'saved'.
- */
-function markSaved() {
-    window.app.currentPage.changed = false;
-    $("#wait_save").removeClass("wait").addClass("hidden");
-    $("#disk").removeClass("hidden");
-    $("#save_button").addClass("disabled");
-    $(".line div[contenteditable]").each(function() {
-        $(this).html(Utils.encodeForBrowser(Utils.encodeForServer($(this).html())));
-    });
-    notie.alert(1, "Gespeichert", 1);
-}
-
-/**
- * Adds comment fields
- */
-function addCommentFields() {
-    $("#file-correction").empty();
-    $("#raw-html table").each(function(curLine) {
-        var $this = $(this);
-        var line = {
-            "id": curLine,
-            "title": $this.find("td")[0].innerHTML,
-            "imgSrc": $this.find("img")[0].getAttribute('src'),
-            "transcription": Utils.encodeForBrowser($this.find("td")[2].innerHTML),
-            "comment": Utils.encodeForBrowser(window.app.currentPage.lineComments[curLine]),
-        };
-        var $line = $(window.app.templates.line(line));
-        $(":checkbox", $line).on('click', function(e) {
-            $(this).closest('.row').toggleClass('selected');
-            e.stopPropagation();
-        });
-        $(".select-col", $line).on('click', function(e) {
-            $(this).find(':checkbox').click();
-        });
-        $(".transcription div[contenteditable]", $line).on('keydown', function(e) {
-            if (e.keyCode == 13) {
-                e.preventDefault();
-            }
-        });
-        $("div[contenteditable]", $line).on('blur', function(e) {
-            $(this).html(Utils.encodeForBrowser(Utils.encodeForServer($(this).html())));
-        });
-        $("#file-correction").append($line);
-    });
-    $("#right-sidebar").html(window.app.templates.rightSidebar(window.app.currentPage));
-    $(".show-line-comment").on('click', toggleLineComment);
-    $(".hide-line-comment").on('click', toggleLineComment);
-    $(".add-comment").on('click', addComment);
-    updateCommentButtonColor();
-    reduceViewToSelectors(UISettings.defaultViews);
-}
-
-/**
- * Increase image zoom by UISettings.zoomInFactor
- */
-function zoomIn(e) {
-    e.stopPropagation();
-    $('#file-correction img').each(function() {
-        Utils.scaleHeight(this, UISettings.zoomInFactor);
-    });
-}
-
-/**
- * Decrease image zoom by UISettings.zoomOutFactor
- */
-function zoomOut(e) {
-    e.stopPropagation();
-    $('#file-correction img').each(function() {
-        Utils.scaleHeight(this, UISettings.zoomOutFactor);
-    });
-}
-
-/**
- * Reset all images to their original size
- */
-function zoomReset(e) {
-    e.stopPropagation();
-    $('#file-correction img').each(function() {
-        Utils.scaleHeight(this, 1);
-    });
-}
-
-/**
- * Update the color of the comment toggle button depending on whether line has
- * comments or not.
- */
-function updateCommentButtonColor() {
-    $(".line").each(function() {
-        var $line = (this);
-        var $lineComment = $(".line-comment div[contenteditable]", $line);
-        var lineCommentId = $(".line-comment", $line).attr('id');
-        if ($lineComment.text().match(/\S/)) {
-            $(".show-line-comment[data-target='#" + lineCommentId + "']").removeClass('btn-default').addClass('btn-info');
-        } else {
-            $(".show-line-comment[data-target='#" + lineCommentId + "']").addClass('btn-default').removeClass('btn-info');
-        }
-    });
-}
-
-/**
- * Show/hide the line comments for a particular line
- */
-function toggleLineComment() {
-    var target = $(this).attr('data-target');
-    $(target).toggleClass("view-hidden");
-    $("*[data-target='#" + target + "']").toggleClass("hidden");
-}
-
-function addMultiComment() {
-    var tag = '#' + $(this).attr('data-tag');
-    $('.selected .line-comment').each(function() {
-        addTagToElement($("div[contenteditable]", $(this)), tag);
-    });
-}
-
-function addComment() {
-    var target = $($(this).attr('data-target')).find('div[contenteditable]');
-    var tag = '#' + $(this).attr('data-tag');
-    addTagToElement($(target), tag);
-}
-
-function addTagToElement($target, tag) {
-    $target.html($target.html().trim());
-    if ($target.html().indexOf(tag) == -1) {
-        if ($target.html().match(/\S/)) {
-            $target.append('\n');
-        }
-        $target.append(tag);
-        $target.append('\n');
-        $target.parent().removeClass("hidden");
-        markChanged();
-    }
-}
-
-/**
- * Sort the rows by image width
- *
- * @param {number} order Sort descending (-1) or ascending (1, default)
- */
-function sortRowsByWidth(order) {
-    var order = order || 1;
-    $("#file-correction").append(
-        $("#file-correction .row").sort(function(a, b) {
-            var aWidth = Utils.getImageWidth(a);
-            var bWidth = Utils.getImageWidth(b);
-            return (aWidth - bWidth) * order;
-        }).detach()
-    );
-}
-
-/**
- * Sort the rows by line number
- *
- * @param {number} order Sort descending (-1) or ascending (1, default)
- */
-function sortRowsByLine(order) {
-    var order = order || 1;
-    $("#file-correction").append(
-        $("#file-correction .row").sort(function(a, b) {
-            var aLine = $(a).attr('id').replace(/[^\d]/g, '');
-            var bLine = $(b).attr('id').replace(/[^\d]/g, '');
-            return (aLine - bLine) * order;
-        }).detach()
-    );
-}
-
-function changeSelection(action) {
-    $('.select-col').each(function() {
-        var $this = $(this);
-        var isSelected = $this.closest('.row').hasClass('selected');
-        if (action === 'select' && !isSelected) {
-            $this.trigger('click');
-        } else if (action === 'unselect' && isSelected) {
-            $this.trigger('click');
-        } else if (action === 'toggle') {
-            $this.trigger('click');
-        }
-    });
-}
-
-function reduceViewToSelectors(selectors) {
-    $(".lines-col .panel *").addClass('view-hidden');
-    for (var i = 0; i < selectors.length; i++) {
-        $(selectors[i])
-            .removeClass('view-hidden')
-            .parents().removeClass('view-hidden');
-    }
-}
-
-/******************/
-/* Event handlers */
-/******************/
-
-function confirmExit(e) {
-    if (window.app.currentPage && window.app.currentPage.changed) {
-        // if (e) e.preventDefault();
-        notie.alert(2, "Ungesicherte Inhalte vorhanden, bitte zuerst speichern!", 5);
-        return "Ungesicherte Inhalte vorhanden, bitte zuerst speichern!";
-    }
-}
-
-function onHashChange() {
-    var cHash = window.location.hash;
-
-    if (window.app.currentPage && window.app.currentPage.changed) {
-        confirmExit();
-    } else if (cHash === '') {
-        return;
-    }
-    window.app.loadPage(cHash.substring(1));
-}
-
-function onScroll() {
-    var done = false;
-    var cur = 0;
-    var total = 0;
-    $("table").each(function() {
-        total += 1;
-        if (done) {
-            return;
-        }
-        if (Utils.isElementInViewport(this)) {
-            cur = 1 + parseInt(this.getAttribute('data-line-number'));
-            done = true;
-        }
-    });
-    $("#currentLine").html(cur + ' / ' + total);
-}
-
-function setupDragAndDrop() {
-    // Prevent the default browser drop action
-    $(document).bind('drop dragover', function(e) {
-        e.preventDefault();
-    });
-    // Show the drop zone on as soon as something is dragged
-    $(document)
-        .bind('dragenter', function onDragEnter(e) {
-            e.preventDefault();
-            $("#file-correction").addClass('hidden');
-            $("#dropzone").removeClass('hidden');
-        })
-        .bind('dragend', function onDragEnd(e) {
-            e.preventDefault();
-            $("#file-correction").removeClass('hidden');
-            $("#dropzone").addClass('hidden');
-        });
-    $("#dropzone")
-        .bind('dragover dragenter', function onDragOver(e) {
-            e.preventDefault();
-            $("#dropzone").addClass('droppable').removeClass('hidden');
-        })
-        .bind('dragenter', function onDragEnterDropZone(e) {
-            e.stopPropagation();
-        })
-        .bind('dragleave', function onDragLeaveDropZone(e) {
-            e.preventDefault();
-            $("#dropzone").removeClass('droppable').addClass('hidden');
-        })
-        .bind('drop', function onDrop(e) {
-            e.preventDefault();
-
-            if (window.app.currentPage && window.app.currentPage.changed) {
-                notie.alert(2, "Ungesicherte Inhalte vorhanden, bitte zuerst speichern!", 2);
-            } else {
-                var url = Utils.getUrlFromDragEvent(e);
-                if (url) {
-                    loadGtEditLocation(url);
-                } else {
-                    notie.alert(3, "Konnte keine URL erkennen.");
-                }
-            }
-        });
-}
-
-function toggleSelectMode() {
-    $(".selected").toggleClass('selected');
-    $(".select-col").toggleClass('hidden');
-    $(".button-col").toggleClass('hidden');
-    $("#select-bar").toggleClass('hidden');
-}
-
 $(function onPageLoaded() {
     var app = window.app = new App();
-    window.onhashchange = onHashChange;
-    window.onbeforeunload = confirmExit;
-    window.onscroll = onScroll;
-
-    // Setup event handlers for drag and drop
-    setupDragAndDrop();
-    // Trigger hash change
-    app.$el.on('app:initialized', function() {
+    app.on('app:initialized', function onInit() {
         notie.alert(1, "App geladen", 1);
-        app.render();
-        onHashChange();
     });
     app.init();
 });
-
-
-
-// vim: sw=4 ts=4 fmr={,} :
