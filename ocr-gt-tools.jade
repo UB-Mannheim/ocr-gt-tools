@@ -17,7 +17,7 @@ html(lang='de')
 				#page-comment.panel-collapse.collapse.in
 					a.list-group-item(target='_blank', href='{{ this.url.hires-url }}')
 						img(src='{{ this.url.thumb-url }}')
-					div(contenteditable) {{ pageComment }}
+					textarea(placeholder="Seitenkommentar...") {{ pageComment }}
 			.panel.panel-info
 				.panel-heading
 					h4.panel-title
@@ -68,9 +68,9 @@ html(lang='de')
 				.col-sm-1.button-col(data-target="#line-comment-{{ id }}")
 					.btn-group.btn-group-sm(role='group')
 						.btn-group(role='group')
-							a.btn.btn-default.show-line-comment(data-target="#line-comment-{{ id }}")
+							a.btn.btn-default.toggle-line-comment.show-line-comment(data-target="#line-comment-{{ id }}")
 								i.fa.fa-commenting-o
-							a.btn.btn-default.hide-line-comment.hidden(data-target="#line-comment-{{ id }}")
+							a.btn.btn-default.toggle-line-comment.hide-line-comment.hidden(data-target="#line-comment-{{ id }}")
 								i.fa.fa-map-o
 						.btn-group(role='group')
 							button.btn.btn-default.dropdown-toggle(data-toggle="dropdown", type='button', aria-haspopup="true", aria-expanded="false", tabindex="-1")
@@ -93,11 +93,11 @@ html(lang='de')
 					.panel.panel-default
 						ul.list-group
 							li.list-group-item.image
-								img(src="{{ imgSrc }}", height="30")
-							li.list-group-item.transcription
-								div(contenteditable) {{ transcription }}
+								img(src="{{ image }}", height="30")
+							li.list-group-item.line-transcription
+								input(type='text', value='{{ transcription }}')
 							li.list-group-item.line-comment(id="line-comment-{{ id }}")
-								div(contenteditable) {{ comment }}
+								textarea(placeholder="Kommentar zu dieser Zeile") {{ comment }}
 
 		//*
 		// A row of history
@@ -178,7 +178,7 @@ html(lang='de')
 		//*
 		// The navbar on the left side
 		//*
-		nav.navbar.navbar-default(role='navigation')
+		#toolbar.nav.navbar.navbar-default(role='navigation')
 
 			// Brand and toggle get grouped for better mobile display
 			.navbar-header
@@ -196,7 +196,7 @@ html(lang='de')
 								i.fa.fa-4x.fa-save.fa-fw
 
 					//- Info
-					li.dropdown
+					li.dropdown.info
 						a.btn.dropdown-toggle(data-toggle='dropdown')
 							i.fa.fa-4x.fa-info-circle
 						ul.dropdown-menu.navbar-default
@@ -213,7 +213,7 @@ html(lang='de')
 										| Verlauf
 
 					//- Zoom
-					li.dropdown.disabled
+					li.dropdown.disabled.zoom
 						a.btn.dropdown-toggle(data-toggle='dropdown')
 							i.fa.fa-search-plus.fa-4x
 						ul.dropdown-menu.navbar-default
@@ -230,16 +230,18 @@ html(lang='de')
 										| Kleiner
 
 					//- Show/hide comments
-					li.dropdown.disabled
+					li.dropdown.disabled.views
 						a.btn.dropdown-toggle(data-toggle='dropdown')
 							i.fa.fa-4x.fa-eye
 						ul.dropdown-menu.navbar-default
 							li
 								.btn-group.btn-group-vertical
 									button.set-view.btn.btn-default(type='button', data-target='*')
-										i.fa.fa-arrows-alt
+										i.fa.fa-picture-o
+										i.fa.fa-commenting-o
+										i.fa.fa-align-left
 										| Vollansicht
-									button.set-view.btn.btn-default(type='button', data-target='.transcription,img')
+									button.set-view.btn.btn-default(type='button', data-target='.line-transcription,img')
 										i.fa.fa-picture-o
 										i.fa.fa-align-left
 										| Bild + Text
@@ -247,30 +249,31 @@ html(lang='de')
 										i.fa.fa-picture-o
 										i.fa.fa-commenting-o
 										| Bild + Kommentar
-									button.set-view.btn.btn-default(type='button', data-target='.line-comment,.transcription')
+									button.set-view.btn.btn-default(type='button', data-target='.line-comment,.line-transcription')
 										i.fa.fa-align-left
 										i.fa.fa-commenting-o
 										| Text + Kommentar
 									button.set-view.btn.btn-default(type='button', data-target='img')
 										i.fa.fa-picture-o
 										| Bild
-									button.set-view.btn.btn-default(type='button', data-target='.transcription')
+									button.set-view.btn.btn-default(type='button', data-target='.line-transcription')
 										i.fa.fa-align-left
 										| Text
 									button.set-view.btn.btn-default(type='button', data-target='.line-comment')
 										i.fa.fa-commenting-o
 										| Kommentar
 
+					li.dropdown.disabled.filter
+						a#toggle-select.btn.dropdown-toggle(data-toggle='dropdown')
+							i.fa.fa-4x.fa-plus-square-o
+
 					//- Filter
-					li.dropdown.disabled
+					li.dropdown.disabled.filter
 						a.btn.dropdown-toggle(data-toggle='dropdown')
-							i.fa.fa-4x.fa-filter
+							i.fa.fa-4x.fa-sort
 						ul.dropdown-menu.navbar-default
 							li
 								.btn-group.btn-group-vertical
-									button#toggle-select.btn.btn-default
-										i.fa.fa-plus-square-o
-										| Multi-Select
 									button#sort-line.btn.btn-default
 										i.fa.fa-sort
 										| Normale Sortierung (auf)
@@ -305,14 +308,6 @@ html(lang='de')
 								button.btn.btn-default.btn-lg(type="button") Los!
 					#file-correction
 					#waiting-animation.hidden
-						table
-							tbody
-								- var y = 0
-								while y++ < 40
-									tr
-										- var x = 0
-											while x++ < 40
-												td &nbsp;
 				#right-sidebar.col-sm-3.panel-group
 
 		script(src='vendor.js')
