@@ -3,23 +3,6 @@
 /********************/
 
 var Utils = {};
-/**
- * Transform text file to array of line lineComments
- *
- * @param {string} txt Contents of the text file
- * @param {object} target the object to attach 'pageComment'/'lineComments' to
- */
-Utils.parseLineComments = function parseLineComments(txt, target) {
-    var lines = txt.split(/\n/);
-    var lineComments = [];
-    for (var i = 0; i < lines.length ; i++) {
-        var lineComment = lines[i].replace(/^\d+:\s*/, '');
-        lineComment = Utils.encodeForServer(lineComment);
-        lineComments.push(lineComment);
-    }
-    target.pageComment = lineComments[0];
-    target.lineComments = lineComments.slice(1);
-};
 
 /**
  * Scale the 'height' attribute of an element by a factor,
@@ -36,27 +19,6 @@ Utils.scaleHeight = function scaleHeight(el, factor) {
     var originalHeight = el.getAttribute('data-original-height');
     var newHeight = factor == 1 ? originalHeight : curHeight * factor;
     el.setAttribute('height',  newHeight);
-};
-
-/**
- * Attach current UNIX time as a URL parameter to a URL so a GET request to it
- * won't be cached.
- *
- * @param {string} url the URL to timestamp
- */
-Utils.uncachedURL = function uncachedURL(url) {
-    return url + "?nocache=" + Date.now();
-};
-
-/**
- * Test whether element is within viewport
- * No jQuery necessary.
- * Thanks to Dan's StackOverflow answer for this:
- * http://stackoverflow.com/questions/123999/how-to-tell-if-a-dom-element-is-visible-in-the-current-viewport
-*/
-Utils.isElementInViewport = function isElementInViewport(el) {
-    var rect = el.getBoundingClientRect();
-    return (rect.top >= 0 && rect.left >= 0);
 };
 
 /**
@@ -85,16 +47,6 @@ Utils.encodeForBrowser = function encodeForBrowser(str) {
         .replace(/\n/g, '<br>');
 };
 
-Utils.encodeForServer = function encodeForServer(str) {
-    if (typeof str === 'undefined') {
-        return '';
-    }
-    return str
-        .replace(/^(<br[^>]*>)*/, '')
-        .replace(/(<br[^>]*>)*$/, '')
-        .replace(/<br[^>]*>/g, "\n");
-};
-
 Utils.getUrlFromDragEvent = function getUrlFromDragEvent(e) {
     var elem = e.originalEvent.dataTransfer.getData('text/html');
     var url = $(elem).find('img').addBack('img').attr('src');
@@ -110,7 +62,7 @@ Utils.getUrlFromDragEvent = function getUrlFromDragEvent(e) {
 /**
  * Compile the Handlebars templates
  */
-function compileTemplates() {
+Utils.compileTemplates = function compileTemplates() {
     var templates = {};
     $("*[id^='tpl-']").each(function() {
         var $this = $(this);
@@ -118,4 +70,16 @@ function compileTemplates() {
         templates[tplId] = Handlebars.compile($this.html());
     });
     return templates;
-}
+};
+
+/**
+ * Shrink/expand a textarea to fit its contents
+ */
+Utils.fitHeight = function expandTextarea(selector) {
+    $(selector).each(function() {
+        $(this)
+            .attr('rows', 1) // Must be one for single-line textareas
+            .css({'height': 'auto', 'overflow-y': 'hidden', 'resize': 'none'})
+            .height(this.scrollHeight);
+    });
+};
