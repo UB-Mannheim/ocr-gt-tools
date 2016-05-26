@@ -32,15 +32,6 @@ Toolbar.prototype.zoomReset = function zoomReset(e) {
     });
 };
 
-Toolbar.prototype.reduceViewToSelectors = function reduceViewToSelectors(selectors) {
-    $(".lines-col .panel *").addClass('view-hidden');
-    for (var i = 0; i < selectors.length; i++) {
-        $(selectors[i])
-            .removeClass('view-hidden')
-            .parents().removeClass('view-hidden');
-    }
-};
-
 
 Toolbar.prototype.render = function() {
     var self = this;
@@ -58,8 +49,10 @@ Toolbar.prototype.render = function() {
     $("#zoom-reset").on("click", this.zoomReset);
 
     // Handle view filtering by selectors
-    $(".set-view").on('click', function() {
-        self.reduceViewToSelectors($(this).attr('data-target').split(/\s*,\s*/));
+    this.$el.find(".set-view").on('click', function reduceView() {
+        Utils.runOnSubtreeAndParents(".line", $(this).attr('data-target'),
+                                     function() { $(this).addClass('view-hidden'); },
+                                     function() { $(this).removeClass('view-hidden'); });
     });
 
     // Handle sorting

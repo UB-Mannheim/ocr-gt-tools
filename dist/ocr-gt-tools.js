@@ -83,6 +83,23 @@ Utils.fitHeight = function expandTextarea(selector) {
             .height(this.scrollHeight);
     });
 };
+
+/**
+ * Fist, for all descendants of `parent`, run fn1
+ * Seoncd, For all descendants of `parent` that match `selectors` as well as their parents and descendants: run fn1
+ *
+ * First go is to mark something (like add a class 'hidden').
+ * Second fn then unmarks that for the matching selectors.
+ */
+Utils.runOnSubtreeAndParents = function addClassToTree(parent, selectors, fn1, fn2) {
+    $(parent)
+        .find("*").each(fn1).addBack()
+        .find(selectors)
+            .each(fn2)
+            .find('*').each(fn2)
+            .addBack()
+            .parents('*').each(fn2);
+};
 // TODO
 
 function addMultiComment() {
@@ -542,11 +559,9 @@ PageView.prototype.render = function() {
     this.$el.empty();
     // render lines
     for (var i = 0; i < this.model.lines.length; i++)  {
-        var lineEl = $("<div>").appendTo(this.$el);
-        new LineView({
-            "$el": lineEl,
-            "model": this.model.lines[i],
-        }).render();
+        var lineModel = this.model.lines[i];
+        var lineEl = $(window.app.templates.lineContainer(lineModel)).appendTo(this.$el);
+        new LineView({"$el": lineEl, "model": lineModel}).render();
     }
     window.app.on('app:loaded', function fitTextareaSize() { Utils.fitHeight('textarea'); });
     window.app.on('app:changed', function fitTextareaSize() { Utils.fitHeight('textarea'); });
@@ -561,20 +576,6 @@ function addComment() {
     var target = $($(this).attr('data-target')).find('div[contenteditable]');
     var tag = '#' + $(this).attr('data-tag');
     addTagToElement($(target), tag);
-}
-
-// TODO
-function addTagToElement($target, tag) {
-    $target.html($target.html().trim());
-    if ($target.html().indexOf(tag) == -1) {
-        if ($target.html().match(/\S/)) {
-            $target.append('\n');
-        }
-        $target.append(tag);
-        $target.append('\n');
-        $target.parent().removeClass("hidden");
-        window.app.emit('app:changed');
-    }
 }
 
 /**
@@ -614,6 +615,7 @@ LineView.prototype.render = function() {
     this.$el.find("*[data-tag]").on('click', function(e) {
         var tag = $(this).attr('data-tag');
         if (self.model.addTag(tag)) {
+            self.$el.removeClass('hidden');
             self.render();
             window.app.emit('app:changed');
         }
@@ -683,15 +685,6 @@ Toolbar.prototype.zoomReset = function zoomReset(e) {
     });
 };
 
-Toolbar.prototype.reduceViewToSelectors = function reduceViewToSelectors(selectors) {
-    $(".lines-col .panel *").addClass('view-hidden');
-    for (var i = 0; i < selectors.length; i++) {
-        $(selectors[i])
-            .removeClass('view-hidden')
-            .parents().removeClass('view-hidden');
-    }
-};
-
 
 Toolbar.prototype.render = function() {
     var self = this;
@@ -709,8 +702,10 @@ Toolbar.prototype.render = function() {
     $("#zoom-reset").on("click", this.zoomReset);
 
     // Handle view filtering by selectors
-    $(".set-view").on('click', function() {
-        self.reduceViewToSelectors($(this).attr('data-target').split(/\s*,\s*/));
+    this.$el.find(".set-view").on('click', function reduceView() {
+        Utils.runOnSubtreeAndParents(".lines-col", $(this).attr('data-target'),
+                                     function() { $(this).addClass('view-hidden'); },
+                                     function() { $(this).removeClass('view-hidden'); });
     });
 
     // Handle sorting
