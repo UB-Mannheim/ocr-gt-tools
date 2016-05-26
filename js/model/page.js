@@ -1,12 +1,13 @@
 function Page(urlOrOpts) {
-    this.lines = [];
+    var self = this;
+    self.lines = [];
     if (typeof urlOrOpts === 'string') {
-        this.imageUrl = urlOrOpts;
+        self.imageUrl = urlOrOpts;
     } else {
-        this.imageUrl = urlOrOpts.imageUrl;
-        for (key in urlOrOpts) { this[key] = urlOrOpts[key]; }
+        self.imageUrl = urlOrOpts.imageUrl;
+        for (key in urlOrOpts) { self[key] = urlOrOpts[key]; }
     }
-    this.changed = false;
+    self.changed = false;
     window.app.on('app:changed', function setChanged() { self.changed = true; });
     window.app.on('app:saved', function setUnChanged() { self.changed = false; });
 }
