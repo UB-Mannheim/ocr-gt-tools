@@ -76,14 +76,15 @@ page, e.g.  `/path/to/work1/page1/`.
 
 * Every line image is saved in a file `line-XXXX.png`
 * Every line transcription is saved in a file `line-XXXX.txt`
+* Every line OCR output is saved in a file `ocr-XXXX.txt`
 * Every line comment is saved in a file `comment-line-XXXX.txt`
 * Page transcription is saved in a file `comment-page.txt`
 
-`XXX` is a zero-padded positive integer, e.g. `023`.
+`XXXX` is a four-digit zero-padded positive integer, e.g. `0023`.
 
-`XXX` is continuously incrementing from 1 (i.e. `line-001.txt`, `line-002.txt`)
-and represents the position of the line in the document order of the original
-document
+`XXXX` is continuously incrementing from 1 (i.e. `line-0001.txt`,
+`line-0002.txt`) and represents the position of the line in the document order
+of the original document
 
 * For every `line-XXXX.txt` there must be one `comment-line-XXXX.txt`.
 * For every `comment-line-XXXX.txt` there must be one `line-XXXX.txt`.
