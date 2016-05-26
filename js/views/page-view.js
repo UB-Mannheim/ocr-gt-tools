@@ -36,6 +36,7 @@ PageView.prototype.sortRowsByLine = function sortRowsByLine(order) {
 
 
 PageView.prototype.render = function() {
+    this.$el.find('*').off().empty();
     // render lines
     for (var i = 0; i < this.model.lines.length; i++)  {
         var lineModel = this.model.lines[i];

@@ -96,12 +96,19 @@ function App() {
 }
 
 App.prototype.on = function() {
-    if (this.settings.debug) console.debug('BIND', arguments[0], ' -> ', arguments[1].name || arguments[1]);
+    if (this.settings.debug) console.info('bind', arguments[0], ' -> ', arguments[1].name || arguments[1]);
     this.$el.on.apply(this.$el, arguments);
+    return this;
+};
+App.prototype.once = function() {
+    if (this.settings.debug) console.info('bind', arguments[0], ' -> ', arguments[1].name || arguments[1]);
+    this.$el.one.apply(this.$el, arguments);
+    return this;
 };
 
+
 App.prototype.emit = function() {
-    if (this.settings.debug) console.debug('emit', arguments[0], arguments[1] || '');
+    if (this.settings.debug) console.log('emit', arguments[0], arguments[1] || '');
     var event = arguments[0];
     if (event === 'app:saved') {
         notie.alert(1, "Gespeichert", 1);
@@ -109,6 +116,7 @@ App.prototype.emit = function() {
         notie.alert(3, "HTTP Fehler " + xhr.status + ":\n<pre style='text-align: left'>" + xhr.responseText + "</pre>");
     }
     this.$el.trigger.apply(this.$el, arguments);
+    return this;
 };
 
 App.prototype.toggleSelectMode = function() {
@@ -117,7 +125,6 @@ App.prototype.toggleSelectMode = function() {
 };
 
 App.prototype.confirmExit = function confirmExit() {
-    console.log("CONFIRM");
     if (this.currentPage && this.currentPage.changed) {
         notie.alert(2, "Ungesicherte Inhalte vorhanden, bitte zuerst speichern!", 5);
         return "Ungesicherte Inhalte vorhanden, bitte zuerst speichern!";
@@ -148,6 +155,8 @@ App.prototype.render = function() {
     this.toolbar.render();
     this.dropzone.render();
 
+    this.on('app:loading', function hideSidebar() { self.sidebar.$el.addClass('hidden'); });
+    this.on('app:loaded',  function showSidebar() { self.sidebar.$el.removeClass('hidden'); });
     this.on('app:loading', function hidePageView() { self.pageView.$el.addClass('hidden'); });
     this.on('app:loaded',  function showPageView() { self.pageView.$el.removeClass('hidden'); });
 
@@ -203,15 +212,30 @@ App.prototype.init = function init() {
         model.load(done);
     }, function(err) {
         if (err) return self.emit('app:ajaxError', err);
+
         // TODO
-        window.onhashchange = function onHashChange() {
-            var cHash = window.location.hash.substring(1);
-            if (cHash !== '') {
-                self.loadPage(cHash);
-            }
-        };
         // TODO
         window.onbeforeunload = self.confirmExit.bind(self);
+        window.onhashchange = function onHashChange(e) {
+            e.preventDefault();
+            var newHash = window.location.hash;
+            console.log(e.oldURL);
+            if (!e.oldURL) {
+                console.info('HashChange (initial) -> ', newHash);
+            } else {
+                var oldHash = e.oldURL.substr(e.oldURL.indexOf('#'));
+                console.info('HashChange', oldHash, ' -> ', newHash);
+                if (oldHash === newHash) {
+                    return;
+                }
+                if (self.confirmExit()) {
+                    window.location.hash = '#' + self.currentPage.imageUrl;
+                    return;
+                }
+            }
+            if (newHash.length > 2)
+                self.loadPage(newHash.substr(1));
+        };
         self.settings.load();
         self.render();
         // Trigger hash change
@@ -234,9 +258,7 @@ App.prototype.savePage = function savePage() {
 
 App.prototype.loadPage = function loadPage(url) {
     var self = this;
-    if (self.confirmExit()) {
-        return;
-    }
+    if (self.confirmExit()) return;
     this.emit('app:loading');
     this.currentPage = new Page(url);
     this.currentPage.load(function(err) {
