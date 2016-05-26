@@ -83,3 +83,20 @@ Utils.fitHeight = function expandTextarea(selector) {
             .height(this.scrollHeight);
     });
 };
+
+/**
+ * Fist, for all descendants of `parent`, run fn1
+ * Seoncd, For all descendants of `parent` that match `selectors` as well as their parents and descendants: run fn1
+ *
+ * First go is to mark something (like add a class 'hidden').
+ * Second fn then unmarks that for the matching selectors.
+ */
+Utils.runOnSubtreeAndParents = function addClassToTree(parent, selectors, fn1, fn2) {
+    $(parent)
+        .find("*").each(fn1).addBack()
+        .find(selectors)
+            .each(fn2)
+            .find('*').each(fn2)
+            .addBack()
+            .parents('*').each(fn2);
+};
