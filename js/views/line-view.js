@@ -10,20 +10,6 @@ function addComment() {
     addTagToElement($(target), tag);
 }
 
-// TODO
-function addTagToElement($target, tag) {
-    $target.html($target.html().trim());
-    if ($target.html().indexOf(tag) == -1) {
-        if ($target.html().match(/\S/)) {
-            $target.append('\n');
-        }
-        $target.append(tag);
-        $target.append('\n');
-        $target.parent().removeClass("hidden");
-        window.app.emit('app:changed');
-    }
-}
-
 /**
  * Update the color of the comment toggle button depending on whether line has
  * comments or not.
@@ -61,6 +47,7 @@ LineView.prototype.render = function() {
     this.$el.find("*[data-tag]").on('click', function(e) {
         var tag = $(this).attr('data-tag');
         if (self.model.addTag(tag)) {
+            self.$el.removeClass('hidden');
             self.render();
             window.app.emit('app:changed');
         }
