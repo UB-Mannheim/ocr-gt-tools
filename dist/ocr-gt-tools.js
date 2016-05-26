@@ -484,6 +484,23 @@ function Line(opts) {
     this.selected = false;
 }
 
+Line.prototype.getTags = function getTags() {
+    var ret = {};
+    this.comment.replace(/(#[a-z0-9-]+)\s*([^\n#]+)?/g, function(_, tag, desc) {
+        ret[tag] = desc;
+    });
+    return ret;
+};
+
+Line.prototype.addTag = function addTag(tag, desc) {
+    desc = desc || '';
+    if (this.getTags().hasOwnProperty(tag)) {
+        console.info("Already has this tag: " + tag);
+        return;
+    }
+    this.comment = (this.comment.trim() + "\n" + tag.trim() + " " + desc.trim()).trim();
+    return true;
+};
 function PageView(opts) {
     for (var key in opts) { this[key] = opts[key]; }
     this.$el = $(this.el);
@@ -525,13 +542,14 @@ PageView.prototype.render = function() {
     this.$el.empty();
     // render lines
     for (var i = 0; i < this.model.lines.length; i++)  {
-        var lineView = new LineView({
+        var lineEl = $("<div>").appendTo(this.$el);
+        new LineView({
+            "$el": lineEl,
             "model": this.model.lines[i],
-        });
-        lineView.render();
-        this.$el.append(lineView.$el);
+        }).render();
     }
     window.app.on('app:loaded', function fitTextareaSize() { Utils.fitHeight('textarea'); });
+    window.app.on('app:changed', function fitTextareaSize() { Utils.fitHeight('textarea'); });
 };
 function LineView(opts) {
     for (key in opts) { this[key] = opts[key]; }
@@ -574,7 +592,7 @@ LineView.prototype.updateCommentButtonColor = function updateCommentButtonColor(
 LineView.prototype.render = function() {
     var self = this;
     // Build from template
-    this.$el = $(window.app.templates.line(this.model));
+    this.$el.empty().html($(window.app.templates.line(this.model)));
 
     // updateCommentButtonColor
     window.app.on('app:changed', this.updateCommentButtonColor.bind(this));
@@ -585,11 +603,20 @@ LineView.prototype.render = function() {
         self.$el.find(".toggle-line-comment").toggleClass("hidden");
     });
 
+    // data binding
     this.$el.find("input,textarea").on('input', function(e) {
         self.model.comment = self.$el.find('.line-comment textarea').val().trim();
         self.model.transcription = self.$el.find('.line-transcription input').val().trim();
-        Utils.fitHeight(this);
         window.app.emit('app:changed');
+    });
+
+    // Add error tag on click
+    this.$el.find("*[data-tag]").on('click', function(e) {
+        var tag = $(this).attr('data-tag');
+        if (self.model.addTag(tag)) {
+            self.render();
+            window.app.emit('app:changed');
+        }
     });
 
     this.$el.find(":checkbox").on('click', function(e) {

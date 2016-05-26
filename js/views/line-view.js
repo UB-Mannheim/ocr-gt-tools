@@ -39,7 +39,7 @@ LineView.prototype.updateCommentButtonColor = function updateCommentButtonColor(
 LineView.prototype.render = function() {
     var self = this;
     // Build from template
-    this.$el = $(window.app.templates.line(this.model));
+    this.$el.empty().html($(window.app.templates.line(this.model)));
 
     // updateCommentButtonColor
     window.app.on('app:changed', this.updateCommentButtonColor.bind(this));
@@ -50,11 +50,20 @@ LineView.prototype.render = function() {
         self.$el.find(".toggle-line-comment").toggleClass("hidden");
     });
 
+    // data binding
     this.$el.find("input,textarea").on('input', function(e) {
         self.model.comment = self.$el.find('.line-comment textarea').val().trim();
         self.model.transcription = self.$el.find('.line-transcription input').val().trim();
-        Utils.fitHeight(this);
         window.app.emit('app:changed');
+    });
+
+    // Add error tag on click
+    this.$el.find("*[data-tag]").on('click', function(e) {
+        var tag = $(this).attr('data-tag');
+        if (self.model.addTag(tag)) {
+            self.render();
+            window.app.emit('app:changed');
+        }
     });
 
     this.$el.find(":checkbox").on('click', function(e) {
