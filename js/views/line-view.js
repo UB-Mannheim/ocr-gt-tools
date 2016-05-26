@@ -72,7 +72,7 @@ LineView.prototype.render = function() {
 
     // Highlight button w/ comments
     window.app.on('app:filter-view', this.renderCommentToggler.bind(this));
-    this.renderCommentToggler();
+    window.app.once('app:loaded', this.renderCommentToggler.bind(this));
 
     return this;
 };
