@@ -156,7 +156,7 @@ html(lang='de')
 		//*
 		#select-bar.hidden
 			.panel-heading.clearfix
-				button.close.pull-left(type='button', data-dismiss='modal')
+				button.toggle-select-mode.close.pull-left(type='button', data-dismiss='modal')
 					span &times;
 				.btn-group.pull-right
 					a.btn.btn-sm.btn-default.select-all
@@ -264,7 +264,7 @@ html(lang='de')
 										| Kommentar
 
 					li.dropdown.disabled.filter
-						a#toggle-select.btn.dropdown-toggle(data-toggle='dropdown')
+						a.toggle-select-mode.btn.dropdown-toggle(data-toggle='dropdown')
 							i.fa.fa-4x.fa-plus-square-o
 
 					//- Filter

@@ -62,10 +62,6 @@ Toolbar.prototype.render = function() {
     $("#sort-width").on('click', function() { app.pageView.sortRowsByWidth(1); });
     $("#sort-width-desc").on('click', function() { app.pageView.sortRowsByWidth(-1); });
 
-    // Select Mode
-    $("#toggle-select").on('click', app.toggleSelectMode.bind(app));
-    $("#select-bar .close").on('click', app.toggleSelectMode.bind(app));
-
     //
     // React to events
     //

@@ -1,13 +1,6 @@
 function LineView(opts) {
-    for (key in opts) { this[key] = opts[key]; }
-}
-
-
-// TODO
-function addComment() {
-    var target = $($(this).attr('data-target')).find('div[contenteditable]');
-    var tag = '#' + $(this).attr('data-tag');
-    addTagToElement($(target), tag);
+    for (var key in opts) { this[key] = opts[key]; }
+    this.tpl = window.app.templates.line;
 }
 
 /**
@@ -23,10 +16,35 @@ LineView.prototype.renderCommentToggler = function renderCommentToggler() {
     $toggler.toggleClass('btn-default', !hasComment).toggleClass('btn-info', hasComment);
 };
 
+LineView.prototype.setSelected = function setSelected(selected) {
+    this.model.selected = selected;
+    this.renderSelected();
+};
+
+LineView.prototype.onEnterSelectMode = function onEnterSelectMode() {
+    this.$el.find('.select-col').toggleClass('hidden', false);
+    this.$el.find('.button-col').toggleClass('hidden', true);
+    var self = this;
+    this.$el.on('click', function() { self.setSelected(!self.model.selected); });
+};
+
+LineView.prototype.onExitSelectMode = function onExitSelectMode() {
+    this.$el.find('.select-col').toggleClass('hidden', true);
+    this.$el.find('.button-col').toggleClass('hidden', false);
+    this.$el.off('click');
+};
+
+LineView.prototype.renderSelected = function renderSelected() {
+    this.$el.toggleClass('selected', this.model.selected);
+    this.$el.find(':checkbox').prop('checked', this.model.selected);
+};
+
 LineView.prototype.render = function() {
     var self = this;
+
+    this.$el.off().find("*").off();
     // Build from template
-    this.$el.find("*").off().addBack().off().html($(window.app.templates.line(this.model)));
+    this.$el.html($(self.tpl(this.model)));
 
     this.$el.find(".toggle-line-comment").on('click', function() {
         var commentField = self.$el.find('.line-comment');
@@ -54,25 +72,14 @@ LineView.prototype.render = function() {
         }
     });
 
-    // Click handler for multi-select
-    this.$el.find(":checkbox").on('click', function(e) {
-        if (!window.app.selectMode) return;
-        $(this).closest('.row').toggleClass('selected');
-        e.stopPropagation();
-    });
-
-    // Click handler for multi-select
-    this.$el.on('click', function(e) {
-        if (!window.app.selectMode) return;
-        $(this).find(':checkbox').click();
-    });
-
     // Adapt the textarea height
     Utils.fitHeight(this.$el.find('textarea'));
 
     // Highlight button w/ comments
-    window.app.on('app:filter-view', this.renderCommentToggler.bind(this));
     window.app.once('app:loaded', this.renderCommentToggler.bind(this));
+    window.app.on('app:filter-view', this.renderCommentToggler.bind(this));
+    window.app.on('app:enter-select-mode', this.onEnterSelectMode.bind(this));
+    window.app.on('app:exit-select-mode', this.onExitSelectMode.bind(this));
 
     return this;
 };

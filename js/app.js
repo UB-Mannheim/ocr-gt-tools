@@ -7,20 +7,6 @@ function addMultiComment() {
     });
 }
 
-function changeSelection(action) {
-    $('.select-col').each(function() {
-        var $this = $(this);
-        var isSelected = $this.closest('.row').hasClass('selected');
-        if (action === 'select' && !isSelected) {
-            $this.trigger('click');
-        } else if (action === 'unselect' && isSelected) {
-            $this.trigger('click');
-        } else if (action === 'toggle') {
-            $this.trigger('click');
-        }
-    });
-}
-
 /******************/
 /* Event handlers */
 /******************/
@@ -70,13 +56,6 @@ function setupDragAndDrop() {
         });
 }
 
-function toggleSelectMode() {
-    $(".selected").toggleClass('selected');
-    $(".select-col").toggleClass('hidden');
-    $(".button-col").toggleClass('hidden');
-    $("#select-bar").toggleClass('hidden');
-}
-
 function App() {
 
     // A dummy element, just used for event emitting/listening
@@ -87,9 +66,6 @@ function App() {
     this.history = new History();
     this.errorTags = new ErrorTags();
     this.cheatsheet = new Cheatsheet();
-
-    // Select mode initially off
-    this.selectMode = false;
 
     // Compile templates
     this.templates = Utils.compileTemplates();
@@ -119,11 +95,6 @@ App.prototype.emit = function() {
     return this;
 };
 
-App.prototype.toggleSelectMode = function() {
-    this.selectMode = !this.selectMode;
-    this.emit('app:' + (this.selectMode ? 'enter' : 'exit') + '-select-mode');
-};
-
 App.prototype.confirmExit = function confirmExit() {
     if (this.currentPage && this.currentPage.changed) {
         notie.alert(2, "Ungesicherte Inhalte vorhanden, bitte zuerst speichern!", 5);
@@ -145,6 +116,9 @@ App.prototype.render = function() {
 
     var self = this;
 
+    // Select mode initially off
+    this.selectMode = false;
+
     // Setup event handlers for drag and drop
     // TODO
     setupDragAndDrop();
@@ -153,41 +127,35 @@ App.prototype.render = function() {
     this.waitingAnimation.render();
     this.cheatsheetView.render();
     this.toolbar.render();
+    this.selectbar.render();
     this.dropzone.render();
 
     this.on('app:loading', function hideSidebar() { self.sidebar.$el.addClass('hidden'); });
-    this.on('app:loaded',  function showSidebar() { self.sidebar.$el.removeClass('hidden'); });
     this.on('app:loading', function hidePageView() { self.pageView.$el.addClass('hidden'); });
+    this.on('app:loaded',  function showSidebar() { self.sidebar.$el.removeClass('hidden'); });
     this.on('app:loaded',  function showPageView() { self.pageView.$el.removeClass('hidden'); });
 
     // Select Mode
-    // TODO
-    $("#toggle-select").on('click', toggleSelectMode);
-    $("#select-bar .close").on('click', toggleSelectMode);
     $('.add-multi-comment').on('click', addMultiComment);
 
     // TODO
     $("#load-image button").on('click', function() {
         window.location.hash = '#' + $("#load-image input").val();
     });
-    // TODO
-    $(".select-all").on('click', function() { changeSelection('select'); });
-    $(".select-none").on('click', function() { changeSelection('unselect'); });
-    $(".select-toggle").on('click', function() { changeSelection('toggle'); });
 };
 
 App.prototype.init = function init() {
     var self = this;
 
     // Set up views
-    this.toolbar = new Toolbar({
-        'el': '#toolbar'
-    });
-    this.sidebar = new Sidebar({
-        'el': '#right-sidebar'
-    });
-    this.pageView = new PageView({
-        'el': "#file-correction",
+    this.pageView  = new PageView({'el': "#file-correction",});
+    this.dropzone  = new Dropzone({'el': '#dropzone'});
+    this.toolbar   = new Toolbar({'el': '#toolbar'});
+    this.sidebar   = new Sidebar({'el': '#right-sidebar'});
+    this.selectbar = new Selectbar({'el': '#select-bar'});
+    this.waitingAnimation = new WaitingAnimation({
+        'el': "#waiting-animation",
+        'model': this.cheatsheet
     });
     this.historyView = new HistoryView({
         'el': "#history-modal",
@@ -198,13 +166,6 @@ App.prototype.init = function init() {
         'el': "#cheatsheet-modal",
         'model': this.cheatsheet,
         'tpl': this.templates.cheatsheetEntry,
-    });
-    this.waitingAnimation = new WaitingAnimation({
-        'el': "#waiting-animation",
-        'model': this.cheatsheet,
-    });
-    this.dropzone = new Dropzone({
-        'el': '#dropzone'
     });
 
     // Load cheatsheet and errorTags

@@ -92,20 +92,6 @@ function addMultiComment() {
     });
 }
 
-function changeSelection(action) {
-    $('.select-col').each(function() {
-        var $this = $(this);
-        var isSelected = $this.closest('.row').hasClass('selected');
-        if (action === 'select' && !isSelected) {
-            $this.trigger('click');
-        } else if (action === 'unselect' && isSelected) {
-            $this.trigger('click');
-        } else if (action === 'toggle') {
-            $this.trigger('click');
-        }
-    });
-}
-
 /******************/
 /* Event handlers */
 /******************/
@@ -155,13 +141,6 @@ function setupDragAndDrop() {
         });
 }
 
-function toggleSelectMode() {
-    $(".selected").toggleClass('selected');
-    $(".select-col").toggleClass('hidden');
-    $(".button-col").toggleClass('hidden');
-    $("#select-bar").toggleClass('hidden');
-}
-
 function App() {
 
     // A dummy element, just used for event emitting/listening
@@ -172,9 +151,6 @@ function App() {
     this.history = new History();
     this.errorTags = new ErrorTags();
     this.cheatsheet = new Cheatsheet();
-
-    // Select mode initially off
-    this.selectMode = false;
 
     // Compile templates
     this.templates = Utils.compileTemplates();
@@ -204,11 +180,6 @@ App.prototype.emit = function() {
     return this;
 };
 
-App.prototype.toggleSelectMode = function() {
-    this.selectMode = !this.selectMode;
-    this.emit('app:' + (this.selectMode ? 'enter' : 'exit') + '-select-mode');
-};
-
 App.prototype.confirmExit = function confirmExit() {
     if (this.currentPage && this.currentPage.changed) {
         notie.alert(2, "Ungesicherte Inhalte vorhanden, bitte zuerst speichern!", 5);
@@ -230,6 +201,9 @@ App.prototype.render = function() {
 
     var self = this;
 
+    // Select mode initially off
+    this.selectMode = false;
+
     // Setup event handlers for drag and drop
     // TODO
     setupDragAndDrop();
@@ -238,41 +212,35 @@ App.prototype.render = function() {
     this.waitingAnimation.render();
     this.cheatsheetView.render();
     this.toolbar.render();
+    this.selectbar.render();
     this.dropzone.render();
 
     this.on('app:loading', function hideSidebar() { self.sidebar.$el.addClass('hidden'); });
-    this.on('app:loaded',  function showSidebar() { self.sidebar.$el.removeClass('hidden'); });
     this.on('app:loading', function hidePageView() { self.pageView.$el.addClass('hidden'); });
+    this.on('app:loaded',  function showSidebar() { self.sidebar.$el.removeClass('hidden'); });
     this.on('app:loaded',  function showPageView() { self.pageView.$el.removeClass('hidden'); });
 
     // Select Mode
-    // TODO
-    $("#toggle-select").on('click', toggleSelectMode);
-    $("#select-bar .close").on('click', toggleSelectMode);
     $('.add-multi-comment').on('click', addMultiComment);
 
     // TODO
     $("#load-image button").on('click', function() {
         window.location.hash = '#' + $("#load-image input").val();
     });
-    // TODO
-    $(".select-all").on('click', function() { changeSelection('select'); });
-    $(".select-none").on('click', function() { changeSelection('unselect'); });
-    $(".select-toggle").on('click', function() { changeSelection('toggle'); });
 };
 
 App.prototype.init = function init() {
     var self = this;
 
     // Set up views
-    this.toolbar = new Toolbar({
-        'el': '#toolbar'
-    });
-    this.sidebar = new Sidebar({
-        'el': '#right-sidebar'
-    });
-    this.pageView = new PageView({
-        'el': "#file-correction",
+    this.pageView  = new PageView({'el': "#file-correction",});
+    this.dropzone  = new Dropzone({'el': '#dropzone'});
+    this.toolbar   = new Toolbar({'el': '#toolbar'});
+    this.sidebar   = new Sidebar({'el': '#right-sidebar'});
+    this.selectbar = new Selectbar({'el': '#select-bar'});
+    this.waitingAnimation = new WaitingAnimation({
+        'el': "#waiting-animation",
+        'model': this.cheatsheet
     });
     this.historyView = new HistoryView({
         'el': "#history-modal",
@@ -283,13 +251,6 @@ App.prototype.init = function init() {
         'el': "#cheatsheet-modal",
         'model': this.cheatsheet,
         'tpl': this.templates.cheatsheetEntry,
-    });
-    this.waitingAnimation = new WaitingAnimation({
-        'el': "#waiting-animation",
-        'model': this.cheatsheet,
-    });
-    this.dropzone = new Dropzone({
-        'el': '#dropzone'
     });
 
     // Load cheatsheet and errorTags
@@ -527,7 +488,9 @@ Line.prototype.addTag = function addTag(tag, desc) {
 function PageView(opts) {
     for (var key in opts) { this[key] = opts[key]; }
     this.$el = $(this.el);
+    this.lineViews = [];
 }
+
 /**
  * Sort the rows by image width
  *
@@ -560,6 +523,20 @@ PageView.prototype.sortRowsByLine = function sortRowsByLine(order) {
     );
 };
 
+PageView.prototype.changeSelection = function changeSelection(action, lines) {
+    lines = lines || this.lineViews;
+    for (var i = 0 ; i < lines.length; i++) {
+        var curLine = this.model.lines[i];
+        if (action === 'select') {
+            curLine.selected = true;
+        } else if (action === 'unselect' && isSelected) {
+            curLine.selected = false;
+        } else if (action === 'toggle') {
+            curLine.selected = !curLine.selected;
+        }
+    }
+};
+
 
 PageView.prototype.render = function() {
     this.$el.find('*').off().empty();
@@ -567,19 +544,14 @@ PageView.prototype.render = function() {
     for (var i = 0; i < this.model.lines.length; i++)  {
         var lineModel = this.model.lines[i];
         var lineEl = $(window.app.templates.lineContainer(lineModel)).appendTo(this.$el);
-        new LineView({"$el": lineEl, "model": lineModel}).render();
+        var lineView = new LineView({"$el": lineEl, "model": lineModel});
+        lineView.render();
+        this.lineViews.push(lineView);
     }
 };
 function LineView(opts) {
-    for (key in opts) { this[key] = opts[key]; }
-}
-
-
-// TODO
-function addComment() {
-    var target = $($(this).attr('data-target')).find('div[contenteditable]');
-    var tag = '#' + $(this).attr('data-tag');
-    addTagToElement($(target), tag);
+    for (var key in opts) { this[key] = opts[key]; }
+    this.tpl = window.app.templates.line;
 }
 
 /**
@@ -595,10 +567,35 @@ LineView.prototype.renderCommentToggler = function renderCommentToggler() {
     $toggler.toggleClass('btn-default', !hasComment).toggleClass('btn-info', hasComment);
 };
 
+LineView.prototype.setSelected = function setSelected(selected) {
+    this.model.selected = selected;
+    this.renderSelected();
+};
+
+LineView.prototype.onEnterSelectMode = function onEnterSelectMode() {
+    this.$el.find('.select-col').toggleClass('hidden', false);
+    this.$el.find('.button-col').toggleClass('hidden', true);
+    var self = this;
+    this.$el.on('click', function() { self.setSelected(!self.model.selected); });
+};
+
+LineView.prototype.onExitSelectMode = function onExitSelectMode() {
+    this.$el.find('.select-col').toggleClass('hidden', true);
+    this.$el.find('.button-col').toggleClass('hidden', false);
+    this.$el.off('click');
+};
+
+LineView.prototype.renderSelected = function renderSelected() {
+    this.$el.toggleClass('selected', this.model.selected);
+    this.$el.find(':checkbox').prop('checked', this.model.selected);
+};
+
 LineView.prototype.render = function() {
     var self = this;
+
+    this.$el.off().find("*").off();
     // Build from template
-    this.$el.find("*").off().addBack().off().html($(window.app.templates.line(this.model)));
+    this.$el.html($(self.tpl(this.model)));
 
     this.$el.find(".toggle-line-comment").on('click', function() {
         var commentField = self.$el.find('.line-comment');
@@ -626,25 +623,14 @@ LineView.prototype.render = function() {
         }
     });
 
-    // Click handler for multi-select
-    this.$el.find(":checkbox").on('click', function(e) {
-        if (!window.app.selectMode) return;
-        $(this).closest('.row').toggleClass('selected');
-        e.stopPropagation();
-    });
-
-    // Click handler for multi-select
-    this.$el.on('click', function(e) {
-        if (!window.app.selectMode) return;
-        $(this).find(':checkbox').click();
-    });
-
     // Adapt the textarea height
     Utils.fitHeight(this.$el.find('textarea'));
 
     // Highlight button w/ comments
-    window.app.on('app:filter-view', this.renderCommentToggler.bind(this));
     window.app.once('app:loaded', this.renderCommentToggler.bind(this));
+    window.app.on('app:filter-view', this.renderCommentToggler.bind(this));
+    window.app.on('app:enter-select-mode', this.onEnterSelectMode.bind(this));
+    window.app.on('app:exit-select-mode', this.onExitSelectMode.bind(this));
 
     return this;
 };
@@ -731,10 +717,6 @@ Toolbar.prototype.render = function() {
     $("#sort-width").on('click', function() { app.pageView.sortRowsByWidth(1); });
     $("#sort-width-desc").on('click', function() { app.pageView.sortRowsByWidth(-1); });
 
-    // Select Mode
-    $("#toggle-select").on('click', app.toggleSelectMode.bind(app));
-    $("#select-bar .close").on('click', app.toggleSelectMode.bind(app));
-
     //
     // React to events
     //
@@ -808,6 +790,53 @@ WaitingAnimation.prototype.start = function startWaitingAnimation() {
                     " seconds. Please see the console for possible errors");
         clearInterval(self.animationId);
     }, window.app.settings.animationTimeout);
+};
+function Selectbar(opts) {
+    for (var key in opts) { this[key] = opts[key]; }
+    this.$el = $(this.el);
+}
+
+Selectbar.prototype.enter = function enter() {
+    window.app.selectMode = true;
+    this.$el.removeClass('hidden');
+    window.app.emit('app:enter-select-mode');
+};
+
+Selectbar.prototype.exit = function exit() {
+    window.app.selectMode = false;
+    this.$el.addClass('hidden');
+    window.app.emit('app:exit-select-mode');
+};
+Selectbar.prototype.toggle = function toggle() {
+    this[window.app.selectMode ? 'exit' : 'enter']();
+};
+
+Selectbar.prototype.selectLines = function selectLines(action, ids) {
+    var app = window.app;
+    // If no id was passed, use all ids
+    if (!ids) {
+        ids = [];
+        for (var i = 0; i < app.currentPage.lines.length; i++) {
+            ids.push(i);
+        }
+    }
+    for (var i = 0; i < ids.length; i++) {
+        var lineView = app.pageView.lineViews[ids[i]];
+        lineView.setSelected(action === 'select' ? true : action === 'unselect' ? false : !lineView.model.selected);
+    }
+};
+
+Selectbar.prototype.render = function renderSelectBar() {
+    var self = this;
+    var app = window.app;
+
+    this.$el.find('.select-all').on('click', function selectAll() { self.selectLines('select'); });
+    this.$el.find('.select-none').on('click',  function selectNone() { self.selectLines('unselect'); });
+    this.$el.find('.select-toggle').on('click', function selectToggle() { self.selectLines('toggle'); });
+
+    app.on('app:select-line', this.selectLines.bind(self));
+    app.on('app:loading', function() { $(".toggle-select-mode").off('click'); });
+    app.on('app:loaded', function() { $(".toggle-select-mode").on('click', self.toggle.bind(self)); });
 };
 function CheatsheetView(opts) {
     for (key in opts) { this[key] = opts[key]; }
