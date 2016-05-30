@@ -22,7 +22,7 @@ cd ocr-gt-tools
 ```
 
 The first time you run this, it will download the [docker
-image](http://dockerhub.com/ubma/ocr-gt-tools) and run an Apache server in the
+image](https://hub.docker.com/r/ubma/ocr-gt-tools/) and run an Apache server in the
 container with all the configuration taken care of.
 
 Navigate to http://localhost:8888/ocr-gt to use it.
