@@ -13,8 +13,6 @@ use POSIX qw(strftime);
 use Time::HiRes qw(time);
 use YAML::XS qw(LoadFile Dump);
 
-# binmode STDOUT, ":encoding(UTF-8)";
-
 my $DEBUGLOG;
 my $DATE_FORMAT = "%Y-%m-%d";
 my $TIME_FORMAT = "%H:%M:%S";
@@ -60,6 +58,23 @@ sub debug
     printf $DEBUGLOG "%s: %s\n", $timestamp, $msg;
 }
 
+
+=head2 slurp
+
+Read file contents into a string.
+
+=cut
+
+sub slurp
+{
+    my ($fname) = @_;
+    my $out = '';
+    open my $fh, "<:encoding(UTF-8)", $fname or httpError(500, "Could not read file %s: $!", $fname);
+    $out .= $_ while(<$fh>);
+    close $fh;
+    chomp $out;
+    return $out;
+}
 
 =head2 logRequest
 
@@ -127,6 +142,13 @@ sub httpJSON
     }
     my $json = JSON->new->utf8->pretty(1)->encode($obj);
     print $cgi->header( -type => 'application/json', -charset => 'utf-8');
+    # debug(Dump($obj));
+    # TODO XXX TODO
+    # TODO XXX TODO
+    sleep 1;
+    # TODO XXX TODO
+    # TODO XXX TODO
+    # TODO XXX TODO
     print $json;
 }
 
@@ -266,54 +288,60 @@ sub executeCommand
 }
 
 
-=head2 processCreateRequest
+=head2 handleGet
 
-Create process to create the files necessary
+Get process to create the files necessary
 
 =cut
 
-sub processCreateRequest
+sub handleGet
 {
     my $url = $cgi->param('imageUrl');
     if (! $url) {
         return httpError(400, "Missing parameter 'imageUrl' \n\n");
     }
-    # Create file object
+    # Get file object
     my $location = parse($url);
     if (! -e $location->{'path'}->{'correction-dir'}) {
         executeCommand($location->{'command'}->{'extract-images'});
-        $location->{'line-comments'} = [];
-        $location->{'line-transcriptions'} = [];
-        $location->{'page-comment'} = "";
+        $location->{'page-comment'} = '';
+        for ('line-comments', 'line-transcriptions', 'line-images') {
+            $location->{$_} = [];
+        }
     }
-    chdir($location->{'path'}->{'correction-dir'});
-    for my $fname (glob '*.txt') {
-        open my $fh, "<", $fname or httpError(500, "Could not open file %s", $fname);
-        my $line = <$fh>;
-        close $fh;
-        my ($basename, $idx) = $fname =~ m/^((?:comment-)?line)-(\d{4})/smx;
-        if ($basename) {
-            $location->{'line-' . ($basename eq 'line' ? 'transcriptions' : 'comments')}->[-1+$idx] = $line;
-        } elsif ($fname eq 'comment-page.txt') {
-            $location->{'page-comment'} = $line;
+    chdir $location->{'path'}->{'correction-dir'};
+    for my $fname (glob 'line-*.*') {
+        my $idx = int(substr($fname, 5, 4));
+        debug($idx);
+        if ($fname =~ /txt$/) {
+            $location->{'line-transcriptions'}->[$idx-1] = slurp($fname);
         } else {
-            return httpError(500, "Unknown file: '$fname'"); }
+            $location->{'line-images'}->[$idx-1] = sprintf($location->{'url'}->{'line-image-url'}, $idx);
+        }
     }
+    for my $fname (glob 'line-*.txt') {
+        $location->{'line-transcriptions'}->[-1+substr($fname, 5, 4)] = slurp($fname);
+    }
+    for my $fname (glob 'comment-line-*.txt') {
+        $location->{'line-comments'}->[-1+substr($fname, 13, 4)] = slurp($fname);
+    }
+    $location->{'page-comment'} = slurp('comment-page.txt');
     $location->{'pages'} = [ map {parse($_)} executeCommand($location->{'command'}->{'find-corrections-for-work'}) ];
     # Send JSON response
     httpJSON($location);
 }
 
 
-=head2 processSaveRequest
+=head2 handleSave
 
 Save transcriptions and comments passed via POST params.
 
 =cut
 
-sub processSaveRequest
+sub handleSave
 {
-    my $body = JSON->new->utf8->decode($cgi->param('POSTDATA')) or httpError(400, "Could not parse POST body");
+    my $postdata = $cgi->param('POSTDATA');
+    my $body = JSON->new->utf8->decode($postdata) or httpError(400, "Could not parse POST body");
     my $location = parse($body->{'url'}->{'thumb-url'});
     # Save line coments and transcriptions
     for (my $i = 0; $i < scalar @{ $body->{'line-comments'}}; $i++) {
@@ -322,26 +350,26 @@ sub processSaveRequest
             'line-comments'       , 'comment-line-%04d.txt',
         );
         while (my ($key, $fname_pat) = each(%saveMap)) {
-            my $fname = join('/', $config->{'path'}->{'correction-dir'}, sprintf($fname_pat, $i));
+            my $fname = join('/', $location->{'path'}->{'correction-dir'}, sprintf($fname_pat, $i+1));
             open my $fh, ">", $fname or httpError(500, "Could not write to '%s': %s\n", $fname, $!);
             print $fh $body->{$key}->[$i] . "\n";
             close $fh;
         }
     }
     # Save page comment
-    my $pageCommentFile = join('/', $config->{'path'}->{'correction-dir'}, 'comment-page.txt');
+    my $pageCommentFile = join('/', $location->{'path'}->{'correction-dir'}, 'comment-page.txt');
     open my $fh, ">", $pageCommentFile or httpError(500, "Could not write to '%s': %s\n", $pageCommentFile, $!);
     print $fh $body->{'page-comment'} . "\n";
     close $fh;
     print $cgi->header(-type   => 'text/plain', -status => 200);
 }
 
-=head2 processListRequest
+=head2 handleList
 
 
 =cut
 
-sub processListRequest
+sub handleList
 {
     my $queryName = $cgi->param('name');
     return httpError(400, "Must set parameter 'name'\n") unless $queryName;
@@ -361,13 +389,13 @@ sub processListRequest
 }
 
 
-=head2 processHistoryRequest
+=head2 handleHistory
 
 Send the request log for the calling IP address.
 
 =cut
 
-sub processHistoryRequest
+sub handleHistory
 {
     my $query = $cgi->param('q');
     my $mine = defined $cgi->param('mine');
@@ -395,17 +423,12 @@ debug('********* START REQUEST *********');
 my $action = $cgi->url_param('action');
 # debug "CGI Params: %s", Dump($cgi->{param});
 httpError(400, "URL parameter 'action' missing.") unless $action;
-if ($action eq 'create') {
-    processCreateRequest();
-} elsif ($action eq 'save') {
-    processSaveRequest();
-} elsif ($action eq 'list') {
-    processListRequest();
-} elsif ($action eq 'history') {
-    processHistoryRequest();
-} else {
-    httpError(400, "URL parameter 'action' must be 'create', 'save', 'list' or 'history'. Not %s", $action);
-}
+if    ( $action eq 'get'     ) { handleGet();     }
+elsif ( $action eq 'save'    ) { handleSave();    }
+elsif ( $action eq 'list'    ) { handleList();    }
+elsif ( $action eq 'history' ) { handleHistory(); }
+else { httpError(400, "URL parameter 'action' must be 'create', 'save', 'list' or 'history'. Not %s", $action); }
+# TODO handle only 'save' and 'get'
 logRequest();
 debug('********* END REQUEST *********');
 

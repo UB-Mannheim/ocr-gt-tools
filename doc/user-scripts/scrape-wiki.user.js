@@ -221,6 +221,7 @@ function scrapeJsonFromWikiPage(schema) {
                 .replace(/^_|_$/, '');
             // console.log(`Parsing '${varName}'`);
             var rawValue = liHtml.substring(colonIndex + 1).trim();
+            rawValue = rawValue.replace('&amp;', '&');
             if (schema.properties[varName] && schema.properties[varName].type === 'array') {
                 thingDesc[varName] = rawValue.split(/\s*;\s*/);
             } else if (schema.properties[varName] && schema.properties[varName].type === 'number') {

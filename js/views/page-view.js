@@ -1,29 +1,48 @@
 function PageView(opts) {
-    for (key in opts) { this[key] = opts[key]; }
+    for (var key in opts) { this[key] = opts[key]; }
     this.$el = $(this.el);
 }
+/**
+ * Sort the rows by image width
+ *
+ * @param {number} order Sort descending (-1) or ascending (1, default)
+ */
+PageView.prototype.sortRowsByWidth = function sortRowsByWidth(order) {
+    var order = order || 1;
+    this.$el.html(
+        this.$el.find(".row").sort(function(a, b) {
+            var aWidth = Utils.getImageWidth(a);
+            var bWidth = Utils.getImageWidth(b);
+            return (aWidth - bWidth) * order;
+        }).detach()
+    );
+};
+
+/**
+ * Sort the rows by line number
+ *
+ * @param {number} order Sort descending (-1) or ascending (1, default)
+ */
+PageView.prototype.sortRowsByLine = function sortRowsByLine(order) {
+    var order = order || 1;
+    this.$el.html(
+        this.$el.find(".row").sort(function(a, b) {
+            var aLine = $(a).attr('id').replace(/[^\d]/g, '');
+            var bLine = $(b).attr('id').replace(/[^\d]/g, '');
+            return (aLine - bLine) * order;
+        }).detach()
+    );
+};
+
+
 PageView.prototype.render = function() {
-    console.log(this.model);
-    for (var i = 0; i < this.model['line-transcriptions'].length; i++)  {
-        var line = {
-            transcription: this.model['line-transcriptions']
-        };
-        var $line = $(this.tpl(line));
-        $line.find(":checkbox").on('click', function(e) {
-            $(this).closest('.row').toggleClass('selected');
-            e.stopPropagation();
-        });
-        $line.find(".select-col").on('click', function(e) {
-            $(this).find(':checkbox').click();
-        });
-        $line.find(".transcription div[contenteditable]").on('keydown', function(e) {
-            if (e.keyCode == 13) {
-                e.preventDefault();
-            }
-        });
-        $line.find("div[contenteditable]").on('blur', function(e) {
-            $(this).html(Utils.encodeForBrowser(Utils.encodeForServer($(this).html())));
-        });
-        this.$el.append($line);
+    this.$el.empty();
+    // render lines
+    for (var i = 0; i < this.model.lines.length; i++)  {
+        var lineModel = this.model.lines[i];
+        var lineEl = $(window.app.templates.lineContainer(lineModel)).appendTo(this.$el);
+        new LineView({"$el": lineEl, "model": lineModel}).render();
     }
+    window.app.on('app:loaded', function fitTextareaSize() { Utils.fitHeight('textarea'); });
+    window.app.on('app:changed', function fitTextareaSize() { Utils.fitHeight('textarea'); });
 };

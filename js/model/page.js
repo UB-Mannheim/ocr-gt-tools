@@ -1,4 +1,5 @@
 function Page(urlOrOpts) {
+    this.lines = [];
     if (typeof urlOrOpts === 'string') {
         this.imageUrl = urlOrOpts;
     } else {
@@ -6,56 +7,52 @@ function Page(urlOrOpts) {
         for (key in urlOrOpts) { this[key] = urlOrOpts[key]; }
     }
     this.changed = false;
+    window.app.on('app:changed', function setChanged() { self.changed = true; });
+    window.app.on('app:saved', function setUnChanged() { self.changed = false; });
 }
 
-Page.prototype.save = function(cb) {
-    if (!this.changed) {
-        notie.alert(2, "Nothing changed.", 1);
-        return;
+Page.prototype.toJSON = function() {
+    var ret = {
+        'line-comments': [],
+        'line-transcriptions': [],
+        'page-comment': this['page-comment'],
+        'ids': this.ids,
+        'url': this.url,
+    };
+    for (var i = 0; i < this.lines.length ; i++) {
+        ret['line-comments'][i] = this.lines[i].comment.trim();
+        ret['line-transcriptions'][i] = this.lines[i].transcription.trim();
     }
-    $("#wait_save").addClass("wait").removeClass("hidden");
-    $("#disk").addClass("hidden");
-    this['line-transcriptions'] = $('li.transcription div').map(function() {
-        return Utils.encodeForServer($(this).html());
-    }).get();
-    this['line-comments'] = $("li.line-comment div").map(function() {
-        return Utils.encodeForServer($(this).html());
-    }).get();
-    this['page-comment'] = Utils.encodeForServer($("#page-comment div").html());
-    // console.log(window.app.currentPage.pageComment);
-    // console.log(window.app.currentPage.transcriptions);
-    // console.log(window.app.currentPage.lineComments);
+    return ret;
+};
 
+Page.prototype.save = function savePage(cb) {
     $.ajax({
         type: 'POST',
         url: 'ocr-gt-tools.cgi?action=save',
-        data: this.toJSON(),
-        error: cb,
-        success: function() {
-            cb();
-        },
+        contentType: 'application/json; charset=UTF-8',
+        data: JSON.stringify(this.toJSON()),
+        success: function() { cb(); },
+        error: cb
     });
-};
-
-Page.prototype.toJSON = function() {
-    var ret = {};
-    ret.ids                    = this.ids;
-    ret.url                    = this.url;
-    ret['line-comments']       = this['line-comments'];
-    ret['page-comment']        = this['page-comment'];
-    ret['line-transcriptions'] = this['line-transcriptions'];
-    return ret;
 };
 
 Page.prototype.load = function(cb) {
     var self = this;
     $.ajax({
         type: 'GET',
-        url: 'ocr-gt-tools.cgi?action=create&imageUrl=' + this.imageUrl,
+        url: 'ocr-gt-tools.cgi?action=get&imageUrl=' + this.imageUrl,
         error: cb,
         success: function(res) {
-            console.log(res);
             for (key in res) { self[key] = res[key]; }
+            for (var i = 0; i < self['line-transcriptions'].length; i++)  {
+                self.lines.push(new Line({
+                    id: i,
+                    transcription: self['line-transcriptions'][i],
+                    comment: self['line-comments'][i],
+                    image: self['line-images'][i],
+                }));
+            }
             cb();
         },
     });
