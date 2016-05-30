@@ -353,65 +353,6 @@ App.prototype.loadPage = function loadPage(url) {
     });
 };
 
-function Page(urlOrOpts) {
-    this.lines = [];
-    if (typeof urlOrOpts === 'string') {
-        this.imageUrl = urlOrOpts;
-    } else {
-        this.imageUrl = urlOrOpts.imageUrl;
-        for (key in urlOrOpts) { this[key] = urlOrOpts[key]; }
-    }
-    this.changed = false;
-    window.app.on('app:changed', function setChanged() { self.changed = true; });
-    window.app.on('app:saved', function setUnChanged() { self.changed = false; });
-}
-
-Page.prototype.toJSON = function() {
-    var ret = {
-        'line-comments': [],
-        'line-transcriptions': [],
-        'page-comment': this['page-comment'],
-        'ids': this.ids,
-        'url': this.url,
-    };
-    for (var i = 0; i < this.lines.length ; i++) {
-        ret['line-comments'][i] = this.lines[i].comment.trim();
-        ret['line-transcriptions'][i] = this.lines[i].transcription.trim();
-    }
-    return ret;
-};
-
-Page.prototype.save = function savePage(cb) {
-    $.ajax({
-        type: 'POST',
-        url: 'ocr-gt-tools.cgi?action=save',
-        contentType: 'application/json; charset=UTF-8',
-        data: JSON.stringify(this.toJSON()),
-        success: function() { cb(); },
-        error: cb
-    });
-};
-
-Page.prototype.load = function(cb) {
-    var self = this;
-    $.ajax({
-        type: 'GET',
-        url: 'ocr-gt-tools.cgi?action=get&imageUrl=' + this.imageUrl,
-        error: cb,
-        success: function(res) {
-            for (key in res) { self[key] = res[key]; }
-            for (var i = 0; i < self['line-transcriptions'].length; i++)  {
-                self.lines.push(new Line({
-                    id: i,
-                    transcription: self['line-transcriptions'][i],
-                    comment: self['line-comments'][i],
-                    image: self['line-images'][i],
-                }));
-            }
-            cb();
-        },
-    });
-};
 function History() { }
 History.prototype.url = 'ocr-gt-tools.cgi?action=history&mine=true';
 History.prototype.load = function(cb) {
@@ -517,6 +458,65 @@ Line.prototype.addTag = function addTag(tag, desc) {
     }
     this.comment = (this.comment.trim() + "\n" + tag.trim() + " " + desc.trim()).trim();
     return true;
+};
+function Page(urlOrOpts) {
+    this.lines = [];
+    if (typeof urlOrOpts === 'string') {
+        this.imageUrl = urlOrOpts;
+    } else {
+        this.imageUrl = urlOrOpts.imageUrl;
+        for (key in urlOrOpts) { this[key] = urlOrOpts[key]; }
+    }
+    this.changed = false;
+    window.app.on('app:changed', function setChanged() { self.changed = true; });
+    window.app.on('app:saved', function setUnChanged() { self.changed = false; });
+}
+
+Page.prototype.toJSON = function() {
+    var ret = {
+        'line-comments': [],
+        'line-transcriptions': [],
+        'page-comment': this['page-comment'],
+        'ids': this.ids,
+        'url': this.url,
+    };
+    for (var i = 0; i < this.lines.length ; i++) {
+        ret['line-comments'][i] = this.lines[i].comment.trim();
+        ret['line-transcriptions'][i] = this.lines[i].transcription.trim();
+    }
+    return ret;
+};
+
+Page.prototype.save = function savePage(cb) {
+    $.ajax({
+        type: 'POST',
+        url: 'ocr-gt-tools.cgi?action=save',
+        contentType: 'application/json; charset=UTF-8',
+        data: JSON.stringify(this.toJSON()),
+        success: function() { cb(); },
+        error: cb
+    });
+};
+
+Page.prototype.load = function(cb) {
+    var self = this;
+    $.ajax({
+        type: 'GET',
+        url: 'ocr-gt-tools.cgi?action=get&imageUrl=' + this.imageUrl,
+        error: cb,
+        success: function(res) {
+            for (key in res) { self[key] = res[key]; }
+            for (var i = 0; i < self['line-transcriptions'].length; i++)  {
+                self.lines.push(new Line({
+                    id: i,
+                    transcription: self['line-transcriptions'][i],
+                    comment: self['line-comments'][i],
+                    image: self['line-images'][i],
+                }));
+            }
+            cb();
+        },
+    });
 };
 function PageView(opts) {
     for (var key in opts) { this[key] = opts[key]; }
@@ -643,6 +643,43 @@ HistoryView.prototype.render = function() {
     }
 };
 
+function CheatsheetView(opts) {
+    for (key in opts) { this[key] = opts[key]; }
+    this.$el = $(this.el);
+    // Setup clipboard
+    new Clipboard('.code');
+}
+
+CheatsheetView.prototype.applyFilter = function applyFilter() {
+    var self = this;
+    $.each(self.model.items, function(id, desc) {
+        if (self.filter &&
+            self.filter !== "" &&
+            desc.baseLetter.indexOf(self.filter) === -1 &&
+            desc.baseLetter.indexOf(self.filter.toLowerCase()) === -1) {
+            $("#cheatsheet-" + desc.id).addClass('hidden');
+        } else {
+            $("#cheatsheet-" + desc.id).removeClass('hidden');
+        }
+    });
+};
+
+CheatsheetView.prototype.render = function render() {
+    var self = this;
+    self.$el.find(".cheatsheet").empty();
+    $.each(self.model.items, function(idx, model) {
+        self.$el.find('.cheatsheet').append(self.tpl(model));
+    });
+    self.$el.find('button').on('click', function() {
+        notie.alert(1, "In Zwischenablage kopiert: '" + $(this).attr('data-clipboard-text') + "'");
+    });
+    self.$el.find('input[type="text"]').on('keydown', function(e) {
+        self.filter = (e.keyCode < 32 || e.ctrlKey || e.altKey) ?  null : String.fromCharCode(e.keyCode);
+        self.applyFilter();
+        $(this).val('');
+    });
+    return self;
+};
 function Dropzone(opts) {
     for (var key in opts) { this[key] = opts[key]; }
     this.$el = $(this.el);
@@ -703,7 +740,7 @@ Toolbar.prototype.render = function() {
 
     // Handle view filtering by selectors
     this.$el.find(".set-view").on('click', function reduceView() {
-        Utils.runOnSubtreeAndParents(".lines-col", $(this).attr('data-target'),
+        Utils.runOnSubtreeAndParents(".line", $(this).attr('data-target'),
                                      function() { $(this).addClass('view-hidden'); },
                                      function() { $(this).removeClass('view-hidden'); });
     });
@@ -791,43 +828,6 @@ WaitingAnimation.prototype.start = function startWaitingAnimation() {
                     " seconds. Please see the console for possible errors");
         clearInterval(self.animationId);
     }, window.app.settings.animationTimeout);
-};
-function CheatsheetView(opts) {
-    for (key in opts) { this[key] = opts[key]; }
-    this.$el = $(this.el);
-    // Setup clipboard
-    new Clipboard('.code');
-}
-
-CheatsheetView.prototype.applyFilter = function applyFilter() {
-    var self = this;
-    $.each(self.model.items, function(id, desc) {
-        if (self.filter &&
-            self.filter !== "" &&
-            desc.baseLetter.indexOf(self.filter) === -1 &&
-            desc.baseLetter.indexOf(self.filter.toLowerCase()) === -1) {
-            $("#cheatsheet-" + desc.id).addClass('hidden');
-        } else {
-            $("#cheatsheet-" + desc.id).removeClass('hidden');
-        }
-    });
-};
-
-CheatsheetView.prototype.render = function render() {
-    var self = this;
-    self.$el.find(".cheatsheet").empty();
-    $.each(self.model.items, function(idx, model) {
-        self.$el.find('.cheatsheet').append(self.tpl(model));
-    });
-    self.$el.find('button').on('click', function() {
-        notie.alert(1, "In Zwischenablage kopiert: '" + $(this).attr('data-clipboard-text') + "'");
-    });
-    self.$el.find('input[type="text"]').on('keydown', function(e) {
-        self.filter = (e.keyCode < 32 || e.ctrlKey || e.altKey) ?  null : String.fromCharCode(e.keyCode);
-        self.applyFilter();
-        $(this).val('');
-    });
-    return self;
 };
 // Name: ocr-gt-tools.js
 
