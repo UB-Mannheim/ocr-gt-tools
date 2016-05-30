@@ -23,7 +23,7 @@ html(lang='de')
 				.panel-heading
 					h4.panel-title
 						a(data-toggle='collapse', href='#work-info') Werk-Info
-				#work-info.panel-collapse.collapse
+				#work-info.panel-collapse.collapse.in
 					.list-group
 						a.list-group-item(target='_blank', href='{{ this.url.landing-page-url }}')
 							i.fa.fa-download
@@ -37,7 +37,7 @@ html(lang='de')
 				.panel-heading
 					h4.panel-title
 						a(data-toggle='collapse', href='#page-info') Seiten-Info
-				#page-info.panel-collapse.collapse.in(aria-expanded='true')
+				#page-info.panel-collapse.collapse.in
 					.list-group
 						a#download-comments.list-group-item(target='_blank', href='{{ this.url.comment-url }}')
 							i.fa.fa-download

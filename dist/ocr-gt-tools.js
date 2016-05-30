@@ -506,6 +506,9 @@ Page.prototype.load = function(cb) {
         error: cb,
         success: function(res) {
             for (key in res) { self[key] = res[key]; }
+            // Sort 'pages'
+            self.pages = self.pages.sort(function(a, b) { return parseInt(a.ids.page) - parseInt(b.ids.page); });
+            // Create line models
             for (var i = 0; i < self['line-transcriptions'].length; i++)  {
                 self.lines.push(new Line({
                     id: i,
