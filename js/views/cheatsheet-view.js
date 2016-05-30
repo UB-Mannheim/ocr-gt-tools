@@ -26,7 +26,7 @@ CheatsheetView.prototype.render = function render() {
         self.$el.find('.cheatsheet').append(self.tpl(model));
     });
     self.$el.find('button').on('click', function() {
-        notie.alert(1, "In Zwischenablage kopiert: '" + $(this).attr('data-clipboard-text') + "'");
+        notie.alert(1, "In Zwischenablage kopiert: '" + $(this).attr('data-clipboard-text') + "'", 1);
     });
     self.$el.find('input[type="text"]').on('keydown', function(e) {
         self.filter = (e.keyCode < 32 || e.ctrlKey || e.altKey) ?  null : String.fromCharCode(e.keyCode);
