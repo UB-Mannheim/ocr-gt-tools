@@ -12,6 +12,7 @@ use JSON;
 use POSIX qw(strftime);
 use Time::HiRes qw(time);
 use YAML::XS qw(LoadFile Dump);
+use open ":encoding(utf8)";
 
 my $DEBUGLOG;
 my $DATE_FORMAT = "%Y-%m-%d";
@@ -351,6 +352,7 @@ sub handleSave
         );
         while (my ($key, $fname_pat) = each(%saveMap)) {
             my $fname = join('/', $location->{'path'}->{'correction-dir'}, sprintf($fname_pat, $i+1));
+            # debug ("WRITE: $fname");
             open my $fh, ">", $fname or httpError(500, "Could not write to '%s': %s\n", $fname, $!);
             print $fh $body->{$key}->[$i] . "\n";
             close $fh;
