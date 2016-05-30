@@ -42,7 +42,7 @@ Selectbar.prototype.selectLines = function selectLines(action, ids) {
     for (var i = 0; i < ids.length; i++) {
         var lineView = app.pageView.lineViews[ids[i]];
         lineView.selected = (action === 'select' ? true : action === 'unselect' ? false : !lineView.selected);
-        lineView.renderComment();
+        lineView.renderCheckbox();
     }
 };
 
@@ -50,9 +50,15 @@ Selectbar.prototype.render = function renderSelectBar() {
     var self = this;
     var app = window.app;
 
-    this.$el.find('.select-all').on('click', function selectAll() { self.selectLines('select'); });
-    this.$el.find('.select-none').on('click',  function selectNone() { self.selectLines('unselect'); });
-    this.$el.find('.select-toggle').on('click', function selectToggle() { self.selectLines('toggle'); });
+    this.$el.find('.select-all').on('click', function selectAll() {
+        self.selectLines('select');
+    });
+    this.$el.find('.select-none').on('click', function selectNone() {
+        self.selectLines('unselect');
+    });
+    this.$el.find('.select-toggle').on('click', function selectToggle() {
+        self.selectLines('toggle');
+    });
     this.$el.find('*[data-tag]').on('click', function addTagMultiple() {
         var tag = $(this).attr('data-tag');
         var selection = self.getSelection();
@@ -63,6 +69,7 @@ Selectbar.prototype.render = function renderSelectBar() {
     });
 
     // app.on('app:select-line', this.selectLines.bind(self));
-    app.on('app:loading', function() { $(".toggle-select-mode").off('click'); });
-    app.on('app:loaded', function() { $(".toggle-select-mode").on('click', self.toggle.bind(self)); });
+    var toggleBound = this.toggle.bind(this);
+    app.on('app:loading', function() { $(".toggle-select-mode").off('click', toggleBound); });
+    app.on('app:loaded', function() { $(".toggle-select-mode").on('click', toggleBound); });
 };

@@ -76,6 +76,7 @@ App.prototype.emit = function() {
     if (event === 'app:saved') {
         notie.alert(1, "Gespeichert", 1);
     } else if (event === 'app:ajaxError') {
+        var xhr = arguments[1];
         notie.alert(3, "HTTP Fehler " + xhr.status + ":\n<pre style='text-align: left'>" + xhr.responseText + "</pre>");
     }
     this.$el.trigger.apply(this.$el, arguments);

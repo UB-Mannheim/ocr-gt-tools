@@ -161,6 +161,7 @@ App.prototype.emit = function() {
     if (event === 'app:saved') {
         notie.alert(1, "Gespeichert", 1);
     } else if (event === 'app:ajaxError') {
+        var xhr = arguments[1];
         notie.alert(3, "HTTP Fehler " + xhr.status + ":\n<pre style='text-align: left'>" + xhr.responseText + "</pre>");
     }
     this.$el.trigger.apply(this.$el, arguments);
@@ -299,69 +300,6 @@ App.prototype.loadPage = function loadPage(url) {
     });
 };
 
-function Page(urlOrOpts) {
-    var self = this;
-    self.lines = [];
-    if (typeof urlOrOpts === 'string') {
-        self.imageUrl = urlOrOpts;
-    } else {
-        self.imageUrl = urlOrOpts.imageUrl;
-        for (key in urlOrOpts) { self[key] = urlOrOpts[key]; }
-    }
-    self.changed = false;
-    window.app.on('app:changed', function setChanged() { self.changed = true; });
-    window.app.on('app:saved', function setUnChanged() { self.changed = false; });
-}
-
-Page.prototype.toJSON = function() {
-    var ret = {
-        'line-comments': [],
-        'line-transcriptions': [],
-        'page-comment': this['page-comment'],
-        'ids': this.ids,
-        'url': this.url,
-    };
-    for (var i = 0; i < this.lines.length ; i++) {
-        ret['line-comments'][i] = this.lines[i].comment.trim();
-        ret['line-transcriptions'][i] = this.lines[i].transcription.trim();
-    }
-    return ret;
-};
-
-Page.prototype.save = function savePage(cb) {
-    $.ajax({
-        type: 'POST',
-        url: 'ocr-gt-tools.cgi?action=save',
-        contentType: 'application/json; charset=UTF-8',
-        data: JSON.stringify(this.toJSON()),
-        success: function() { cb(); },
-        error: cb
-    });
-};
-
-Page.prototype.load = function(cb) {
-    var self = this;
-    $.ajax({
-        type: 'GET',
-        url: 'ocr-gt-tools.cgi?action=get&imageUrl=' + this.imageUrl,
-        error: cb,
-        success: function(res) {
-            for (key in res) { self[key] = res[key]; }
-            // Sort 'pages'
-            self.pages = self.pages.sort(function(a, b) { return parseInt(a.ids.page) - parseInt(b.ids.page); });
-            // Create line models
-            for (var i = 0; i < self['line-transcriptions'].length; i++)  {
-                self.lines.push(new Line({
-                    id: i,
-                    transcription: self['line-transcriptions'][i],
-                    comment: self['line-comments'][i],
-                    image: self['line-images'][i],
-                }));
-            }
-            cb();
-        },
-    });
-};
 function History() { }
 History.prototype.url = 'ocr-gt-tools.cgi?action=history&mine=true';
 History.prototype.load = function(cb) {
@@ -467,6 +405,69 @@ Line.prototype.addTag = function addTag(tag, desc) {
     this.comment = (this.comment.trim() + "\n" + tag.trim() + " " + desc.trim()).trim();
     return true;
 };
+function Page(urlOrOpts) {
+    var self = this;
+    self.lines = [];
+    if (typeof urlOrOpts === 'string') {
+        self.imageUrl = urlOrOpts;
+    } else {
+        self.imageUrl = urlOrOpts.imageUrl;
+        for (key in urlOrOpts) { self[key] = urlOrOpts[key]; }
+    }
+    self.changed = false;
+    window.app.on('app:changed', function setChanged() { self.changed = true; });
+    window.app.on('app:saved', function setUnChanged() { self.changed = false; });
+}
+
+Page.prototype.toJSON = function() {
+    var ret = {
+        'line-comments': [],
+        'line-transcriptions': [],
+        'page-comment': this['page-comment'],
+        'ids': this.ids,
+        'url': this.url,
+    };
+    for (var i = 0; i < this.lines.length ; i++) {
+        ret['line-comments'][i] = this.lines[i].comment.trim();
+        ret['line-transcriptions'][i] = this.lines[i].transcription.trim();
+    }
+    return ret;
+};
+
+Page.prototype.save = function savePage(cb) {
+    $.ajax({
+        type: 'POST',
+        url: 'ocr-gt-tools.cgi?action=save',
+        contentType: 'application/json; charset=UTF-8',
+        data: JSON.stringify(this.toJSON()),
+        success: function() { cb(); },
+        error: cb
+    });
+};
+
+Page.prototype.load = function(cb) {
+    var self = this;
+    $.ajax({
+        type: 'GET',
+        url: 'ocr-gt-tools.cgi?action=get&imageUrl=' + this.imageUrl,
+        error: cb,
+        success: function(res) {
+            for (key in res) { self[key] = res[key]; }
+            // Sort 'pages'
+            self.pages = self.pages.sort(function(a, b) { return parseInt(a.ids.page) - parseInt(b.ids.page); });
+            // Create line models
+            for (var i = 0; i < self['line-transcriptions'].length; i++)  {
+                self.lines.push(new Line({
+                    id: i,
+                    transcription: self['line-transcriptions'][i],
+                    comment: self['line-comments'][i],
+                    image: self['line-images'][i],
+                }));
+            }
+            cb();
+        },
+    });
+};
 function PageView(opts) {
     for (var key in opts) { this[key] = opts[key]; }
     this.$el = $(this.el);
@@ -519,23 +520,17 @@ PageView.prototype.render = function() {
 function LineView(opts) {
     for (var key in opts) { this[key] = opts[key]; }
     this.tpl = window.app.templates.line;
+    window.app.once('app:loaded', this.render.bind(this));
+    window.app.on('app:filter-view', this.renderToggler.bind(this));
+    window.app.on('app:enter-select-mode', this.renderCheckbox.bind(this));
+    window.app.on('app:exit-select-mode', this.renderCheckbox.bind(this));
 }
 
-/**
- * Update the color of the comment toggle button depending on whether line has
- * comments or not.
+/*
+ * Render (or do not render) the checkbox for multi-select mode
  */
-LineView.prototype.renderComment = function renderComment() {
-
-    // Comment toggler
-    var lineComment = this.$el.find('.line-comment');
-    var isVisible = lineComment.is(':visible');
-    var hasComment = this.model.comment.length > 0;
-    var $toggler = this.$el.find(".toggle-line-comment");
-    $toggler.find(".show-line-comment").toggleClass('hidden', isVisible);
-    $toggler.find(".hide-line-comment").toggleClass('hidden', !isVisible);
-    $toggler.toggleClass('btn-default', !hasComment).toggleClass('btn-info', hasComment);
-
+LineView.prototype.renderCheckbox = function renderComment() {
+    var self = this;
     // Selectionmode
     this.$el.find('.select-col').toggleClass('hidden', !window.app.selectMode);
     this.$el.find('.button-col').toggleClass('hidden', window.app.selectMode);
@@ -543,65 +538,78 @@ LineView.prototype.renderComment = function renderComment() {
     this.$el.find(':checkbox').prop('checked', this.selected);
 };
 
-// LineView.prototype.setSelected = function setSelected(selected) {
-//     this.selected = selected;
-//     this.renderComment();
-// };
-
-LineView.prototype.onEnterSelectMode = function onEnterSelectMode() {
-    var self = this;
-    this.$el.on('click', function() {
-        self.selected = !self.selected;
-        self.renderComment();
-    });
-    self.renderComment();
+LineView.prototype.renderTextarea = function renderTextarea() {
+    // fit height
+    Utils.fitHeight(this.$el.find('textarea'));
 };
 
-LineView.prototype.onExitSelectMode = function onExitSelectMode() {
-    this.$el.off('click');
-    this.renderComment();
+/**
+ * Update the color of the comment toggle button depending on whether line has
+ * comments or not.
+ */
+LineView.prototype.renderToggler = function renderToggler() {
+    var lineComment = this.$el.find('.line-comment');
+    var isVisible = lineComment.is(':visible');
+    var hasComment = this.model.comment.length > 0;
+    var $toggler = this.$el.find(".toggle-line-comment");
+    $toggler.find(".show-line-comment").toggleClass('hidden', isVisible);
+    $toggler.find(".hide-line-comment").toggleClass('hidden', !isVisible);
+    $toggler.toggleClass('btn-default', !hasComment).toggleClass('btn-info', hasComment);
 };
 
 LineView.prototype.addTag = function addTag(tag) {
     this.model.addTag(tag);
-    this.renderComment();
+    this.render();
+};
+
+LineView.prototype.onInput = function onInput() {
+    this.model.comment = this.$el.find('.line-comment textarea ').val().trim();
+    this.model.transcription = this.$el.find('.line-transcription input').val().trim();
+    this.renderToggler();
+    this.renderTextarea();
+    window.app.emit('app:changed');
 };
 
 LineView.prototype.render = function() {
     var self = this;
     console.log("Rendering", this.model.id);
-    this.$el.off().find("*").off();
+
     // Build from template
+    this.$el.off().find("*").off();
     this.$el.html($(self.tpl(this.model)));
 
-    var lineComment = self.$el.find('.line-comment textarea');
-
-    this.$el.find(".toggle-line-comment").on('click', function() {
-        var commentField = self.$el.find('.line-comment');
-        commentField.toggleClass('hidden', commentField.is(':visible')).removeClass('view-hidden');
-        self.renderComment();
-    });
-
     // data binding
-    this.$el.find("input,textarea").on('input', function(e) {
-        self.model.comment = lineComment.val().trim();
-        self.model.transcription = self.$el.find('.line-transcription input').val().trim();
-        // self.renderComment();
-        Utils.fitHeight(lineComment);
-        // console.log(self.selected);
-        // window.app.emit('app:changed');
+    this.$el.on('input', self.onInput.bind(this));
+
+    // Mark line selected on click in select mode
+    this.$el.on('click', function() {
+        if (window.app.selectMode) {
+            self.selected = !self.selected;
+            self.renderCheckbox();
+        }
     });
 
     // Add error tag on click
-    this.$el.find("*[data-tag]").on('click', this.addTag.bind(this));
+    this.$el.find("*[data-tag]").on('click', function() {
+        self.addTag($(this).attr('data-tag'));
+        window.app.emit('app:changed');
+    });
 
-    // this.renderComment();
-    Utils.fitHeight(lineComment);
-    window.app.once('app:loaded', function() { Utils.fitHeight(lineComment); });
-    window.app.once('app:loaded', this.renderComment.bind(this));
-    window.app.on('app:filter-view', this.renderComment.bind(this));
-    window.app.on('app:enter-select-mode', this.onEnterSelectMode.bind(this));
-    window.app.on('app:exit-select-mode', this.onExitSelectMode.bind(this));
+    // On clicking the comment toggler
+    this.$el.find(".toggle-line-comment").on('click', function() {
+        var commentField = self.$el.find('.line-comment');
+        commentField.toggleClass('hidden', commentField.is(':visible')).removeClass('view-hidden');
+        self.renderToggler();
+    });
+
+    // Render the toggle button
+    this.renderToggler();
+
+    // Render (or don't) the checkbox
+    this.renderCheckbox();
+
+    // Fit height of text area
+    this.renderTextarea();
 
     return this;
 };
@@ -616,6 +624,43 @@ HistoryView.prototype.render = function() {
     }
 };
 
+function CheatsheetView(opts) {
+    for (key in opts) { this[key] = opts[key]; }
+    this.$el = $(this.el);
+    // Setup clipboard
+    new Clipboard('.code');
+}
+
+CheatsheetView.prototype.applyFilter = function applyFilter() {
+    var self = this;
+    $.each(self.model.items, function(id, desc) {
+        if (self.filter &&
+            self.filter !== "" &&
+            desc.baseLetter.indexOf(self.filter) === -1 &&
+            desc.baseLetter.indexOf(self.filter.toLowerCase()) === -1) {
+            $("#cheatsheet-" + desc.id).addClass('hidden');
+        } else {
+            $("#cheatsheet-" + desc.id).removeClass('hidden');
+        }
+    });
+};
+
+CheatsheetView.prototype.render = function render() {
+    var self = this;
+    self.$el.find(".cheatsheet").empty();
+    $.each(self.model.items, function(idx, model) {
+        self.$el.find('.cheatsheet').append(self.tpl(model));
+    });
+    self.$el.find('button').on('click', function() {
+        notie.alert(1, "In Zwischenablage kopiert: '" + $(this).attr('data-clipboard-text') + "'", 1);
+    });
+    self.$el.find('input[type="text"]').on('keydown', function(e) {
+        self.filter = (e.keyCode < 32 || e.ctrlKey || e.altKey) ?  null : String.fromCharCode(e.keyCode);
+        self.applyFilter();
+        $(this).val('');
+    });
+    return self;
+};
 function Dropzone(opts) {
     for (var key in opts) { this[key] = opts[key]; }
     this.$el = $(this.el);
@@ -725,49 +770,6 @@ function Sidebar(opts) {
 Sidebar.prototype.render = function renderSidebar() {
     this.$el.empty().html(window.app.templates.rightSidebar(this.model));
 };
-function WaitingAnimation(opts) {
-    for (key in opts) { this[key] = opts[key]; }
-    this.$el = $(this.el);
-}
-WaitingAnimation.prototype.render = function() {
-    window.app.on('app:loading', this.start.bind(this));
-    window.app.on('app:loaded', this.stop.bind(this));
-    window.app.on('app:ajaxError', this.stop.bind(this));
-    this.glyphs = [];
-    for (var i = 0; i <  this.model.items.length; i++) {
-        for (var j = 0 ; j < this.model.items[i].sample.length; j++) {
-            this.glyphs.push(this.model.items[i].sample[j]);
-        }
-    }
-};
-
-WaitingAnimation.prototype.stop = function stopWaitingAnimation() {
-    this.$el.addClass('hidden');
-    this.$el.empty();
-    clearInterval(this.animationId);
-    clearTimeout(this.timeoutId);
-};
-
-WaitingAnimation.prototype.start = function startWaitingAnimation() {
-    var self = this;
-    this.$el.removeClass('hidden');
-    this.animationId = setInterval(function() {
-        perRound = window.app.settings.animationsPerRound;
-        while (perRound-- > 0) {
-            $(self.glyphs[parseInt(Math.random() * self.glyphs.length)])
-                .css('top', parseInt(Math.random() * 100) + "vh")
-                .css('left', parseInt(Math.random() * 100) + "vw")
-                .appendTo(self.$el) ;
-        }
-    }, window.app.settings.animationInterval);
-    this.timeoutId = setTimeout(function timeoutAnimation() {
-        console.error("Animation ran too long, stopping it");
-        notie.alert(3, "Loading took more than " +
-                    (window.app.settings.animationTimeout / 1000) +
-                    " seconds. Please see the console for possible errors");
-        clearInterval(self.animationId);
-    }, window.app.settings.animationTimeout);
-};
 function Selectbar(opts) {
     for (var key in opts) { this[key] = opts[key]; }
     this.$el = $(this.el);
@@ -812,7 +814,7 @@ Selectbar.prototype.selectLines = function selectLines(action, ids) {
     for (var i = 0; i < ids.length; i++) {
         var lineView = app.pageView.lineViews[ids[i]];
         lineView.selected = (action === 'select' ? true : action === 'unselect' ? false : !lineView.selected);
-        lineView.renderComment();
+        lineView.renderCheckbox();
     }
 };
 
@@ -820,9 +822,15 @@ Selectbar.prototype.render = function renderSelectBar() {
     var self = this;
     var app = window.app;
 
-    this.$el.find('.select-all').on('click', function selectAll() { self.selectLines('select'); });
-    this.$el.find('.select-none').on('click',  function selectNone() { self.selectLines('unselect'); });
-    this.$el.find('.select-toggle').on('click', function selectToggle() { self.selectLines('toggle'); });
+    this.$el.find('.select-all').on('click', function selectAll() {
+        self.selectLines('select');
+    });
+    this.$el.find('.select-none').on('click', function selectNone() {
+        self.selectLines('unselect');
+    });
+    this.$el.find('.select-toggle').on('click', function selectToggle() {
+        self.selectLines('toggle');
+    });
     this.$el.find('*[data-tag]').on('click', function addTagMultiple() {
         var tag = $(this).attr('data-tag');
         var selection = self.getSelection();
@@ -833,45 +841,52 @@ Selectbar.prototype.render = function renderSelectBar() {
     });
 
     // app.on('app:select-line', this.selectLines.bind(self));
-    app.on('app:loading', function() { $(".toggle-select-mode").off('click'); });
-    app.on('app:loaded', function() { $(".toggle-select-mode").on('click', self.toggle.bind(self)); });
+    var toggleBound = this.toggle.bind(this);
+    app.on('app:loading', function() { $(".toggle-select-mode").off('click', toggleBound); });
+    app.on('app:loaded', function() { $(".toggle-select-mode").on('click', toggleBound); });
 };
-function CheatsheetView(opts) {
+function WaitingAnimation(opts) {
     for (key in opts) { this[key] = opts[key]; }
     this.$el = $(this.el);
-    // Setup clipboard
-    new Clipboard('.code');
 }
-
-CheatsheetView.prototype.applyFilter = function applyFilter() {
-    var self = this;
-    $.each(self.model.items, function(id, desc) {
-        if (self.filter &&
-            self.filter !== "" &&
-            desc.baseLetter.indexOf(self.filter) === -1 &&
-            desc.baseLetter.indexOf(self.filter.toLowerCase()) === -1) {
-            $("#cheatsheet-" + desc.id).addClass('hidden');
-        } else {
-            $("#cheatsheet-" + desc.id).removeClass('hidden');
+WaitingAnimation.prototype.render = function() {
+    window.app.on('app:loading', this.start.bind(this));
+    window.app.on('app:loaded', this.stop.bind(this));
+    window.app.on('app:ajaxError', this.stop.bind(this));
+    this.glyphs = [];
+    for (var i = 0; i <  this.model.items.length; i++) {
+        for (var j = 0 ; j < this.model.items[i].sample.length; j++) {
+            this.glyphs.push(this.model.items[i].sample[j]);
         }
-    });
+    }
 };
 
-CheatsheetView.prototype.render = function render() {
+WaitingAnimation.prototype.stop = function stopWaitingAnimation() {
+    this.$el.addClass('hidden');
+    this.$el.empty();
+    clearInterval(this.animationId);
+    clearTimeout(this.timeoutId);
+};
+
+WaitingAnimation.prototype.start = function startWaitingAnimation() {
     var self = this;
-    self.$el.find(".cheatsheet").empty();
-    $.each(self.model.items, function(idx, model) {
-        self.$el.find('.cheatsheet').append(self.tpl(model));
-    });
-    self.$el.find('button').on('click', function() {
-        notie.alert(1, "In Zwischenablage kopiert: '" + $(this).attr('data-clipboard-text') + "'");
-    });
-    self.$el.find('input[type="text"]').on('keydown', function(e) {
-        self.filter = (e.keyCode < 32 || e.ctrlKey || e.altKey) ?  null : String.fromCharCode(e.keyCode);
-        self.applyFilter();
-        $(this).val('');
-    });
-    return self;
+    this.$el.removeClass('hidden');
+    this.animationId = setInterval(function() {
+        perRound = window.app.settings.animationsPerRound;
+        while (perRound-- > 0) {
+            $(self.glyphs[parseInt(Math.random() * self.glyphs.length)])
+                .css('top', parseInt(Math.random() * 100) + "vh")
+                .css('left', parseInt(Math.random() * 100) + "vw")
+                .appendTo(self.$el) ;
+        }
+    }, window.app.settings.animationInterval);
+    this.timeoutId = setTimeout(function timeoutAnimation() {
+        console.error("Animation ran too long, stopping it");
+        notie.alert(3, "Loading took more than " +
+                    (window.app.settings.animationTimeout / 1000) +
+                    " seconds. Please see the console for possible errors");
+        clearInterval(self.animationId);
+    }, window.app.settings.animationTimeout);
 };
 // Name: ocr-gt-tools.js
 
