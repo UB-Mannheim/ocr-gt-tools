@@ -36,21 +36,6 @@ PageView.prototype.sortRowsByLine = function sortRowsByLine(order) {
     );
 };
 
-PageView.prototype.changeSelection = function changeSelection(action, lines) {
-    lines = lines || this.lineViews;
-    for (var i = 0 ; i < lines.length; i++) {
-        var curLine = this.model.lines[i];
-        if (action === 'select') {
-            curLine.selected = true;
-        } else if (action === 'unselect' && isSelected) {
-            curLine.selected = false;
-        } else if (action === 'toggle') {
-            curLine.selected = !curLine.selected;
-        }
-    }
-};
-
-
 PageView.prototype.render = function() {
     this.$el.find('*').off().empty();
     // render lines

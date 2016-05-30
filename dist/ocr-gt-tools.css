@@ -158,6 +158,25 @@ input[type='text'] {
 #file-correction .panel-heading h4 {
   padding-top: 7.5px;
 }
+#file-correction .col-sm-1 {
+  width: 10%;
+  padding-left: 0;
+  padding-right: 0;
+}
+#file-correction .col-sm-1 .btn-group > .btn {
+  padding: 0;
+  width: 35px;
+}
+#file-correction .col-sm-1 .btn {
+  text-align: left;
+}
+#file-correction .col-sm-1 .btn i {
+  padding: 5px;
+}
+#file-correction .col-sm-11 {
+  width: 88%;
+  padding-left: 0;
+}
 #right-sidebar {
   position: fixed;
   right: 0;
@@ -230,17 +249,6 @@ input[type='text'] {
   height: 23px;
   padding: 0;
   margin: 4px 0 0 0;
-}
-.button-col {
-  padding-left: 0;
-  padding-right: 0;
-}
-.button-col .btn {
-  padding: 0;
-  text-align: left;
-}
-.button-col .btn i {
-  padding: 5px;
 }
 #work-info {
   overflow-y: scroll;

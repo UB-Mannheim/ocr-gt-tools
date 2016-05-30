@@ -75,7 +75,7 @@ Utils.compileTemplates = function compileTemplates() {
 /**
  * Shrink/expand a textarea to fit its contents
  */
-Utils.fitHeight = function expandTextarea(selector) {
+Utils.fitHeight = function fitHeight(selector) {
     $(selector).each(function() {
         $(this)
             .attr('rows', 1) // Must be one for single-line textareas
@@ -83,19 +83,6 @@ Utils.fitHeight = function expandTextarea(selector) {
             .height(this.scrollHeight);
     });
 };
-// TODO
-
-function addMultiComment() {
-    var tag = '#' + $(this).attr('data-tag');
-    $('.selected .line-comment').each(function() {
-        addTagToElement($("div[contenteditable]", $(this)), tag);
-    });
-}
-
-/******************/
-/* Event handlers */
-/******************/
-
 function setupDragAndDrop() {
     // Prevent the default browser drop action
     $(document).bind('drop dragover', function(e) {
@@ -187,6 +174,27 @@ App.prototype.confirmExit = function confirmExit() {
     }
 };
 
+App.prototype.onHashChange = function onHashChange(e) {
+    e.preventDefault();
+    var newHash = window.location.hash;
+    console.log(e.oldURL);
+    if (!e.oldURL) {
+        console.info('HashChange (initial) -> ', newHash);
+    } else {
+        var oldHash = e.oldURL.substr(e.oldURL.indexOf('#'));
+        console.info('HashChange', oldHash, ' -> ', newHash);
+        if (oldHash === newHash) {
+            return;
+        }
+        if (this.confirmExit()) {
+            window.location.hash = '#' + this.currentPage.imageUrl;
+            return;
+        }
+    }
+    if (newHash.length > 2)
+        this.loadPage(newHash.substr(1));
+};
+
 App.prototype.showHistory = function() {
     var self = this;
     this.history.load(function(err) {
@@ -219,18 +227,14 @@ App.prototype.render = function() {
     this.on('app:loading', function hidePageView() { self.pageView.$el.addClass('hidden'); });
     this.on('app:loaded',  function showSidebar() { self.sidebar.$el.removeClass('hidden'); });
     this.on('app:loaded',  function showPageView() { self.pageView.$el.removeClass('hidden'); });
-
-    // Select Mode
-    $('.add-multi-comment').on('click', addMultiComment);
-
-    // TODO
-    $("#load-image button").on('click', function() {
-        window.location.hash = '#' + $("#load-image input").val();
-    });
 };
 
 App.prototype.init = function init() {
     var self = this;
+
+    // window global events
+    window.onbeforeunload = self.confirmExit.bind(self);
+    window.onhashchange = self.onHashChange.bind(self);
 
     // Set up views
     this.pageView  = new PageView({'el': "#file-correction",});
@@ -258,30 +262,6 @@ App.prototype.init = function init() {
         model.load(done);
     }, function(err) {
         if (err) return self.emit('app:ajaxError', err);
-
-        // TODO
-        // TODO
-        window.onbeforeunload = self.confirmExit.bind(self);
-        window.onhashchange = function onHashChange(e) {
-            e.preventDefault();
-            var newHash = window.location.hash;
-            console.log(e.oldURL);
-            if (!e.oldURL) {
-                console.info('HashChange (initial) -> ', newHash);
-            } else {
-                var oldHash = e.oldURL.substr(e.oldURL.indexOf('#'));
-                console.info('HashChange', oldHash, ' -> ', newHash);
-                if (oldHash === newHash) {
-                    return;
-                }
-                if (self.confirmExit()) {
-                    window.location.hash = '#' + self.currentPage.imageUrl;
-                    return;
-                }
-            }
-            if (newHash.length > 2)
-                self.loadPage(newHash.substr(1));
-        };
         self.settings.load();
         self.render();
         // Trigger hash change
@@ -465,7 +445,6 @@ Cheatsheet.prototype.load = function(cb) {
 function Line(opts) {
     for (key in opts) { this[key] = opts[key]; }
     this.changed = false;
-    this.selected = false;
 }
 
 Line.prototype.getTags = function getTags() {
@@ -523,21 +502,6 @@ PageView.prototype.sortRowsByLine = function sortRowsByLine(order) {
     );
 };
 
-PageView.prototype.changeSelection = function changeSelection(action, lines) {
-    lines = lines || this.lineViews;
-    for (var i = 0 ; i < lines.length; i++) {
-        var curLine = this.model.lines[i];
-        if (action === 'select') {
-            curLine.selected = true;
-        } else if (action === 'unselect' && isSelected) {
-            curLine.selected = false;
-        } else if (action === 'toggle') {
-            curLine.selected = !curLine.selected;
-        }
-    }
-};
-
-
 PageView.prototype.render = function() {
     this.$el.find('*').off().empty();
     // render lines
@@ -558,77 +522,81 @@ function LineView(opts) {
  * Update the color of the comment toggle button depending on whether line has
  * comments or not.
  */
-LineView.prototype.renderCommentToggler = function renderCommentToggler() {
+LineView.prototype.renderComment = function renderComment() {
+
+    // Comment toggler
+    var lineComment = this.$el.find('.line-comment');
+    var isVisible = lineComment.is(':visible');
     var hasComment = this.model.comment.length > 0;
-    var isVisible = this.$el.find('.line-comment').is(':visible');
     var $toggler = this.$el.find(".toggle-line-comment");
     $toggler.find(".show-line-comment").toggleClass('hidden', isVisible);
     $toggler.find(".hide-line-comment").toggleClass('hidden', !isVisible);
     $toggler.toggleClass('btn-default', !hasComment).toggleClass('btn-info', hasComment);
+
+    // Selectionmode
+    this.$el.find('.select-col').toggleClass('hidden', !window.app.selectMode);
+    this.$el.find('.button-col').toggleClass('hidden', window.app.selectMode);
+    this.$el.toggleClass('selected', this.selected);
+    this.$el.find(':checkbox').prop('checked', this.selected);
 };
 
-LineView.prototype.setSelected = function setSelected(selected) {
-    this.model.selected = selected;
-    this.renderSelected();
-};
+// LineView.prototype.setSelected = function setSelected(selected) {
+//     this.selected = selected;
+//     this.renderComment();
+// };
 
 LineView.prototype.onEnterSelectMode = function onEnterSelectMode() {
-    this.$el.find('.select-col').toggleClass('hidden', false);
-    this.$el.find('.button-col').toggleClass('hidden', true);
     var self = this;
-    this.$el.on('click', function() { self.setSelected(!self.model.selected); });
+    this.$el.on('click', function() {
+        self.selected = !self.selected;
+        self.renderComment();
+    });
+    self.renderComment();
 };
 
 LineView.prototype.onExitSelectMode = function onExitSelectMode() {
-    this.$el.find('.select-col').toggleClass('hidden', true);
-    this.$el.find('.button-col').toggleClass('hidden', false);
     this.$el.off('click');
+    this.renderComment();
 };
 
-LineView.prototype.renderSelected = function renderSelected() {
-    this.$el.toggleClass('selected', this.model.selected);
-    this.$el.find(':checkbox').prop('checked', this.model.selected);
+LineView.prototype.addTag = function addTag(tag) {
+    this.model.addTag(tag);
+    this.renderComment();
 };
 
 LineView.prototype.render = function() {
     var self = this;
-
+    console.log("Rendering", this.model.id);
     this.$el.off().find("*").off();
     // Build from template
     this.$el.html($(self.tpl(this.model)));
 
+    var lineComment = self.$el.find('.line-comment textarea');
+
     this.$el.find(".toggle-line-comment").on('click', function() {
         var commentField = self.$el.find('.line-comment');
         commentField.toggleClass('hidden', commentField.is(':visible')).removeClass('view-hidden');
-        self.renderCommentToggler();
+        self.renderComment();
     });
 
     // data binding
     this.$el.find("input,textarea").on('input', function(e) {
-        self.model.comment = self.$el.find('.line-comment textarea').val().trim();
+        self.model.comment = lineComment.val().trim();
         self.model.transcription = self.$el.find('.line-transcription input').val().trim();
-        self.renderCommentToggler();
-        Utils.fitHeight(this);
-        window.app.emit('app:changed');
+        // self.renderComment();
+        Utils.fitHeight(lineComment);
+        // console.log(self.selected);
+        // window.app.emit('app:changed');
     });
 
     // Add error tag on click
-    this.$el.find("*[data-tag]").on('click', function(e) {
-        var tag = $(this).attr('data-tag');
-        if (self.model.addTag(tag)) {
-            self.$el.removeClass('hidden');
-            self.$el.removeClass('hidden');
-            self.render();
-            window.app.emit('app:changed');
-        }
-    });
+    this.$el.find("*[data-tag]").on('click', this.addTag.bind(this));
 
-    // Adapt the textarea height
-    Utils.fitHeight(this.$el.find('textarea'));
-
-    // Highlight button w/ comments
-    window.app.once('app:loaded', this.renderCommentToggler.bind(this));
-    window.app.on('app:filter-view', this.renderCommentToggler.bind(this));
+    // this.renderComment();
+    Utils.fitHeight(lineComment);
+    window.app.once('app:loaded', function() { Utils.fitHeight(lineComment); });
+    window.app.once('app:loaded', this.renderComment.bind(this));
+    window.app.on('app:filter-view', this.renderComment.bind(this));
     window.app.on('app:enter-select-mode', this.onEnterSelectMode.bind(this));
     window.app.on('app:exit-select-mode', this.onExitSelectMode.bind(this));
 
@@ -651,29 +619,35 @@ function Dropzone(opts) {
 }
 Dropzone.prototype.render = function() {
     var self = this;
+
+    $("#load-image button").on('click', function() {
+        window.location.hash = '#' + $("#load-image input").val();
+    });
+
     window.app.on('app:loading', function hideDropzone() { self.$el.addClass('hidden'); });
+
 };
 function Toolbar(opts) {
     for (key in opts) { this[key] = opts[key]; }
     this.$el = $(this.el);
 }
 /**
- * Increase image zoom by UISettings.zoomInFactor
+ * Increase image zoom by Settings.zoomInFactor
  */
 Toolbar.prototype.zoomIn = function(e) {
     e.stopPropagation();
     $('#file-correction img').each(function() {
-        Utils.scaleHeight(this, UISettings.zoomInFactor);
+        Utils.scaleHeight(this, window.app.settings.zoomInFactor);
     });
 };
 
 /**
- * Decrease image zoom by UISettings.zoomOutFactor
+ * Decrease image zoom by Settings.zoomOutFactor
  */
 Toolbar.prototype.zoomOut = function zoomOut(e) {
     e.stopPropagation();
     $('#file-correction img').each(function() {
-        Utils.scaleHeight(this, UISettings.zoomOutFactor);
+        Utils.scaleHeight(this, window.app.settings.zoomOutFactor);
     });
 };
 
@@ -797,18 +771,30 @@ function Selectbar(opts) {
 }
 
 Selectbar.prototype.enter = function enter() {
+    this.selectLines('unselect');
     window.app.selectMode = true;
     this.$el.removeClass('hidden');
     window.app.emit('app:enter-select-mode');
 };
 
 Selectbar.prototype.exit = function exit() {
+    this.selectLines('unselect');
     window.app.selectMode = false;
     this.$el.addClass('hidden');
     window.app.emit('app:exit-select-mode');
 };
+
 Selectbar.prototype.toggle = function toggle() {
     this[window.app.selectMode ? 'exit' : 'enter']();
+};
+
+Selectbar.prototype.getSelection = function getSelection() {
+    var ret = [];
+    for (var i = 0; i < app.pageView.lineViews.length; i++) {
+        var lineView = app.pageView.lineViews[i];
+        if (lineView.selected) ret.push(lineView);
+    }
+    return ret;
 };
 
 Selectbar.prototype.selectLines = function selectLines(action, ids) {
@@ -822,7 +808,8 @@ Selectbar.prototype.selectLines = function selectLines(action, ids) {
     }
     for (var i = 0; i < ids.length; i++) {
         var lineView = app.pageView.lineViews[ids[i]];
-        lineView.setSelected(action === 'select' ? true : action === 'unselect' ? false : !lineView.model.selected);
+        lineView.selected = (action === 'select' ? true : action === 'unselect' ? false : !lineView.selected);
+        lineView.renderComment();
     }
 };
 
@@ -833,8 +820,16 @@ Selectbar.prototype.render = function renderSelectBar() {
     this.$el.find('.select-all').on('click', function selectAll() { self.selectLines('select'); });
     this.$el.find('.select-none').on('click',  function selectNone() { self.selectLines('unselect'); });
     this.$el.find('.select-toggle').on('click', function selectToggle() { self.selectLines('toggle'); });
+    this.$el.find('*[data-tag]').on('click', function addTagMultiple() {
+        var tag = $(this).attr('data-tag');
+        var selection = self.getSelection();
+        for (var i = 0; i < selection.length; i++) {
+            selection[i].addTag(tag);
+        }
+        window.app.emit('app:changed');
+    });
 
-    app.on('app:select-line', this.selectLines.bind(self));
+    // app.on('app:select-line', this.selectLines.bind(self));
     app.on('app:loading', function() { $(".toggle-select-mode").off('click'); });
     app.on('app:loaded', function() { $(".toggle-select-mode").on('click', self.toggle.bind(self)); });
 };

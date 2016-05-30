@@ -1,16 +1,3 @@
-// TODO
-
-function addMultiComment() {
-    var tag = '#' + $(this).attr('data-tag');
-    $('.selected .line-comment').each(function() {
-        addTagToElement($("div[contenteditable]", $(this)), tag);
-    });
-}
-
-/******************/
-/* Event handlers */
-/******************/
-
 function setupDragAndDrop() {
     // Prevent the default browser drop action
     $(document).bind('drop dragover', function(e) {
@@ -102,6 +89,27 @@ App.prototype.confirmExit = function confirmExit() {
     }
 };
 
+App.prototype.onHashChange = function onHashChange(e) {
+    e.preventDefault();
+    var newHash = window.location.hash;
+    console.log(e.oldURL);
+    if (!e.oldURL) {
+        console.info('HashChange (initial) -> ', newHash);
+    } else {
+        var oldHash = e.oldURL.substr(e.oldURL.indexOf('#'));
+        console.info('HashChange', oldHash, ' -> ', newHash);
+        if (oldHash === newHash) {
+            return;
+        }
+        if (this.confirmExit()) {
+            window.location.hash = '#' + this.currentPage.imageUrl;
+            return;
+        }
+    }
+    if (newHash.length > 2)
+        this.loadPage(newHash.substr(1));
+};
+
 App.prototype.showHistory = function() {
     var self = this;
     this.history.load(function(err) {
@@ -134,18 +142,14 @@ App.prototype.render = function() {
     this.on('app:loading', function hidePageView() { self.pageView.$el.addClass('hidden'); });
     this.on('app:loaded',  function showSidebar() { self.sidebar.$el.removeClass('hidden'); });
     this.on('app:loaded',  function showPageView() { self.pageView.$el.removeClass('hidden'); });
-
-    // Select Mode
-    $('.add-multi-comment').on('click', addMultiComment);
-
-    // TODO
-    $("#load-image button").on('click', function() {
-        window.location.hash = '#' + $("#load-image input").val();
-    });
 };
 
 App.prototype.init = function init() {
     var self = this;
+
+    // window global events
+    window.onbeforeunload = self.confirmExit.bind(self);
+    window.onhashchange = self.onHashChange.bind(self);
 
     // Set up views
     this.pageView  = new PageView({'el': "#file-correction",});
@@ -173,30 +177,6 @@ App.prototype.init = function init() {
         model.load(done);
     }, function(err) {
         if (err) return self.emit('app:ajaxError', err);
-
-        // TODO
-        // TODO
-        window.onbeforeunload = self.confirmExit.bind(self);
-        window.onhashchange = function onHashChange(e) {
-            e.preventDefault();
-            var newHash = window.location.hash;
-            console.log(e.oldURL);
-            if (!e.oldURL) {
-                console.info('HashChange (initial) -> ', newHash);
-            } else {
-                var oldHash = e.oldURL.substr(e.oldURL.indexOf('#'));
-                console.info('HashChange', oldHash, ' -> ', newHash);
-                if (oldHash === newHash) {
-                    return;
-                }
-                if (self.confirmExit()) {
-                    window.location.hash = '#' + self.currentPage.imageUrl;
-                    return;
-                }
-            }
-            if (newHash.length > 2)
-                self.loadPage(newHash.substr(1));
-        };
         self.settings.load();
         self.render();
         // Trigger hash change

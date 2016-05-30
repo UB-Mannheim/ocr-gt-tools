@@ -3,22 +3,22 @@ function Toolbar(opts) {
     this.$el = $(this.el);
 }
 /**
- * Increase image zoom by UISettings.zoomInFactor
+ * Increase image zoom by Settings.zoomInFactor
  */
 Toolbar.prototype.zoomIn = function(e) {
     e.stopPropagation();
     $('#file-correction img').each(function() {
-        Utils.scaleHeight(this, UISettings.zoomInFactor);
+        Utils.scaleHeight(this, window.app.settings.zoomInFactor);
     });
 };
 
 /**
- * Decrease image zoom by UISettings.zoomOutFactor
+ * Decrease image zoom by Settings.zoomOutFactor
  */
 Toolbar.prototype.zoomOut = function zoomOut(e) {
     e.stopPropagation();
     $('#file-correction img').each(function() {
-        Utils.scaleHeight(this, UISettings.zoomOutFactor);
+        Utils.scaleHeight(this, window.app.settings.zoomOutFactor);
     });
 };
 

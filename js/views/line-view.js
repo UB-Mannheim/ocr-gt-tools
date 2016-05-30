@@ -7,77 +7,81 @@ function LineView(opts) {
  * Update the color of the comment toggle button depending on whether line has
  * comments or not.
  */
-LineView.prototype.renderCommentToggler = function renderCommentToggler() {
+LineView.prototype.renderComment = function renderComment() {
+
+    // Comment toggler
+    var lineComment = this.$el.find('.line-comment');
+    var isVisible = lineComment.is(':visible');
     var hasComment = this.model.comment.length > 0;
-    var isVisible = this.$el.find('.line-comment').is(':visible');
     var $toggler = this.$el.find(".toggle-line-comment");
     $toggler.find(".show-line-comment").toggleClass('hidden', isVisible);
     $toggler.find(".hide-line-comment").toggleClass('hidden', !isVisible);
     $toggler.toggleClass('btn-default', !hasComment).toggleClass('btn-info', hasComment);
+
+    // Selectionmode
+    this.$el.find('.select-col').toggleClass('hidden', !window.app.selectMode);
+    this.$el.find('.button-col').toggleClass('hidden', window.app.selectMode);
+    this.$el.toggleClass('selected', this.selected);
+    this.$el.find(':checkbox').prop('checked', this.selected);
 };
 
-LineView.prototype.setSelected = function setSelected(selected) {
-    this.model.selected = selected;
-    this.renderSelected();
-};
+// LineView.prototype.setSelected = function setSelected(selected) {
+//     this.selected = selected;
+//     this.renderComment();
+// };
 
 LineView.prototype.onEnterSelectMode = function onEnterSelectMode() {
-    this.$el.find('.select-col').toggleClass('hidden', false);
-    this.$el.find('.button-col').toggleClass('hidden', true);
     var self = this;
-    this.$el.on('click', function() { self.setSelected(!self.model.selected); });
+    this.$el.on('click', function() {
+        self.selected = !self.selected;
+        self.renderComment();
+    });
+    self.renderComment();
 };
 
 LineView.prototype.onExitSelectMode = function onExitSelectMode() {
-    this.$el.find('.select-col').toggleClass('hidden', true);
-    this.$el.find('.button-col').toggleClass('hidden', false);
     this.$el.off('click');
+    this.renderComment();
 };
 
-LineView.prototype.renderSelected = function renderSelected() {
-    this.$el.toggleClass('selected', this.model.selected);
-    this.$el.find(':checkbox').prop('checked', this.model.selected);
+LineView.prototype.addTag = function addTag(tag) {
+    this.model.addTag(tag);
+    this.renderComment();
 };
 
 LineView.prototype.render = function() {
     var self = this;
-
+    console.log("Rendering", this.model.id);
     this.$el.off().find("*").off();
     // Build from template
     this.$el.html($(self.tpl(this.model)));
 
+    var lineComment = self.$el.find('.line-comment textarea');
+
     this.$el.find(".toggle-line-comment").on('click', function() {
         var commentField = self.$el.find('.line-comment');
         commentField.toggleClass('hidden', commentField.is(':visible')).removeClass('view-hidden');
-        self.renderCommentToggler();
+        self.renderComment();
     });
 
     // data binding
     this.$el.find("input,textarea").on('input', function(e) {
-        self.model.comment = self.$el.find('.line-comment textarea').val().trim();
+        self.model.comment = lineComment.val().trim();
         self.model.transcription = self.$el.find('.line-transcription input').val().trim();
-        self.renderCommentToggler();
-        Utils.fitHeight(this);
-        window.app.emit('app:changed');
+        // self.renderComment();
+        Utils.fitHeight(lineComment);
+        // console.log(self.selected);
+        // window.app.emit('app:changed');
     });
 
     // Add error tag on click
-    this.$el.find("*[data-tag]").on('click', function(e) {
-        var tag = $(this).attr('data-tag');
-        if (self.model.addTag(tag)) {
-            self.$el.removeClass('hidden');
-            self.$el.removeClass('hidden');
-            self.render();
-            window.app.emit('app:changed');
-        }
-    });
+    this.$el.find("*[data-tag]").on('click', this.addTag.bind(this));
 
-    // Adapt the textarea height
-    Utils.fitHeight(this.$el.find('textarea'));
-
-    // Highlight button w/ comments
-    window.app.once('app:loaded', this.renderCommentToggler.bind(this));
-    window.app.on('app:filter-view', this.renderCommentToggler.bind(this));
+    // this.renderComment();
+    Utils.fitHeight(lineComment);
+    window.app.once('app:loaded', function() { Utils.fitHeight(lineComment); });
+    window.app.once('app:loaded', this.renderComment.bind(this));
+    window.app.on('app:filter-view', this.renderComment.bind(this));
     window.app.on('app:enter-select-mode', this.onEnterSelectMode.bind(this));
     window.app.on('app:exit-select-mode', this.onExitSelectMode.bind(this));
 

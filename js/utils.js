@@ -75,7 +75,7 @@ Utils.compileTemplates = function compileTemplates() {
 /**
  * Shrink/expand a textarea to fit its contents
  */
-Utils.fitHeight = function expandTextarea(selector) {
+Utils.fitHeight = function fitHeight(selector) {
     $(selector).each(function() {
         $(this)
             .attr('rows', 1) // Must be one for single-line textareas
