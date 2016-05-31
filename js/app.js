@@ -35,7 +35,7 @@ function setupDragAndDrop() {
             } else {
                 var url = Utils.getUrlFromDragEvent(e);
                 if (url) {
-                    window.app.loadPage(url);
+                    window.location.hash = '#' + url;
                 } else {
                     notie.alert(3, "Konnte keine URL erkennen.");
                 }
