@@ -242,7 +242,7 @@ sub processCountAll {
                                 $cTempName =~ m/^line-(?<lineNumber>\d{3})\.png/;
                                 $imageNumber = $+{lineNumber};
                             }
-                            $imageName = 'line-' . $imageNumber . '.png';
+                            $imageName = 'line-0' . $imageNumber . '.png';
                             #print __LINE__ . " " . $imageName . "\n";
 
                             $nZeile++;
@@ -284,7 +284,7 @@ sub processCountAll {
                             }
 
                             if (!$config->{'lCreateNoFiles'}) {
-                                my $inputFileName = $aktPage->{'path'} . '/' . 'line-' . $imageNumber . '.txt';
+                                my $inputFileName = $aktPage->{'path'} . '/' . 'line-0' . $imageNumber . '.txt';
                                 open my $fh, '>:utf8', $inputFileName or die $!;
                                 print $fh $userInput;
                                 close $fh;
