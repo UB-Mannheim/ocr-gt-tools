@@ -97,24 +97,16 @@
 }
 #waiting-animation {
   position: fixed;
-  height: 50vh;
-  width: 70vh;
-  left: 25vw;
-  font-size: 150%;
-  text-align: center;
+  height: 100vh;
+  width: 100vw;
+  z-index: 10000;
 }
-#waiting-animation tr {
-  height: 34px;
-}
-#waiting-animation td {
+#waiting-animation a {
+  position: absolute;
   height: 32px;
   width: 32px;
 }
-#waiting-animation td a img {
-  height: 0;
-  display: none;
-}
-#waiting-animation td a:nth-child(1) img {
+#waiting-animation a img {
   height: 32px !important;
   max-width: 32px !important;
   display: block !important;
@@ -134,18 +126,24 @@
 .selected .panel {
   background: #f00;
 }
-div[contenteditable] {
+textarea,
+input[type='text'] {
   display: inline-block;
   white-space: pre-wrap;
+  border: none;
+  padding: 0;
   color: #000060;
   font-family: 'EB Garamond', serif;
   font-size: 20px;
   min-height: 24px;
   width: 100%;
   height: auto;
+  overflow: hidden;
+  resize: none;
 }
 .line-comment,
-#page-comment {
+.line-comment *,
+#page-comment textarea {
   background-color: #ffffe0;
   font-family: 'EB Garamond', serif;
   font-size: 20px;
@@ -159,6 +157,25 @@ div[contenteditable] {
 }
 #file-correction .panel-heading h4 {
   padding-top: 7.5px;
+}
+#file-correction .col-sm-1 {
+  width: 10%;
+  padding-left: 0;
+  padding-right: 0;
+}
+#file-correction .col-sm-1 .btn-group > .btn {
+  padding: 0;
+  width: 35px;
+}
+#file-correction .col-sm-1 .btn {
+  text-align: left;
+}
+#file-correction .col-sm-1 .btn i {
+  padding: 5px;
+}
+#file-correction .col-sm-11 {
+  width: 88%;
+  padding-left: 0;
 }
 #right-sidebar {
   position: fixed;
@@ -232,17 +249,6 @@ div[contenteditable] {
   height: 23px;
   padding: 0;
   margin: 4px 0 0 0;
-}
-.button-col {
-  padding-left: 0;
-  padding-right: 0;
-}
-.button-col .btn {
-  padding: 0;
-  text-align: left;
-}
-.button-col .btn i {
-  padding: 5px;
 }
 #work-info {
   overflow-y: scroll;

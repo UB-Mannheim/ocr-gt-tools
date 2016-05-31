@@ -1,16 +1,15 @@
 defaults:
-  path-prefix:         '<OCR_GT_BASEDIR>/example'
-  correction-root:     '/ocr-corrections'
-  images-root:         '/fileadmin'
-  correction-filename: 'correction.html'
-  comments-filename:   'anmerkungen.txt'
-  debuglog:            '/tmp/ocr-gt.log'
-  hostname:            'http://localhost:9090'
-  url_prefix:          'http://localhost:9090'
+  path-prefix:           '<OCR_GT_BASEDIR>/example'
+  correction-root:       '/ocr-corrections'
+  images-root:           '/fileadmin'
+  debuglog:              '/tmp/ocr-gt.log'
+  hostname:              'http://localhost:9090'
+  url_prefix:            'http://localhost:9090'
+  page-comment-filename: 'comment-page.txt'
 
 logging:
   logdir: '<OCR_GT_BASEDIR>/log'
-  stderr: false
+  stderr: true
 
 pattern:
   - |
@@ -42,17 +41,14 @@ template:
   url:
     thumb-url:      '<hostname><images-root>/<collection>/<work>/thumbs/<work>_<page>.jpg'
     hires-url:      '<hostname><images-root>/<collection>/<work>/max/<work>_<page>.jpg'
-    alto-url:       '<hostname><images-root>/<collection>/<work>/alto/<work>_<page>.alto'
-    correction-url: '<url_prefix><correction-root>/<collection>/<work>/gt/<page>/<correction-filename>'
-    comment-url:    '<url_prefix><correction-root>/<collection>/<work>/gt/<page>/<comments-filename>'
+    hocr-url:       '<hostname><images-root>/<collection>/<work>/hocr/<work>_<page>.hocr'
+    line-image-url: '<url_prefix><correction-root>/<collection>/<work>/gt/<page>/line-%04d.png'
     landing-page-url: 'http://digi.bib.uni-mannheim.de/en/suchergebnis/?tx_dlf[query]=<work>'
   path:
-    correction-dir:        '<path-prefix><correction-root>/<collection>/<work>/gt/<page>'
-    correction-file:       '<path-prefix><correction-root>/<collection>/<work>/gt/<page>/<correction-filename>'
-    comment-file:          '<path-prefix><correction-root>/<collection>/<work>/gt/<page>/<comments-filename>'
-    hocr-file:             '<path-prefix><images-root>/<collection>/<work>/hocr/<work>_<page>.hocr'
-    hires-dir:             '<path-prefix><images-root>/<collection>/<work>/max'
-    hires-file:            '<path-prefix><images-root>/<collection>/<work>/max/<work>_<page>.jpg'
+    correction-dir:  '<path-prefix><correction-root>/<collection>/<work>/gt/<page>'
+    hocr-file:       '<path-prefix><images-root>/<collection>/<work>/hocr/<work>_<page>.hocr'
+    hires-dir:       '<path-prefix><images-root>/<collection>/<work>/max'
+    hires-file:      '<path-prefix><images-root>/<collection>/<work>/max/<work>_<page>.jpg'
   command:
     find-corrections-for-work:
       - 'find'
@@ -60,10 +56,10 @@ template:
       - '-type'
       - 'f'
       - '-name'
-      - '<correction-filename>'
-    build-correction-html:
+      - '<page-comment-filename>'
+    extract-images:
       - '<OCR_GT_BASEDIR>/ocropus-gtedit-wrapper.sh'
       - '<hocr-file>'
       - '<hires-dir>'
-      - '<correction-file>'
-      - '<comment-file>'
+      - '<correction-dir>'
+      - '<page-comment-filename>'

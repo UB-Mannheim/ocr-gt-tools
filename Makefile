@@ -47,11 +47,14 @@ CSS_FILES   = bower_components/reset-css/reset.css \
               bower_components/font-awesome/css/font-awesome.css
 # JS scripts to bundle into one minified `dist/vendor.js`
 # NOTE: Javascript developed by us should not be bundled here
-JS_FILES    = bower_components/jquery/dist/jquery.js \
-              bower_components/bootstrap/dist/js/bootstrap.js \
-              bower_components/handlebars/handlebars.min.js \
-			  bower_components/clipboard/dist/clipboard.js \
-              bower_components/notie/dist/notie.js
+VENDOR_JS_FILES  = bower_components/jquery/dist/jquery.js \
+				   bower_components/async/dist/async.min.js \
+				   bower_components/bootstrap/dist/js/bootstrap.js \
+				   bower_components/handlebars/handlebars.min.js \
+				   bower_components/clipboard/dist/clipboard.js \
+				   bower_components/notie/dist/notie.js
+		   
+JS_FILES = js/*.js js/**/*.js ocr-gt-tools.js ocr-gt-tools.js
 # The HTML files, described in the Jade shorthand / templating language
 JADE_FILES  = ocr-gt-tools.jade
 
@@ -107,7 +110,6 @@ dist: \
 	dist/ocr-gt-tools.css\
 	dist/ocr-gt-tools.cgi
 
-
 dist/%.json: doc/%.json
 	$(CP) $< $@
 
@@ -118,12 +120,9 @@ dist/ocr-gt-tools.cgi: ocr-gt-tools.cgi
 	$(CP) $< $@
 	chmod a+x $@
 
-dist/ocr-gt-tools.js:\
-	js/utils.js\
-	js/animation.js\
-	js/views/cheatsheet-view.js\
-	ocr-gt-tools.js
-	$(UGLIFYJS) --compress --output $@ $^
+#$(UGLIFYJS) --compress --output $@ $^
+dist/ocr-gt-tools.js: $(JS_FILES)
+	cat $^ > $@
 
 dist/ocr-gt-tools.css: ocr-gt-tools.styl
 	$(STYLUS) < $< > $@
@@ -143,7 +142,7 @@ dist/vendor.css: ${CSS_FILES} dist/fonts.css
 	$(CLEANCSS) --skip-rebase --output $@ dist/temp.css
 	$(RM) dist/temp.css
 
-dist/vendor.js: ${JS_FILES}
+dist/vendor.js: ${VENDOR_JS_FILES}
 	$(UGLIFYJS) --output $@ \
 		--prefix 1 \
 		--source-map $@.map \

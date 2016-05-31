@@ -89,25 +89,17 @@ paperColor = #b9af96
 
 #waiting-animation
 	position: fixed
-	height: 50vh
-	width: 70vh
-	left: 25vw
-	font-size 150%
-	text-align center
-	tr
-		height: 34px
-	td
+	height: 100vh
+	width: 100vw
+	z-index: 10000
+	a
+		position: absolute
 		height: 32px
 		width: 32px
-		a
-			img
-				height: 0
-				display: none
-		a:nth-child(1)
-			img
-				height: 32px !important
-				max-width: 32px !important
-				display: block !important
+		img
+			height: 32px !important
+			max-width: 32px !important
+			display: block !important
 
 .hidden
 	display none
@@ -122,19 +114,24 @@ paperColor = #b9af96
 	.panel
 		background: selectedColor
 
-div[contenteditable],
-div[contenteditable]
+textarea
+input[type='text']
 	display inline-block
 	white-space pre-wrap
+	border none
+	padding 0
 	color #000060
 	font-family 'EB Garamond', serif
 	font-size 20px
 	min-height 24px
 	width 100%
+	// Important to make textareas auto-expand
 	height auto
+	overflow hidden
+	resize none
 
-.line-comment,
-#page-comment
+.line-comment, .line-comment *,
+#page-comment textarea
 	background-color lightyellow
 	font-family 'EB Garamond', serif
 	font-size 20px
@@ -147,6 +144,21 @@ div[contenteditable]
 		padding 0
 		h4
 			padding-top 7.5px
+	.col-sm-1
+		width:10%
+		padding-left 0
+		padding-right 0
+		.btn-group > .btn
+			padding: 0
+			width: 35px
+		.btn
+			text-align left
+			i
+				padding: 5px;
+	.col-sm-11
+		width: 88%
+		padding-left: 0
+
 
 #right-sidebar
 	position fixed
@@ -214,14 +226,6 @@ div[contenteditable]
 		margin: 4px 0 0 0
 		// padding-top 32px
 
-.button-col
-	padding-left 0
-	padding-right 0
-	.btn
-		padding:0
-		text-align left
-		i
-			padding: 5px;
 
 #work-info
 	overflow-y: scroll
