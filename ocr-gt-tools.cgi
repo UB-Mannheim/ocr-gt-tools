@@ -143,13 +143,6 @@ sub httpJSON
     }
     my $json = JSON->new->utf8->pretty(1)->encode($obj);
     print $cgi->header( -type => 'application/json', -charset => 'utf-8');
-    # debug(Dump($obj));
-    # TODO XXX TODO
-    # TODO XXX TODO
-    sleep 1;
-    # TODO XXX TODO
-    # TODO XXX TODO
-    # TODO XXX TODO
     print $json;
 }
 
