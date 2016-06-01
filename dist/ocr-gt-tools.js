@@ -300,6 +300,69 @@ App.prototype.loadPage = function loadPage(url) {
     });
 };
 
+function Page(urlOrOpts) {
+    var self = this;
+    self.lines = [];
+    if (typeof urlOrOpts === 'string') {
+        self.imageUrl = urlOrOpts;
+    } else {
+        self.imageUrl = urlOrOpts.imageUrl;
+        for (key in urlOrOpts) { self[key] = urlOrOpts[key]; }
+    }
+    self.changed = false;
+    window.app.on('app:changed', function setChanged() { self.changed = true; });
+    window.app.on('app:saved', function setUnChanged() { self.changed = false; });
+}
+
+Page.prototype.toJSON = function() {
+    var ret = {
+        'line-comments': [],
+        'line-transcriptions': [],
+        'page-comment': this['page-comment'],
+        'ids': this.ids,
+        'url': this.url,
+    };
+    for (var i = 0; i < this.lines.length ; i++) {
+        ret['line-comments'][i] = this.lines[i].comment.trim();
+        ret['line-transcriptions'][i] = this.lines[i].transcription.trim();
+    }
+    return ret;
+};
+
+Page.prototype.save = function savePage(cb) {
+    $.ajax({
+        type: 'POST',
+        url: 'ocr-gt-tools.cgi?action=save',
+        contentType: 'application/json; charset=UTF-8',
+        data: JSON.stringify(this.toJSON()),
+        success: function() { cb(); },
+        error: cb
+    });
+};
+
+Page.prototype.load = function(cb) {
+    var self = this;
+    $.ajax({
+        type: 'GET',
+        url: 'ocr-gt-tools.cgi?action=get&imageUrl=' + this.imageUrl,
+        error: cb,
+        success: function(res) {
+            for (key in res) { self[key] = res[key]; }
+            // Sort 'pages'
+            self.pages = self.pages.sort(function(a, b) { return parseInt(a.ids.page) - parseInt(b.ids.page); });
+            // Create line models
+            for (var i = 0; i < self['line-transcriptions'].length; i++)  {
+                self.lines.push(new Line({
+                    id: i,
+                    transcription: self['line-transcriptions'][i],
+                    comment: self['line-comments'][i],
+                    image: self['line-images'][i],
+                }));
+            }
+            cb();
+        },
+    });
+};
 function History() { }
 History.prototype.url = 'ocr-gt-tools.cgi?action=history&mine=true';
 History.prototype.load = function(cb) {
@@ -404,69 +467,6 @@ Line.prototype.addTag = function addTag(tag, desc) {
     }
     this.comment = (this.comment.trim() + "\n" + tag.trim() + " " + desc.trim()).trim();
     return true;
-};
-function Page(urlOrOpts) {
-    var self = this;
-    self.lines = [];
-    if (typeof urlOrOpts === 'string') {
-        self.imageUrl = urlOrOpts;
-    } else {
-        self.imageUrl = urlOrOpts.imageUrl;
-        for (key in urlOrOpts) { self[key] = urlOrOpts[key]; }
-    }
-    self.changed = false;
-    window.app.on('app:changed', function setChanged() { self.changed = true; });
-    window.app.on('app:saved', function setUnChanged() { self.changed = false; });
-}
-
-Page.prototype.toJSON = function() {
-    var ret = {
-        'line-comments': [],
-        'line-transcriptions': [],
-        'page-comment': this['page-comment'],
-        'ids': this.ids,
-        'url': this.url,
-    };
-    for (var i = 0; i < this.lines.length ; i++) {
-        ret['line-comments'][i] = this.lines[i].comment.trim();
-        ret['line-transcriptions'][i] = this.lines[i].transcription.trim();
-    }
-    return ret;
-};
-
-Page.prototype.save = function savePage(cb) {
-    $.ajax({
-        type: 'POST',
-        url: 'ocr-gt-tools.cgi?action=save',
-        contentType: 'application/json; charset=UTF-8',
-        data: JSON.stringify(this.toJSON()),
-        success: function() { cb(); },
-        error: cb
-    });
-};
-
-Page.prototype.load = function(cb) {
-    var self = this;
-    $.ajax({
-        type: 'GET',
-        url: 'ocr-gt-tools.cgi?action=get&imageUrl=' + this.imageUrl,
-        error: cb,
-        success: function(res) {
-            for (key in res) { self[key] = res[key]; }
-            // Sort 'pages'
-            self.pages = self.pages.sort(function(a, b) { return parseInt(a.ids.page) - parseInt(b.ids.page); });
-            // Create line models
-            for (var i = 0; i < self['line-transcriptions'].length; i++)  {
-                self.lines.push(new Line({
-                    id: i,
-                    transcription: self['line-transcriptions'][i],
-                    comment: self['line-comments'][i],
-                    image: self['line-images'][i],
-                }));
-            }
-            cb();
-        },
-    });
 };
 function PageView(opts) {
     for (var key in opts) { this[key] = opts[key]; }
@@ -624,43 +624,6 @@ HistoryView.prototype.render = function() {
     }
 };
 
-function CheatsheetView(opts) {
-    for (key in opts) { this[key] = opts[key]; }
-    this.$el = $(this.el);
-    // Setup clipboard
-    new Clipboard('.code');
-}
-
-CheatsheetView.prototype.applyFilter = function applyFilter() {
-    var self = this;
-    $.each(self.model.items, function(id, desc) {
-        if (self.filter &&
-            self.filter !== "" &&
-            desc.baseLetter.indexOf(self.filter) === -1 &&
-            desc.baseLetter.indexOf(self.filter.toLowerCase()) === -1) {
-            $("#cheatsheet-" + desc.id).addClass('hidden');
-        } else {
-            $("#cheatsheet-" + desc.id).removeClass('hidden');
-        }
-    });
-};
-
-CheatsheetView.prototype.render = function render() {
-    var self = this;
-    self.$el.find(".cheatsheet").empty();
-    $.each(self.model.items, function(idx, model) {
-        self.$el.find('.cheatsheet').append(self.tpl(model));
-    });
-    self.$el.find('button').on('click', function() {
-        notie.alert(1, "In Zwischenablage kopiert: '" + $(this).attr('data-clipboard-text') + "'", 1);
-    });
-    self.$el.find('input[type="text"]').on('keydown', function(e) {
-        self.filter = (e.keyCode < 32 || e.ctrlKey || e.altKey) ?  null : String.fromCharCode(e.keyCode);
-        self.applyFilter();
-        $(this).val('');
-    });
-    return self;
-};
 function Dropzone(opts) {
     for (var key in opts) { this[key] = opts[key]; }
     this.$el = $(this.el);
@@ -776,6 +739,49 @@ Sidebar.prototype.render = function renderSidebar() {
         window.app.emit('app:changed');
     });
 };
+function WaitingAnimation(opts) {
+    for (key in opts) { this[key] = opts[key]; }
+    this.$el = $(this.el);
+}
+WaitingAnimation.prototype.render = function() {
+    window.app.on('app:loading', this.start.bind(this));
+    window.app.on('app:loaded', this.stop.bind(this));
+    window.app.on('app:ajaxError', this.stop.bind(this));
+    this.glyphs = [];
+    for (var i = 0; i <  this.model.items.length; i++) {
+        for (var j = 0 ; j < this.model.items[i].sample.length; j++) {
+            this.glyphs.push(this.model.items[i].sample[j]);
+        }
+    }
+};
+
+WaitingAnimation.prototype.stop = function stopWaitingAnimation() {
+    this.$el.addClass('hidden');
+    this.$el.empty();
+    clearInterval(this.animationId);
+    clearTimeout(this.timeoutId);
+};
+
+WaitingAnimation.prototype.start = function startWaitingAnimation() {
+    var self = this;
+    this.$el.removeClass('hidden');
+    this.animationId = setInterval(function() {
+        perRound = window.app.settings.animationsPerRound;
+        while (perRound-- > 0) {
+            $(self.glyphs[parseInt(Math.random() * self.glyphs.length)])
+                .css('top', parseInt(Math.random() * 100) + "vh")
+                .css('left', parseInt(Math.random() * 100) + "vw")
+                .appendTo(self.$el) ;
+        }
+    }, window.app.settings.animationInterval);
+    this.timeoutId = setTimeout(function timeoutAnimation() {
+        console.error("Animation ran too long, stopping it");
+        notie.alert(3, "Loading took more than " +
+                    (window.app.settings.animationTimeout / 1000) +
+                    " seconds. Please see the console for possible errors");
+        clearInterval(self.animationId);
+    }, window.app.settings.animationTimeout);
+};
 function Selectbar(opts) {
     for (var key in opts) { this[key] = opts[key]; }
     this.$el = $(this.el);
@@ -851,48 +857,42 @@ Selectbar.prototype.render = function renderSelectBar() {
     app.on('app:loading', function() { $(".toggle-select-mode").off('click', toggleBound); });
     app.on('app:loaded', function() { $(".toggle-select-mode").on('click', toggleBound); });
 };
-function WaitingAnimation(opts) {
+function CheatsheetView(opts) {
     for (key in opts) { this[key] = opts[key]; }
     this.$el = $(this.el);
+    // Setup clipboard
+    new Clipboard('.code');
 }
-WaitingAnimation.prototype.render = function() {
-    window.app.on('app:loading', this.start.bind(this));
-    window.app.on('app:loaded', this.stop.bind(this));
-    window.app.on('app:ajaxError', this.stop.bind(this));
-    this.glyphs = [];
-    for (var i = 0; i <  this.model.items.length; i++) {
-        for (var j = 0 ; j < this.model.items[i].sample.length; j++) {
-            this.glyphs.push(this.model.items[i].sample[j]);
-        }
-    }
-};
 
-WaitingAnimation.prototype.stop = function stopWaitingAnimation() {
-    this.$el.addClass('hidden');
-    this.$el.empty();
-    clearInterval(this.animationId);
-    clearTimeout(this.timeoutId);
-};
-
-WaitingAnimation.prototype.start = function startWaitingAnimation() {
+CheatsheetView.prototype.applyFilter = function applyFilter() {
     var self = this;
-    this.$el.removeClass('hidden');
-    this.animationId = setInterval(function() {
-        perRound = window.app.settings.animationsPerRound;
-        while (perRound-- > 0) {
-            $(self.glyphs[parseInt(Math.random() * self.glyphs.length)])
-                .css('top', parseInt(Math.random() * 100) + "vh")
-                .css('left', parseInt(Math.random() * 100) + "vw")
-                .appendTo(self.$el) ;
+    $.each(self.model.items, function(id, desc) {
+        if (self.filter &&
+            self.filter !== "" &&
+            desc.baseLetter.indexOf(self.filter) === -1 &&
+            desc.baseLetter.indexOf(self.filter.toLowerCase()) === -1) {
+            $("#cheatsheet-" + desc.id).addClass('hidden');
+        } else {
+            $("#cheatsheet-" + desc.id).removeClass('hidden');
         }
-    }, window.app.settings.animationInterval);
-    this.timeoutId = setTimeout(function timeoutAnimation() {
-        console.error("Animation ran too long, stopping it");
-        notie.alert(3, "Loading took more than " +
-                    (window.app.settings.animationTimeout / 1000) +
-                    " seconds. Please see the console for possible errors");
-        clearInterval(self.animationId);
-    }, window.app.settings.animationTimeout);
+    });
+};
+
+CheatsheetView.prototype.render = function render() {
+    var self = this;
+    self.$el.find(".cheatsheet").empty();
+    $.each(self.model.items, function(idx, model) {
+        self.$el.find('.cheatsheet').append(self.tpl(model));
+    });
+    self.$el.find('button').on('click', function() {
+        notie.alert(1, "In Zwischenablage kopiert: '" + $(this).attr('data-clipboard-text') + "'", 1);
+    });
+    self.$el.find('input[type="text"]').on('keydown', function(e) {
+        self.filter = (e.keyCode < 32 || e.ctrlKey || e.altKey) ?  null : String.fromCharCode(e.keyCode);
+        self.applyFilter();
+        $(this).val('');
+    });
+    return self;
 };
 // Name: ocr-gt-tools.js
 
