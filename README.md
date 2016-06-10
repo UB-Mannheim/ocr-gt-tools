@@ -58,9 +58,9 @@ The frontend is written in HTML and Javascript.
 ## Usage
 
 - Open 'ocr-gt-tools/index.html' with a browser
-- open in a second Window 'Page Previews' from Goobi
+- open in a second Window 'Page Previews' from Kitodo
 - Search the book from which you created the hOCR file
-- Drag and drop a image from the Goobi 'Page Preview' Window to the Window with 'ocr-gt-tools/index.html'
+- Drag and drop a image from the Kitodo 'Page Preview' Window to the Window with 'ocr-gt-tools/index.html'
 - The perl script ocr-gt-tools.cgi will create in the background all files, which takes a few seconds
 - with ajax a json objects will be returned to index.html
 - index.html will load with ajax the created 'correction.html' and 'anmerkungen.txt' inline
