@@ -29,3 +29,4 @@ RUN make -f apache.mk \
     APACHE_USER="daemon" \
     APACHE_GROUP="www-data" \
     deploy
+ADD doc/ocr-gt-tools.docker.yml htdocs/ocr-gt/ocr-gt-tools.yml

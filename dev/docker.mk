@@ -1,6 +1,6 @@
 .PHONY: docker docker-run docker-run-bash
 
-DOCKER_IMAGE = 'ocr-gt-tools'
+DOCKER_IMAGE = ocr-gt-tools
 DOCKER_PORT = 12345
 MOUNT_DIR = $(PWD)/dist/example
 CONFIG_FILE = $(PWD)/doc/ocr-gt-tools.docker.yml
@@ -9,7 +9,7 @@ CONFIG_FILE = $(PWD)/doc/ocr-gt-tools.docker.yml
 # Docker related
 #
 docker:
-	docker build -t $(DOCKER_IMAGE) .
+	docker build -t kbai/$(DOCKER_IMAGE) .
 
 docker-run: docker
 	@echo Running on http://localhost:$(DOCKER_PORT)/ocr-gt/

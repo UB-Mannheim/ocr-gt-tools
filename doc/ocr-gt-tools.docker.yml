@@ -2,8 +2,8 @@ defaults:
   path-prefix:         '/data'
   correction-root:     '/ocr-corrections'
   images-root:         '/fileadmin'
-  hostname:            'http://localhost:12345'
-  url_prefix:          'http://localhost:12345'
+  hostname:            'http://localhost:8888'
+  url_prefix:          'http://localhost:8888'
 
 logging:
   stderr: true
