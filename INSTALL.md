@@ -35,6 +35,8 @@ Install Debian packagess (for other distros, YMMV).
 make apt-get
 ```
 
+(See `dev/debian.mk`)
+
 Install current Git revisions of hocr-tools and ocropus:
 
 ```
@@ -43,10 +45,10 @@ make dist/vendor
 
 ## Create configuration
 
-Copy the configuration template and edit as needed:
+Copy the default configuration and shorten/edit as needed:
 
 ```
-cp dist/ocr-gt-tools.dev.yml dist/ocr-gt-tools.yml
+cp dist/ocr-gt-tools.default.yml dist/ocr-gt-tools.yml
 ```
 
 ## Deploy on a server
@@ -65,6 +67,8 @@ sudo a2enmod cgi
 make deploy
 ```
 
+(See `dev/apache.mk`)
+
 This will recreate out-of-date files in `./dist`, create a folder
 `$APACHE_BASEURL` in `$APACHE_DIR` and copy all the files from `./dist` to
 `$APACHE_DIR/$APACHE_BASEURL` using `sudo` with user `$APACHE_USER`.
@@ -79,11 +83,11 @@ make APACHE_USER=www-default APACHE_DIR=/var/www/html APACHE_BASEURL=ocr-gt-tool
   `$APACHE_DIR/$APACHE_BASEURL` folder:
 
 ```
-sudo $EDITOR /etc/apache2/sites-available/000-default.conf
-#    <Directory "/var/www/html/ocr-gt-tools">
-#        Options +ExecCGI
-#        AddHandler cgi-script .cgi
-#    </Directory>
+$ sudo $EDITOR /etc/apache2/sites-available/000-default.conf
+    <Directory "/var/www/html/ocr-gt-tools">
+        Options +ExecCGI
+        AddHandler cgi-script .cgi
+    </Directory>
 ```
 
 * Copy the configuration:
