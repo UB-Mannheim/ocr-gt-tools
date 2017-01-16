@@ -90,10 +90,10 @@ $ sudo $EDITOR /etc/apache2/sites-available/000-default.conf
     </Directory>
 ```
 
-* Copy the configuration:
+* Copy the configuration (unless [already configured](#create-configuration):
 
 ```
-sudo -u www-data cp dist/ocr-gt-tools.dev.yml $APACHE_DIR/$APACHE_BASEURL/ocr-gt-tools.yml
+sudo -u www-data cp dist/ocr-gt-tools.default.yml $APACHE_DIR/$APACHE_BASEURL/ocr-gt-tools.yml
 # "sudo $EDITOR $APACHE_DIR/$APACHE_BASEURL/ocr-gt-tools.yml" as needed
 ```
 
