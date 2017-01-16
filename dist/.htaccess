@@ -1,4 +1,4 @@
-<Files ~ ".*(log|ini)$">
+<Files ~ ".*(log|ini|yml)$">
   Order allow,deny
   Deny from all
 </Files>
