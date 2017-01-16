@@ -123,7 +123,7 @@ make dev-server
 
 ### Testing the server
 
-Navigate to [http://localhost:9090/dist/index.html](http://localhost:9090/index.html).
+Navigate to [http://localhost:9090/index.html](http://localhost:9090/index.html).
 
 Drop a file, such as [this thumbnail](http://digi.bib.uni-mannheim.de/fileadmin/digi/445442158/thumbs/445442158_0126.jpg) onto the document.
 
