@@ -15,6 +15,8 @@ include \
 MKDIR = mkdir -p
 RM    = rm -rf
 CP    = cp -r
+GIT_CLONE = git clone --depth 1
+
 # cURL to download files
 CURL          = curl -s
 # clean-css is a CSS minifier and optimizer
