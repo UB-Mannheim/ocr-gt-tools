@@ -40,7 +40,7 @@ make apt-get
 Install current Git revisions of hocr-tools and ocropus:
 
 ```
-make dist/vendor
+make vendor
 ```
 
 ## Create configuration
@@ -73,10 +73,10 @@ This will recreate out-of-date files in `./dist`, create a folder
 `$APACHE_BASEURL` in `$APACHE_DIR` and copy all the files from `./dist` to
 `$APACHE_DIR/$APACHE_BASEURL` using `sudo` with user `$APACHE_USER`.
 
-Deployment can be customized with three environment variables, the default is:
+Deployment can be customized with four environment variables, the default is:
 
 ```
-make APACHE_USER=www-default APACHE_DIR=/var/www/html APACHE_BASEURL=ocr-gt-tools deploy
+make APACHE_USER=www-data APACHE_GROUP=www-data APACHE_DIR=/var/www/html APACHE_BASEURL=ocr-gt deploy
 ```
 
 * Make sure scripts ending in `.cgi` are executable in the
@@ -84,7 +84,7 @@ make APACHE_USER=www-default APACHE_DIR=/var/www/html APACHE_BASEURL=ocr-gt-tool
 
 ```
 $ sudo $EDITOR /etc/apache2/sites-available/000-default.conf
-    <Directory "/var/www/html/ocr-gt-tools">
+    <Directory "/var/www/html/ocr-gt">
         Options +ExecCGI
         AddHandler cgi-script .cgi
     </Directory>
@@ -103,7 +103,7 @@ sudo -u www-data cp dist/ocr-gt-tools.default.yml $APACHE_DIR/$APACHE_BASEURL/oc
 sudo systemctl restart apache2
 ```
 
-The web application will be available under [http://localhost/ocr-gt-tools](http://localhost/ocr-gt-tools).
+The web application will be available under [http://localhost/ocr-gt](http://localhost/ocr-gt).
 
 ### Docker
 
@@ -183,3 +183,5 @@ The scripts used the following perl modules. You can download them from cpan.
 
 ### Log-Files / Error-Log-Files
 Infos from perlscript ocr-gt-tools.cgi are stored in log/ocr-gt-tools.log
+
+Debug log can be written on stderr or in log/ocr-gt-tools.log, default is stderr. If you wish to become debug log in log/ocr-gt-tools.log, please edit ocr-gt-tools.yml and set logging:stderr to false.
