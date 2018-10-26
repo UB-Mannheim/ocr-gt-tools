@@ -1,5 +1,5 @@
 function WaitingAnimation(opts) {
-    for (key in opts) { this[key] = opts[key]; }
+    for (var key in opts) { this[key] = opts[key]; }
     this.$el = $(this.el);
 }
 WaitingAnimation.prototype.render = function() {
@@ -25,7 +25,7 @@ WaitingAnimation.prototype.start = function startWaitingAnimation() {
     var self = this;
     this.$el.removeClass('hidden');
     this.animationId = setInterval(function() {
-        perRound = window.app.settings.animationsPerRound;
+        var perRound = window.app.settings.animationsPerRound;
         while (perRound-- > 0) {
             $(self.glyphs[parseInt(Math.random() * self.glyphs.length)])
                 .css('top', parseInt(Math.random() * 100) + "vh")

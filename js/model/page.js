@@ -5,7 +5,7 @@ function Page(urlOrOpts) {
         self.imageUrl = urlOrOpts;
     } else {
         self.imageUrl = urlOrOpts.imageUrl;
-        for (key in urlOrOpts) { self[key] = urlOrOpts[key]; }
+        for (var key in urlOrOpts) { self[key] = urlOrOpts[key]; }
     }
     self.changed = false;
     window.app.on('app:changed', function setChanged() { self.changed = true; });
@@ -45,7 +45,7 @@ Page.prototype.load = function(cb) {
         url: 'ocr-gt-tools.cgi?action=get&imageUrl=' + this.imageUrl,
         error: cb,
         success: function(res) {
-            for (key in res) { self[key] = res[key]; }
+            for (var key in res) { self[key] = res[key]; }
             // Sort 'pages'
             self.pages = self.pages.sort(function(a, b) { return parseInt(a.ids.page) - parseInt(b.ids.page); });
             // Create line models

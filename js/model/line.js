@@ -1,5 +1,5 @@
 function Line(opts) {
-    for (key in opts) { this[key] = opts[key]; }
+    for (let key in opts) { this[key] = opts[key]; }
     this.changed = false;
 }
 
