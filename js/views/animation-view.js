@@ -1,5 +1,5 @@
 function WaitingAnimation(opts) {
-    for (var key in opts) { this[key] = opts[key]; }
+    for (let key in opts) { this[key] = opts[key]; }
     this.$el = $(this.el);
 }
 WaitingAnimation.prototype.render = function() {
@@ -7,8 +7,8 @@ WaitingAnimation.prototype.render = function() {
     window.app.on('app:loaded', this.stop.bind(this));
     window.app.on('app:ajaxError', this.stop.bind(this));
     this.glyphs = [];
-    for (var i = 0; i <  this.model.items.length; i++) {
-        for (var j = 0 ; j < this.model.items[i].sample.length; j++) {
+    for (let i = 0; i <  this.model.items.length; i++) {
+        for (let j = 0 ; j < this.model.items[i].sample.length; j++) {
             this.glyphs.push(this.model.items[i].sample[j]);
         }
     }

@@ -203,13 +203,13 @@ function scrapeJsonFromWikiPage(schema) {
     var parsed = {};
     var validator = new ZSchema();
     var h2s = $(".markdown-body h2").get();
-    for (var i = 0; i < h2s.length; i++) {
+    for (let i = 0; i < h2s.length; i++) {
         var $h2 = $(h2s[i]);
         var thingDesc = {};
         var thingId = $h2.text().trim();
         parsed[thingId] = thingDesc;
         var lis = $h2.next('ul').find('li').get();
-        for (var j = 0; j < lis.length; j++) {
+        for (let j = 0; j < lis.length; j++) {
             var liHtml = $(lis[j]).html();
             var colonIndex = liHtml.indexOf(':');
             var varName = liHtml.substring(0, colonIndex)

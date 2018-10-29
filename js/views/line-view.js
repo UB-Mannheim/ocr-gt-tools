@@ -1,5 +1,5 @@
 function LineView(opts) {
-    for (var key in opts) { this[key] = opts[key]; }
+    for (let key in opts) { this[key] = opts[key]; }
     this.tpl = window.app.templates.line;
     window.app.once('app:loaded', this.render.bind(this));
     window.app.on('app:filter-view', this.renderToggler.bind(this));

@@ -11,7 +11,7 @@ ErrorTags.prototype.load = function(cb) {
         success: function(data) {
             self.items = [];
             var keys = Object.keys(data);
-            for (var i = 0; i < keys.length; i++) {
+            for (let i = 0; i < keys.length; i++) {
                 self.items.push(data[keys[i]]);
             }
             cb();

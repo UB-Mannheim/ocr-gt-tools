@@ -10,7 +10,7 @@ var defaultSettings = {
 };
 
 function Settings(opts) {
-    for (var k in defaultSettings) { this[k] = defaultSettings[k]; }
+    for (let k in defaultSettings) { this[k] = defaultSettings[k]; }
 }
 
 Settings.prototype.load = function loadSettings() {
