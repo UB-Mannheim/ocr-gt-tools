@@ -1,5 +1,5 @@
 function PageView(opts) {
-    for (var key in opts) { this[key] = opts[key]; }
+    for (let key in opts) { this[key] = opts[key]; }
     this.$el = $(this.el);
     this.lineViews = [];
 }
@@ -39,7 +39,7 @@ PageView.prototype.sortRowsByLine = function sortRowsByLine(order) {
 PageView.prototype.render = function() {
     this.$el.find('*').off().empty();
     // render lines
-    for (var i = 0; i < this.model.lines.length; i++)  {
+    for (let i = 0; i < this.model.lines.length; i++)  {
         var lineModel = this.model.lines[i];
         var lineEl = $(window.app.templates.lineContainer(lineModel)).appendTo(this.$el);
         var lineView = new LineView({"$el": lineEl, "model": lineModel});

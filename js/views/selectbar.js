@@ -1,5 +1,5 @@
 function Selectbar(opts) {
-    for (var key in opts) { this[key] = opts[key]; }
+    for (let key in opts) { this[key] = opts[key]; }
     this.$el = $(this.el);
 }
 
@@ -23,7 +23,7 @@ Selectbar.prototype.toggle = function toggle() {
 
 Selectbar.prototype.getSelection = function getSelection() {
     var ret = [];
-    for (var i = 0; i < app.pageView.lineViews.length; i++) {
+    for (let i = 0; i < app.pageView.lineViews.length; i++) {
         var lineView = app.pageView.lineViews[i];
         if (lineView.selected) ret.push(lineView);
     }
@@ -35,11 +35,11 @@ Selectbar.prototype.selectLines = function selectLines(action, ids) {
     // If no id was passed, use all ids
     if (!ids) {
         ids = [];
-        for (var i = 0; i < app.currentPage.lines.length; i++) {
+        for (let i = 0; i < app.currentPage.lines.length; i++) {
             ids.push(i);
         }
     }
-    for (var i = 0; i < ids.length; i++) {
+    for (let i = 0; i < ids.length; i++) {
         var lineView = app.pageView.lineViews[ids[i]];
         lineView.selected = (action === 'select' ? true : action === 'unselect' ? false : !lineView.selected);
         lineView.renderCheckbox();
@@ -62,7 +62,7 @@ Selectbar.prototype.render = function renderSelectBar() {
     this.$el.find('*[data-tag]').on('click', function addTagMultiple() {
         var tag = $(this).attr('data-tag');
         var selection = self.getSelection();
-        for (var i = 0; i < selection.length; i++) {
+        for (let i = 0; i < selection.length; i++) {
             selection[i].addTag(tag);
         }
         window.app.emit('app:changed');

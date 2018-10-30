@@ -1,5 +1,5 @@
 function Dropzone(opts) {
-    for (var key in opts) { this[key] = opts[key]; }
+    for (let key in opts) { this[key] = opts[key]; }
     this.$el = $(this.el);
 }
 Dropzone.prototype.render = function() {

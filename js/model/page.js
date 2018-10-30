@@ -5,7 +5,7 @@ function Page(urlOrOpts) {
         self.imageUrl = urlOrOpts;
     } else {
         self.imageUrl = urlOrOpts.imageUrl;
-        for (key in urlOrOpts) { self[key] = urlOrOpts[key]; }
+        for (let key in urlOrOpts) { self[key] = urlOrOpts[key]; }
     }
     self.changed = false;
     window.app.on('app:changed', function setChanged() { self.changed = true; });
@@ -20,7 +20,7 @@ Page.prototype.toJSON = function() {
         'ids': this.ids,
         'url': this.url,
     };
-    for (var i = 0; i < this.lines.length ; i++) {
+    for (let i = 0; i < this.lines.length ; i++) {
         ret['line-comments'][i] = this.lines[i].comment.trim();
         ret['line-transcriptions'][i] = this.lines[i].transcription.trim();
     }
@@ -45,11 +45,11 @@ Page.prototype.load = function(cb) {
         url: 'ocr-gt-tools.cgi?action=get&imageUrl=' + this.imageUrl,
         error: cb,
         success: function(res) {
-            for (key in res) { self[key] = res[key]; }
+            for (let key in res) { self[key] = res[key]; }
             // Sort 'pages'
             self.pages = self.pages.sort(function(a, b) { return parseInt(a.ids.page) - parseInt(b.ids.page); });
             // Create line models
-            for (var i = 0; i < self['line-transcriptions'].length; i++)  {
+            for (let i = 0; i < self['line-transcriptions'].length; i++)  {
                 self.lines.push(new Line({
                     id: i,
                     transcription: self['line-transcriptions'][i],
