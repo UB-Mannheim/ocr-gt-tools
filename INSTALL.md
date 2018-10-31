@@ -32,7 +32,7 @@ Navigate to http://localhost:8888/ocr-gt to use it.
 Install Debian packages (for other distros, YMMV).
 
 ```
-make apt-get
+sudo make apt-get
 ```
 
 (See `dev/debian.mk`)

@@ -19,6 +19,8 @@ GIT_CLONE = git clone --depth 1
 
 # cURL to download files
 CURL          = curl -s
+# Git clone, by default do a shallow clone, only last commit
+GIT_CLONE     = git clone --depth 1
 # clean-css is a CSS minifier and optimizer
 CLEANCSS      = cleancss
 # UglifyJS minifies, merges and optimizes Javascript
