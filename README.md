@@ -3,6 +3,7 @@ ocr-gt-tools
 
 A web interface for creating ground truth for evaluating and training OCR.
 
+[![Codacy Badge](https://api.codacy.com/project/badge/Grade/2070d0de80a042b789e5d47b9871b682)](https://app.codacy.com/app/Stefan-Weil/ocr-gt-tools?utm_source=github.com&utm_medium=referral&utm_content=UB-Mannheim/ocr-gt-tools&utm_campaign=Badge_Grade_Dashboard)
 [![Docker Stars](https://img.shields.io/docker/stars/ubma/ocr-gt-tools.svg)](https://hub.docker.com/r/ubma/ocr-gt-tools/)
 [![Docker Pulls](https://img.shields.io/docker/pulls/ubma/ocr-gt-tools.svg)](https://hub.docker.com/r/ubma/ocr-gt-tools/)
 [![license](https://img.shields.io/github/license/UB-Mannheim/ocr-gt-tools.svg)](https://github.com/UB-Mannheim/ocr-gt-tools/blob/master/LICENSE)
