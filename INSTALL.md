@@ -29,7 +29,7 @@ Navigate to http://localhost:8888/ocr-gt to use it.
 
 ## Install dependencies
 
-Install Debian packagess (for other distros, YMMV).
+Install Debian packages (for other distros, YMMV).
 
 ```
 make apt-get
