@@ -149,7 +149,7 @@ JS API
     * history-view: Table of past requests to keep track
     * line-view: View of a single line, handles button logic and model-sync
     * page-view: View of a page, creates line-views as necessary, model-sync
-    * sidebar: The sidebar contianing work/collection/page info
+    * sidebar: The sidebar containing work/collection/page info
     * toolbar: THe toolbar with buttons for accessing all the actions
   * app: Global app class, entry point to the application
   * utils:

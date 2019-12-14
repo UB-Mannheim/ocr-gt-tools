@@ -214,7 +214,7 @@ sub parse
 
 =head2 renderTemplates
 
-Replace all variables apropriately
+Replace all variables appropriately
 
 =cut
 
@@ -337,7 +337,7 @@ sub handleSave
     my $postdata = $cgi->param('POSTDATA');
     my $body = JSON->new->utf8->decode($postdata) or httpError(400, "Could not parse POST body");
     my $location = parse($body->{'url'}->{'thumb-url'});
-    # Save line coments and transcriptions
+    # Save line comments and transcriptions
     for (my $i = 0; $i < scalar @{ $body->{'line-comments'}}; $i++) {
         my %saveMap = (
             'line-transcriptions' , 'line-%04d.txt',
