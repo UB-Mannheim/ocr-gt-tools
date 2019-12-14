@@ -307,7 +307,7 @@ function Page(urlOrOpts) {
         self.imageUrl = urlOrOpts;
     } else {
         self.imageUrl = urlOrOpts.imageUrl;
-        for (key in urlOrOpts) { self[key] = urlOrOpts[key]; }
+        for (let key in urlOrOpts) { self[key] = urlOrOpts[key]; }
     }
     self.changed = false;
     window.app.on('app:changed', function setChanged() { self.changed = true; });
@@ -322,7 +322,7 @@ Page.prototype.toJSON = function() {
         'ids': this.ids,
         'url': this.url,
     };
-    for (var i = 0; i < this.lines.length ; i++) {
+    for (let i = 0; i < this.lines.length ; i++) {
         ret['line-comments'][i] = this.lines[i].comment.trim();
         ret['line-transcriptions'][i] = this.lines[i].transcription.trim();
     }
@@ -347,11 +347,11 @@ Page.prototype.load = function(cb) {
         url: 'ocr-gt-tools.cgi?action=get&imageUrl=' + this.imageUrl,
         error: cb,
         success: function(res) {
-            for (key in res) { self[key] = res[key]; }
+            for (let key in res) { self[key] = res[key]; }
             // Sort 'pages'
             self.pages = self.pages.sort(function(a, b) { return parseInt(a.ids.page) - parseInt(b.ids.page); });
             // Create line models
-            for (var i = 0; i < self['line-transcriptions'].length; i++)  {
+            for (let i = 0; i < self['line-transcriptions'].length; i++)  {
                 self.lines.push(new Line({
                     id: i,
                     transcription: self['line-transcriptions'][i],
@@ -392,7 +392,7 @@ var defaultSettings = {
 };
 
 function Settings(opts) {
-    for (var k in defaultSettings) { this[k] = defaultSettings[k]; }
+    for (let k in defaultSettings) { this[k] = defaultSettings[k]; }
 }
 
 Settings.prototype.load = function loadSettings() {
@@ -416,7 +416,7 @@ ErrorTags.prototype.load = function(cb) {
         success: function(data) {
             self.items = [];
             var keys = Object.keys(data);
-            for (var i = 0; i < keys.length; i++) {
+            for (let i = 0; i < keys.length; i++) {
                 self.items.push(data[keys[i]]);
             }
             cb();
@@ -436,7 +436,7 @@ Cheatsheet.prototype.load = function(cb) {
         success: function(data) {
             self.items = [];
             var keys = Object.keys(data);
-            for (var i = 0; i < keys.length; i++) {
+            for (let i = 0; i < keys.length; i++) {
                 var cheatsheetEntry = data[keys[i]];
                 // console.log(cheatsheetEntry.id, cheatsheetEntry.recognition);
                 self.items.push(cheatsheetEntry);
@@ -447,7 +447,7 @@ Cheatsheet.prototype.load = function(cb) {
 };
 
 function Line(opts) {
-    for (key in opts) { this[key] = opts[key]; }
+    for (let key in opts) { this[key] = opts[key]; }
     this.changed = false;
 }
 
@@ -469,7 +469,7 @@ Line.prototype.addTag = function addTag(tag, desc) {
     return true;
 };
 function PageView(opts) {
-    for (var key in opts) { this[key] = opts[key]; }
+    for (let key in opts) { this[key] = opts[key]; }
     this.$el = $(this.el);
     this.lineViews = [];
 }
@@ -509,7 +509,7 @@ PageView.prototype.sortRowsByLine = function sortRowsByLine(order) {
 PageView.prototype.render = function() {
     this.$el.find('*').off().empty();
     // render lines
-    for (var i = 0; i < this.model.lines.length; i++)  {
+    for (let i = 0; i < this.model.lines.length; i++)  {
         var lineModel = this.model.lines[i];
         var lineEl = $(window.app.templates.lineContainer(lineModel)).appendTo(this.$el);
         var lineView = new LineView({"$el": lineEl, "model": lineModel});
@@ -517,8 +517,22 @@ PageView.prototype.render = function() {
         this.lineViews.push(lineView);
     }
 };
+function Dropzone(opts) {
+    for (let key in opts) { this[key] = opts[key]; }
+    this.$el = $(this.el);
+}
+Dropzone.prototype.render = function() {
+    var self = this;
+
+    $("#load-image button").on('click', function() {
+        window.location.hash = '#' + $("#load-image input").val();
+    });
+
+    window.app.on('app:loading', function hideDropzone() { self.$el.addClass('hidden'); });
+
+};
 function LineView(opts) {
-    for (var key in opts) { this[key] = opts[key]; }
+    for (let key in opts) { this[key] = opts[key]; }
     this.tpl = window.app.templates.line;
     window.app.once('app:loaded', this.render.bind(this));
     window.app.on('app:filter-view', this.renderToggler.bind(this));
@@ -614,32 +628,18 @@ LineView.prototype.render = function() {
     return this;
 };
 function HistoryView(opts) {
-    for (key in opts) { this[key] = opts[key]; }
+    for (let key in opts) { this[key] = opts[key]; }
     this.$el = $(this.el);
 }
 HistoryView.prototype.render = function() {
     this.$el.find("tbody").empty();
-    for (var i = 0; i < this.model.items.length ; i++) {
+    for (let i = 0; i < this.model.items.length ; i++) {
         this.$el.find("tbody").append(this.tpl(this.model.items[i]));
     }
 };
 
-function Dropzone(opts) {
-    for (var key in opts) { this[key] = opts[key]; }
-    this.$el = $(this.el);
-}
-Dropzone.prototype.render = function() {
-    var self = this;
-
-    $("#load-image button").on('click', function() {
-        window.location.hash = '#' + $("#load-image input").val();
-    });
-
-    window.app.on('app:loading', function hideDropzone() { self.$el.addClass('hidden'); });
-
-};
 function Toolbar(opts) {
-    for (key in opts) { this[key] = opts[key]; }
+    for (let key in opts) { this[key] = opts[key]; }
     this.$el = $(this.el);
 }
 /**
@@ -726,7 +726,7 @@ Toolbar.prototype.render = function() {
     });
 };
 function Sidebar(opts) {
-    for (var key in opts) { this[key] = opts[key]; }
+    for (let key in opts) { this[key] = opts[key]; }
     this.$el = $(this.el);
 }
 
@@ -740,7 +740,7 @@ Sidebar.prototype.render = function renderSidebar() {
     });
 };
 function WaitingAnimation(opts) {
-    for (key in opts) { this[key] = opts[key]; }
+    for (let key in opts) { this[key] = opts[key]; }
     this.$el = $(this.el);
 }
 WaitingAnimation.prototype.render = function() {
@@ -748,8 +748,8 @@ WaitingAnimation.prototype.render = function() {
     window.app.on('app:loaded', this.stop.bind(this));
     window.app.on('app:ajaxError', this.stop.bind(this));
     this.glyphs = [];
-    for (var i = 0; i <  this.model.items.length; i++) {
-        for (var j = 0 ; j < this.model.items[i].sample.length; j++) {
+    for (let i = 0; i <  this.model.items.length; i++) {
+        for (let j = 0 ; j < this.model.items[i].sample.length; j++) {
             this.glyphs.push(this.model.items[i].sample[j]);
         }
     }
@@ -766,7 +766,7 @@ WaitingAnimation.prototype.start = function startWaitingAnimation() {
     var self = this;
     this.$el.removeClass('hidden');
     this.animationId = setInterval(function() {
-        perRound = window.app.settings.animationsPerRound;
+        var perRound = window.app.settings.animationsPerRound;
         while (perRound-- > 0) {
             $(self.glyphs[parseInt(Math.random() * self.glyphs.length)])
                 .css('top', parseInt(Math.random() * 100) + "vh")
@@ -783,7 +783,7 @@ WaitingAnimation.prototype.start = function startWaitingAnimation() {
     }, window.app.settings.animationTimeout);
 };
 function Selectbar(opts) {
-    for (var key in opts) { this[key] = opts[key]; }
+    for (let key in opts) { this[key] = opts[key]; }
     this.$el = $(this.el);
 }
 
@@ -807,7 +807,7 @@ Selectbar.prototype.toggle = function toggle() {
 
 Selectbar.prototype.getSelection = function getSelection() {
     var ret = [];
-    for (var i = 0; i < app.pageView.lineViews.length; i++) {
+    for (let i = 0; i < app.pageView.lineViews.length; i++) {
         var lineView = app.pageView.lineViews[i];
         if (lineView.selected) ret.push(lineView);
     }
@@ -819,11 +819,11 @@ Selectbar.prototype.selectLines = function selectLines(action, ids) {
     // If no id was passed, use all ids
     if (!ids) {
         ids = [];
-        for (var i = 0; i < app.currentPage.lines.length; i++) {
+        for (let i = 0; i < app.currentPage.lines.length; i++) {
             ids.push(i);
         }
     }
-    for (var i = 0; i < ids.length; i++) {
+    for (let i = 0; i < ids.length; i++) {
         var lineView = app.pageView.lineViews[ids[i]];
         lineView.selected = (action === 'select' ? true : action === 'unselect' ? false : !lineView.selected);
         lineView.renderCheckbox();
@@ -846,7 +846,7 @@ Selectbar.prototype.render = function renderSelectBar() {
     this.$el.find('*[data-tag]').on('click', function addTagMultiple() {
         var tag = $(this).attr('data-tag');
         var selection = self.getSelection();
-        for (var i = 0; i < selection.length; i++) {
+        for (let i = 0; i < selection.length; i++) {
             selection[i].addTag(tag);
         }
         window.app.emit('app:changed');
@@ -858,7 +858,7 @@ Selectbar.prototype.render = function renderSelectBar() {
     app.on('app:loaded', function() { $(".toggle-select-mode").on('click', toggleBound); });
 };
 function CheatsheetView(opts) {
-    for (key in opts) { this[key] = opts[key]; }
+    for (let key in opts) { this[key] = opts[key]; }
     this.$el = $(this.el);
     // Setup clipboard
     new Clipboard('.code');
