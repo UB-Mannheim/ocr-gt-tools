@@ -1,6 +1,6 @@
 {
   "name": "ocr-gt-tools",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "A web interface for creating ground truth for improving OCR",
   "main": "Gruntfile.js",
   "directories": {
@@ -10,7 +10,7 @@
   "devDependencies": {
     "bower": "^1.7.9",
     "chokidar-cli": "^1.2.0",
-    "clean-css": "^3.4.12",
+    "clean-css": ">=4.1.11",
     "jade": "^1.11.0",
     "jscs": "^3.0.3",
     "stylus": "^0.54.2",
