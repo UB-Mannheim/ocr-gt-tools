@@ -1,4 +1,5 @@
-*~
+/dist/fonts/*.woff
+/dist/fonts/*.ttf
 /dist/log
 /dist/ocr-gt-tools.yml
 /dist/vendor
