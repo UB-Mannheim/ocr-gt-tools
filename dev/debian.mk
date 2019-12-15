@@ -3,10 +3,12 @@
 # Debian packages required for running the backend
 DEBIAN_PACKAGES = \
 	git \
+	libcgi-pm-perl \
 	libjson-perl \
 	libhash-merge-perl \
 	libyaml-perl \
 	libipc-run-perl \
+	python-fabio \
 	python-lxml \
 	python-numpy \
 	python-scipy \
