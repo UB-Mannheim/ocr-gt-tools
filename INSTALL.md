@@ -148,13 +148,13 @@ Then npm to bootstrap the tools for building HTML from Jade, CSS from LESS etc.:
 npm install
 ```
 
-And finally bower to install the frontend assets:
+And finally yarn to install the frontend assets:
 
 ```
-bower install
+yarn install
 ```
 
-*Note:* If you are running bower as `root`, add the `--allow-root` option: `bower --allow-root install`.
+*Note:* If you are running yarn as `root`, add the `--allow-root` option: `yarn --allow-root install`.
 
 After changing CSS/Javascript, make sure to regenerate the `dist` folder:
 
@@ -168,7 +168,7 @@ This will
 * copy all CSS stylesheets to `./dist/css/` and minify them to `./dist/style.css`
 * copy all JS scripts to `./dist/js/` and minify them, in the right order, to `./dist/script.js` with source map
 
-Javascript/CSS project dependencies are managed by bower, see `bower.json`
+Javascript/CSS project dependencies are managed by yarn, see `bower.json`
 
 ### Perl
 
