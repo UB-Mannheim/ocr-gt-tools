@@ -16,7 +16,7 @@
         <div class="panel-heading">
           <h4 class="panel-title"><a data-toggle="collapse" href="#page-comment">Seiten-Kommentar</a></h4>
         </div>
-        <div id="page-comment" class="panel-collapse collapse in"><a target="_blank" href="{{ this.url.hires-url }}" class="list-group-item"><img src="{{ this.url.thumb-url }}"></a>
+        <div class="panel-collapse collapse in" id="page-comment"><a class="list-group-item" target="_blank" href="{{ this.url.hires-url }}"><img src="{{ this.url.thumb-url }}"></a>
           <textarea placeholder="Seitenkommentar...">{{ page-comment }}</textarea>
         </div>
       </div>
@@ -24,16 +24,16 @@
         <div class="panel-heading">
           <h4 class="panel-title"><a data-toggle="collapse" href="#work-info">Werk-Info</a></h4>
         </div>
-        <div id="work-info" class="panel-collapse collapse in">
-          <div class="list-group"><a target="_blank" href="{{ this.url.landing-page-url }}" class="list-group-item"><i class="fa fa-download"></i>Werk in Digitaler Bibliothek</a>{{#each pages}}<a href="#{{ this.url.thumb-url }}" class="list-group-item"><i class="fa fa-history"></i>Seite {{this.ids.page}}</a>{{/each}}</div>
+        <div class="panel-collapse collapse in" id="work-info">
+          <div class="list-group"><a class="list-group-item" target="_blank" href="{{ this.url.landing-page-url }}"><i class="fa fa-download"></i>Werk in Digitaler Bibliothek</a>{{#each pages}}<a class="list-group-item" href="#{{ this.url.thumb-url }}"><i class="fa fa-history"></i>Seite {{this.ids.page}}</a>{{/each}}</div>
         </div>
       </div>
       <div class="panel panel-info">
         <div class="panel-heading">
           <h4 class="panel-title"><a data-toggle="collapse" href="#page-info">Seiten-Info</a></h4>
         </div>
-        <div id="page-info" class="panel-collapse collapse in">
-          <div class="list-group"><a id="download-comments" target="_blank" href="{{ this.url.comment-url }}" class="list-group-item"><i class="fa fa-download"></i>Anmerkungen</a><a id="download-correction" target="_blank" href="{{ this.url.correction-url }}" class="list-group-item"><i class="fa fa-download"></i>Korrektur</a></div>
+        <div class="panel-collapse collapse in" id="page-info">
+          <div class="list-group"><a class="list-group-item" id="download-comments" target="_blank" href="{{ this.url.comment-url }}"><i class="fa fa-download"></i>Anmerkungen</a><a class="list-group-item" id="download-correction" target="_blank" href="{{ this.url.correction-url }}"><i class="fa fa-download"></i>Korrektur</a></div>
         </div>
       </div>
     </script>
@@ -45,7 +45,7 @@
         <td><a target="_blank" href="https://github.com/UB-Mannheim/ocr-gt-tools/wiki/Special-Characters#{{ id }}">{{ name.de }}</a></td>
         <td>{{{ sample }}}</td>
         <td>
-          <button data-clipboard-text="{{ recognition }}" class="code"><span class="fa fa-clipboard clipboard"></span><span class="recognition">{{ recognition }}</span></button>
+          <button class="code" data-clipboard-text="{{ recognition }}"><span class="fa fa-clipboard clipboard"></span><span class="recognition">{{ recognition }}</span></button>
         </td>
       </tr>
     </script>
@@ -53,22 +53,22 @@
     <!-- A line of page-->
     <!--*-->
     <script id="tpl-lineContainer" type="text/x-handlebars-template">
-      <div id="line-{{ id }}" class="row line"></div>
+      <div class="row line" id="line-{{ id }}"></div>
     </script>
     <script id="tpl-line" type="text/x-handlebars-template">
-      <div data-target="#line-comment-{{ id }}" class="col-sm-1 button-col">
-        <div role="group" class="btn-group btn-group-sm">
-          <div role="group" class="btn-group"><a data-target="#line-comment-{{ id }}" class="btn btn-default toggle-line-comment"><i class="show-line-comment fa fa-commenting-o"></i><i class="hide-line-comment fa fa-map-o hidden"></i></a></div>
-          <div role="group" class="btn-group">
-            <button data-toggle="dropdown" type="button" aria-haspopup="true" aria-expanded="false" tabindex="-1" class="btn btn-default dropdown-toggle"><i class="fa fa-exclamation"></i><span class="caret"></span></button>
+      <div class="col-sm-1 button-col" data-target="#line-comment-{{ id }}">
+        <div class="btn-group btn-group-sm" role="group">
+          <div class="btn-group" role="group"><a class="btn btn-default toggle-line-comment" data-target="#line-comment-{{ id }}"><i class="show-line-comment fa fa-commenting-o"></i><i class="hide-line-comment fa fa-map-o hidden"></i></a></div>
+          <div class="btn-group" role="group">
+            <button class="btn btn-default dropdown-toggle" data-toggle="dropdown" type="button" aria-haspopup="true" aria-expanded="false" tabindex="-1"><i class="fa fa-exclamation"></i><span class="caret"></span></button>
             <ul class="dropdown-menu">
-              <li><a data-target="#line-comment-{{ id }}" data-tag="#text-italic" class="btn btn-default add-comment"><i class="fa fa-italic"></i>Kursiv</a></li>
-              <li><a data-target="#line-comment-{{ id }}" data-tag="#wrong-image-section" class="btn btn-warning add-comment"><i class="fa fa-exclamation-circle"></i>Fehler in Vorlage</a></li>
+              <li><a class="btn btn-default add-comment" data-target="#line-comment-{{ id }}" data-tag="#text-italic"><i class="fa fa-italic"></i>Kursiv</a></li>
+              <li><a class="btn btn-warning add-comment" data-target="#line-comment-{{ id }}" data-tag="#wrong-image-section"><i class="fa fa-exclamation-circle"></i>Fehler in Vorlage</a></li>
             </ul>
           </div>
         </div>
       </div>
-      <div data-target="#line-comment-{{ id }}" class="col-sm-1 select-col hidden">
+      <div class="col-sm-1 select-col hidden" data-target="#line-comment-{{ id }}">
         <input type="checkbox">
       </div>
       <div class="col-sm-11 lines-col">
@@ -78,7 +78,7 @@
             <li class="list-group-item line-transcription">
               <input type="text" value="{{ transcription }}">
             </li>
-            <li id="line-comment-{{ id }}" class="list-group-item line-comment">
+            <li class="list-group-item line-comment" id="line-comment-{{ id }}">
               <textarea placeholder="Kommentar zu dieser Zeile">{{ comment }}</textarea>
             </li>
           </ul>
@@ -99,12 +99,12 @@
     <!--*-->
     <!-- Modal popup containing the history-->
     <!--*-->
-    <div id="history-modal" tabindex="-1" class="modal fade">
+    <div class="modal fade" id="history-modal" tabindex="-1">
       <div class="modal-admin">
         <div class="modal-content">
           <div class="modal-header">
             <h2 class="modal-title">Verlauf
-              <button type="button" data-dismiss="modal" class="close"><span>&times;</span></button>
+              <button class="close" type="button" data-dismiss="modal"><span>&times;</span></button>
             </h2>
           </div>
           <div class="modal-body">
@@ -126,7 +126,7 @@
     <!--*-->
     <!-- Help modal-->
     <!--*-->
-    <div id="cheatsheet-modal" tabindex="-1" class="modal fade">
+    <div class="modal fade" id="cheatsheet-modal" tabindex="-1">
       <div class="modal-admin">
         <div class="modal-content">
           <div class="modal-header">
@@ -134,7 +134,7 @@
             <div class="cheatsheet-entry">
               <input type="text">
             </div>
-            <button type="button" data-dismiss="modal" class="close"><span>&times;</span></button>
+            <button class="close" type="button" data-dismiss="modal"><span>&times;</span></button>
           </div>
           <div class="modal-body">
             <table class="table table-condensed">
@@ -147,75 +147,75 @@
     <!--*-->
     <!-- Will contain the raw HTML-->
     <!--*-->
-    <div id="raw-html" class="hidden"></div>
+    <div class="hidden" id="raw-html"></div>
     <!--*-->
     <!-- Will contain the toolbar for the multi select mode-->
     <!--*-->
-    <div id="select-bar" class="hidden">
+    <div class="hidden" id="select-bar">
       <div class="panel-heading clearfix">
-        <button type="button" data-dismiss="modal" class="toggle-select-mode close pull-left"><span>&times;</span></button>
-        <div class="btn-group pull-right"><a class="btn btn-sm btn-default select-all"><i class="fa btn-sm fa-arrows-alt"></i>Alle auswählen</a><a class="btn btn-sm btn-default select-none"><i class="fa btn-sm fa-arrows-alt"></i>Auswahl aufheben</a><a class="btn btn-sm btn-default select-toggle"><i class="fa btn-sm fa-arrows-alt"></i>Auswahl umkehren</a><a data-tag="#text-italic" class="btn btn-sm btn-default add-multi-comment"><i class="fa btn-sm fa-italic"></i>Kursiv</a><a data-tag="#wrong-image-section" class="btn btn-sm btn-warning add-multi-comment"><i class="fa btn-sm fa-exclamation-circle"></i>Fehler in Vorlage</a></div>
+        <button class="toggle-select-mode close pull-left" type="button" data-dismiss="modal"><span>&times;</span></button>
+        <div class="btn-group pull-right"><a class="btn btn-sm btn-default select-all"><i class="fa btn-sm fa-arrows-alt"></i>Alle auswählen</a><a class="btn btn-sm btn-default select-none"><i class="fa btn-sm fa-arrows-alt"></i>Auswahl aufheben</a><a class="btn btn-sm btn-default select-toggle"><i class="fa btn-sm fa-arrows-alt"></i>Auswahl umkehren</a><a class="btn btn-sm btn-default add-multi-comment" data-tag="#text-italic"><i class="fa btn-sm fa-italic"></i>Kursiv</a><a class="btn btn-sm btn-warning add-multi-comment" data-tag="#wrong-image-section"><i class="fa btn-sm fa-exclamation-circle"></i>Fehler in Vorlage</a></div>
       </div>
     </div>
     <!--*-->
     <!-- The navbar on the left side-->
     <!--*-->
-    <div id="toolbar" role="navigation" class="nav navbar navbar-default">
+    <div class="nav navbar navbar-default" id="toolbar" role="navigation">
       <!-- Brand and toggle get grouped for better mobile display-->
       <div class="navbar-header">
-        <button type="button" data-toggle="collapse" data-target=".navbar-ex1-collapse" class="navbar-toggle"><span class="sr-only">Toggle navigation</span></button>
+        <button class="navbar-toggle" type="button" data-toggle="collapse" data-target=".navbar-ex1-collapse"><span class="sr-only">Toggle navigation</span></button>
       </div>
       <!-- Collect the nav links, forms, and other content for toggling-->
       <div class="collapse navbar-collapse navbar-ex1-collapse">
         <ul class="nav navbar-nav">
           <li>
-            <button id="save_button" class="btn btn-success disabled"><span id="wait_save" class="hidden"><i class="fa fa-4x fa-spinner fa-pulse fa-fw"></i></span><span id="disk"><i class="fa fa-4x fa-save fa-fw"></i></span></button>
+            <button class="btn btn-success disabled" id="save_button"><span class="hidden" id="wait_save"><i class="fa fa-4x fa-spinner fa-pulse fa-fw"></i></span><span id="disk"><i class="fa fa-4x fa-save fa-fw"></i></span></button>
           </li>
-          <li class="dropdown info"><a data-toggle="dropdown" class="btn dropdown-toggle"><i class="fa fa-4x fa-info-circle"></i></a>
+          <li class="dropdown info"><a class="btn dropdown-toggle" data-toggle="dropdown"><i class="fa fa-4x fa-info-circle"></i></a>
             <ul class="dropdown-menu navbar-default">
               <li>
-                <div class="btn-group btn-group-vertical"><a target="_blank" href="https://github.com/UB-Mannheim/ocr-gt-tools/wiki/Error-Tags" class="btn btn-default pull-right"><i class="fa fa-exclamation"></i>Fehler-Kategorien</a>
-                  <button data-toggle="modal" data-target="#cheatsheet-modal" data-keyboard="true" class="btn btn-default"><i class="fa fa-question"></i>Spickzettel</button>
-                  <button data-toggle="modal" data-target="#history-modal" data-keyboard="true" class="btn btn-default"><i class="fa fa-history"></i>Verlauf</button>
+                <div class="btn-group btn-group-vertical"><a class="btn btn-default pull-right" target="_blank" href="https://github.com/UB-Mannheim/ocr-gt-tools/wiki/Error-Tags"><i class="fa fa-exclamation"></i>Fehler-Kategorien</a>
+                  <button class="btn btn-default" data-toggle="modal" data-target="#cheatsheet-modal" data-keyboard="true"><i class="fa fa-question"></i>Spickzettel</button>
+                  <button class="btn btn-default" data-toggle="modal" data-target="#history-modal" data-keyboard="true"><i class="fa fa-history"></i>Verlauf</button>
                 </div>
               </li>
             </ul>
           </li>
-          <li class="dropdown disabled zoom"><a data-toggle="dropdown" class="btn dropdown-toggle"><i class="fa fa-search-plus fa-4x"></i></a>
+          <li class="dropdown disabled zoom"><a class="btn dropdown-toggle" data-toggle="dropdown"><i class="fa fa-search-plus fa-4x"></i></a>
             <ul class="dropdown-menu navbar-default">
               <li>
                 <div class="btn-group btn-group-vertical">
-                  <button id="zoom-in" type="button" class="btn btn-default"><i class="fa fa-search-plus"></i>Größer</button>
-                  <button id="zoom-reset" type="button" class="btn btn-default"><i class="fa fa-search"></i>Zurücksetzen</button>
-                  <button id="zoom-out" type="button" class="btn btn-default"><i class="fa fa-search-minus"></i>Kleiner</button>
+                  <button class="btn btn-default" id="zoom-in" type="button"><i class="fa fa-search-plus"></i>Größer</button>
+                  <button class="btn btn-default" id="zoom-reset" type="button"><i class="fa fa-search"></i>Zurücksetzen</button>
+                  <button class="btn btn-default" id="zoom-out" type="button"><i class="fa fa-search-minus"></i>Kleiner</button>
                 </div>
               </li>
             </ul>
           </li>
-          <li class="dropdown disabled views"><a data-toggle="dropdown" class="btn dropdown-toggle"><i class="fa fa-4x fa-eye"></i></a>
+          <li class="dropdown disabled views"><a class="btn dropdown-toggle" data-toggle="dropdown"><i class="fa fa-4x fa-eye"></i></a>
             <ul class="dropdown-menu navbar-default">
               <li>
                 <div class="btn-group btn-group-vertical">
-                  <button type="button" data-target="*" class="set-view btn btn-default"><i class="fa fa-picture-o"></i><i class="fa fa-commenting-o"></i><i class="fa fa-align-left"></i>Vollansicht</button>
-                  <button type="button" data-target=".line-transcription,.line-image" class="set-view btn btn-default"><i class="fa fa-picture-o"></i><i class="fa fa-align-left"></i>Bild + Text</button>
-                  <button type="button" data-target=".line-comment,.line-image" class="set-view btn btn-default"><i class="fa fa-picture-o"></i><i class="fa fa-commenting-o"></i>Bild + Kommentar</button>
-                  <button type="button" data-target=".line-comment,.line-transcription" class="set-view btn btn-default"><i class="fa fa-align-left"></i><i class="fa fa-commenting-o"></i>Text + Kommentar</button>
-                  <button type="button" data-target=".line-image" class="set-view btn btn-default"><i class="fa fa-picture-o"></i>Bild</button>
-                  <button type="button" data-target=".line-transcription" class="set-view btn btn-default"><i class="fa fa-align-left"></i>Text</button>
-                  <button type="button" data-target=".line-comment" class="set-view btn btn-default"><i class="fa fa-commenting-o"></i>Kommentar</button>
+                  <button class="set-view btn btn-default" type="button" data-target="*"><i class="fa fa-picture-o"></i><i class="fa fa-commenting-o"></i><i class="fa fa-align-left"></i>Vollansicht</button>
+                  <button class="set-view btn btn-default" type="button" data-target=".line-transcription,.line-image"><i class="fa fa-picture-o"></i><i class="fa fa-align-left"></i>Bild + Text</button>
+                  <button class="set-view btn btn-default" type="button" data-target=".line-comment,.line-image"><i class="fa fa-picture-o"></i><i class="fa fa-commenting-o"></i>Bild + Kommentar</button>
+                  <button class="set-view btn btn-default" type="button" data-target=".line-comment,.line-transcription"><i class="fa fa-align-left"></i><i class="fa fa-commenting-o"></i>Text + Kommentar</button>
+                  <button class="set-view btn btn-default" type="button" data-target=".line-image"><i class="fa fa-picture-o"></i>Bild</button>
+                  <button class="set-view btn btn-default" type="button" data-target=".line-transcription"><i class="fa fa-align-left"></i>Text</button>
+                  <button class="set-view btn btn-default" type="button" data-target=".line-comment"><i class="fa fa-commenting-o"></i>Kommentar</button>
                 </div>
               </li>
             </ul>
           </li>
-          <li class="dropdown disabled filter"><a data-toggle="dropdown" class="toggle-select-mode btn dropdown-toggle"><i class="fa fa-4x fa-plus-square-o"></i></a></li>
-          <li class="dropdown disabled filter"><a data-toggle="dropdown" class="btn dropdown-toggle"><i class="fa fa-4x fa-sort"></i></a>
+          <li class="dropdown disabled filter"><a class="toggle-select-mode btn dropdown-toggle" data-toggle="dropdown"><i class="fa fa-4x fa-plus-square-o"></i></a></li>
+          <li class="dropdown disabled filter"><a class="btn dropdown-toggle" data-toggle="dropdown"><i class="fa fa-4x fa-sort"></i></a>
             <ul class="dropdown-menu navbar-default">
               <li>
                 <div class="btn-group btn-group-vertical">
-                  <button id="sort-line" class="btn btn-default"><i class="fa fa-sort"></i>Normale Sortierung (auf)</button>
-                  <button id="sort-line-desc" class="btn btn-default"><i class="fa fa-sort"></i>Umgekehrte Sortierung (ab)</button>
-                  <button id="sort-width" class="btn btn-default"><i class="fa fa-sort"></i>Nach Breite sortieren (auf)</button>
-                  <button id="sort-width-desc" class="btn btn-default"><i class="fa fa-sort"></i>Nach Breite sortieren (ab)</button>
+                  <button class="btn btn-default" id="sort-line"><i class="fa fa-sort"></i>Normale Sortierung (auf)</button>
+                  <button class="btn btn-default" id="sort-line-desc"><i class="fa fa-sort"></i>Umgekehrte Sortierung (ab)</button>
+                  <button class="btn btn-default" id="sort-width"><i class="fa fa-sort"></i>Nach Breite sortieren (auf)</button>
+                  <button class="btn btn-default" id="sort-width-desc"><i class="fa fa-sort"></i>Nach Breite sortieren (ab)</button>
                 </div>
               </li>
             </ul>
@@ -227,17 +227,17 @@
     <!--*-->
     <div class="container-fluid">
       <div class="row">
-        <div id="root" class="col-sm-9">
-          <div id="dropzone" class="jumbotron"><span id="wait-load" class="hidden"><i class="fa fa-spinner fa-pulse fa-fw"></i></span>Grafik auf dem Dokument ablegen<br>oder<br>URL angeben:<br>
-            <div id="load-image" class="input-group">
-              <input type="text" class="input-lg form-control"><span class="input-group-btn">
-                <button type="button" class="btn btn-default btn-lg">Los!</button></span>
+        <div class="col-sm-9" id="root">
+          <div class="jumbotron" id="dropzone"><span class="hidden" id="wait-load"><i class="fa fa-spinner fa-pulse fa-fw"></i></span>Grafik auf dem Dokument ablegen<br>oder<br>URL angeben:<br>
+            <div class="input-group" id="load-image">
+              <input class="input-lg form-control" type="text"><span class="input-group-btn">
+                <button class="btn btn-default btn-lg" type="button">Los!</button></span>
             </div>
           </div>
           <div id="file-correction"></div>
-          <div id="waiting-animation" class="hidden"></div>
+          <div class="hidden" id="waiting-animation"></div>
         </div>
-        <div id="right-sidebar" class="col-sm-3 panel-group"></div>
+        <div class="col-sm-3 panel-group" id="right-sidebar"></div>
       </div>
     </div>
     <script src="vendor.js"></script>
