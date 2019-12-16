@@ -142,19 +142,12 @@ Install the development dependencies: The `npm` package (which pulls in nodejs) 
 make dev-apt-get
 ```
 
-Then npm to bootstrap the tools for building HTML from Pug, CSS from LESS etc.:
+Then npm to bootstrap the tools for building HTML from Pug, CSS from LESS etc.
+and to install the frontend assets:
 
 ```
 npm install
 ```
-
-And finally yarn to install the frontend assets:
-
-```
-yarn install
-```
-
-*Note:* If you are running yarn as `root`, add the `--allow-root` option: `yarn --allow-root install`.
 
 After changing CSS/Javascript, make sure to regenerate the `dist` folder:
 
@@ -167,8 +160,6 @@ This will
 * Download web fonts to `./dist/fonts/` and generate a matching CSS file in `./dist/css/`
 * copy all CSS stylesheets to `./dist/css/` and minify them to `./dist/style.css`
 * copy all JS scripts to `./dist/js/` and minify them, in the right order, to `./dist/script.js` with source map
-
-Javascript/CSS project dependencies are managed by yarn, see `bower.json`
 
 ### Perl
 

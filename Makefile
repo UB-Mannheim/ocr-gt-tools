@@ -1,4 +1,4 @@
-# Add node_modules/.bin to $PATH so the CLI tools 
+# Add node_modules/.bin to $PATH so the CLI tools
 # installed locally by npm can be used
 export PATH := $(PWD)/node_modules/.bin:$(PATH)
 
@@ -37,25 +37,25 @@ STYLUS  = stylus
 # URLs of Web Fonts to embed
 FONT_URLS = https://fonts.googleapis.com/css?family=EB+Garamond&subset=latin,latin-ext
 # Font files (eot, ttf, woff...) to bundle
-FONT_FILES = bower_components/font-awesome/fonts/fontawesome-webfont.* \
-             bower_components/bootstrap/fonts/glyphicons-halflings-regular.*
+FONT_FILES = node_modules/font-awesome/fonts/fontawesome-webfont.* \
+             node_modules/bootstrap/fonts/glyphicons-halflings-regular.*
 # URLs of CSS to download
 CSS_URLS = https://getbootstrap.com/examples/dashboard/dashboard.css
 # CSS files to bundle into one minified `dist/vendor.css`
 # NOTE: Our CSS should not be bundled here
-CSS_FILES   = bower_components/reset-css/reset.css \
-              bower_components/bootstrap/dist/css/bootstrap.css \
-			  bower_components/notie/dist/notie.css \
-              bower_components/font-awesome/css/font-awesome.css
+CSS_FILES   = node_modules/reset-css/reset.css \
+              node_modules/bootstrap/dist/css/bootstrap.css \
+              node_modules/notie/dist/notie.css \
+              node_modules/font-awesome/css/font-awesome.css
 # JS scripts to bundle into one minified `dist/vendor.js`
 # NOTE: Javascript developed by us should not be bundled here
-VENDOR_JS_FILES  = bower_components/jquery/dist/jquery.js \
-				   bower_components/async/dist/async.min.js \
-				   bower_components/bootstrap/dist/js/bootstrap.js \
-				   bower_components/handlebars/handlebars.min.js \
-				   bower_components/clipboard/dist/clipboard.js \
-				   bower_components/notie/dist/notie.js
-		   
+VENDOR_JS_FILES  = node_modules/jquery/dist/jquery.js \
+                   node_modules/async/dist/async.min.js \
+                   node_modules/bootstrap/dist/js/bootstrap.js \
+                   node_modules/handlebars/dist/handlebars.min.js \
+                   node_modules/clipboard/dist/clipboard.js \
+                   node_modules/notie/dist/notie.js
+
 JS_FILES = js/*.js js/**/*.js ocr-gt-tools.js ocr-gt-tools.js
 # The HTML files, described in the Pug shorthand / templating language
 PUG_FILES  = ocr-gt-tools.pug
@@ -169,7 +169,7 @@ clean-%:
 clean: clean-js clean-css clean-fonts clean-html
 
 realclean:
-	$(RM) bower_components node_modules
+	$(RM) node_modules
 	$(RM) dist
 
 test:

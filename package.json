@@ -10,28 +10,26 @@
   "directories": {
     "example": "example"
   },
-  "dependencies": {
-    "@bower_components/async": "caolan/async#^1.5.2",
-    "@bower_components/bootstrap": "twbs/bootstrap#^3.3.6",
-    "@bower_components/clipboard": "zenorocha/clipboard.js#^1.5.10",
-    "@bower_components/font-awesome": "FortAwesome/Font-Awesome#^4.6.1",
-    "@bower_components/handlebars": "components/handlebars.js#^4.0.5",
-    "@bower_components/jquery": "jquery/jquery-dist#^2.2.3",
-    "@bower_components/notie": "jaredreich/notie.js#^3.2.0",
-    "@bower_components/reset-css": "shannonmoeller/reset-css#^2.0.2011012603"
-  },
+  "dependencies": {},
   "devDependencies": {
+    "async": "^1.5.2",
+    "bootstrap": "^3.3.6",
+    "clipboard": "^1.5.10",
+    "font-awesome": "^4.6.1",
+    "handlebars": "^4.0.5",
+    "jquery": "^2.2.3",
+    "notie": "^3.2.0",
+    "reset-css": "^2.0.2011012603",
     "chokidar-cli": "^1.2.0",
     "clean-css": ">=4.1.11",
     "jscs": "^3.0.3",
-    "pug-cli": "^2.0.4",
+    "pug-cli": "^1.0.0-alpha6",
     "stylus": "^0.54.2",
     "uglify-js": "^2.6.2",
     "webfont-dl": "^0.1.2"
   },
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "postinstall": "node -e \"try { require('fs').symlinkSync(require('path').resolve('node_modules/@bower_components'), 'bower_components', 'junction') } catch (e) { }\""
+    "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
     "type": "git",
@@ -59,8 +57,5 @@
   "bugs": {
     "url": "https://github.com/UB-Mannheim/ocr-gt-tools/issues"
   },
-  "homepage": "https://github.com/UB-Mannheim/ocr-gt-tools#readme",
-  "engines": {
-    "yarn": ">= 1.0.0"
-  }
+  "homepage": "https://github.com/UB-Mannheim/ocr-gt-tools#readme"
 }

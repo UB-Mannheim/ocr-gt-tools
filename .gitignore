@@ -3,6 +3,5 @@
 /dist/log
 /dist/ocr-gt-tools.yml
 /dist/vendor
-/bower_components
 /node_modules
 npm-debug.log
