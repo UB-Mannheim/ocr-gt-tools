@@ -25,8 +25,8 @@ CLEANCSS      = cleancss
 UGLIFYJS      = uglifyjs
 # webfont-dl is a tool to download web fonts from the Google Fonts API
 WEBFONTDL     = webfont-dl  --eot=omit
-# Jade is a templating engine
-JADE          = jade --pretty
+# Pug is a templating engine
+PUG           = pug --pretty
 # Stylus is a CSS compiler
 STYLUS  = stylus
 
@@ -57,8 +57,8 @@ VENDOR_JS_FILES  = bower_components/jquery/dist/jquery.js \
 				   bower_components/notie/dist/notie.js
 		   
 JS_FILES = js/*.js js/**/*.js ocr-gt-tools.js ocr-gt-tools.js
-# The HTML files, described in the Jade shorthand / templating language
-JADE_FILES  = ocr-gt-tools.jade
+# The HTML files, described in the Pug shorthand / templating language
+PUG_FILES  = ocr-gt-tools.pug
 
 #
 # Define the list of targets that will "always fail", i.e. the CLI api
@@ -151,10 +151,10 @@ dist/vendor.js: ${VENDOR_JS_FILES}
 		--source-map-url vendor.js.map \
 		$^
 
-# sed "s,\(=.\)dist/,\1,g" $< | $(JADE) > $@
-dist/index.html: ${JADE_FILES}
+# sed "s,\(=.\)dist/,\1,g" $< | $(PUG) > $@
+dist/index.html: ${PUG_FILES}
 	$(MKDIR) dist
-	$(JADE) < $< > $@
+	$(PUG) < $< > $@
 
 #
 # Clean up, delete files

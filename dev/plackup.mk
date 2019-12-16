@@ -14,7 +14,7 @@ CHOKIDAR_OPTS = --verbose --polling --initial --debounce 100
 CHOKIDAR      = chokidar $(CHOKIDAR_OPTS)
 
 # The files to watch for changes for to trigger a rebuild
-WATCH_FILES = Makefile ocr-gt-tools.* ${JADE_FILES} *.json js/**/*.js js/*.js
+WATCH_FILES = Makefile ocr-gt-tools.* ${PUG_FILES} *.json js/**/*.js js/*.js
 
 #
 # Run the development standalone server on port 9090

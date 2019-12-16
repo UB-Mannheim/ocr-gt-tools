@@ -18,14 +18,13 @@
     "@bower_components/handlebars": "components/handlebars.js#^4.0.5",
     "@bower_components/jquery": "jquery/jquery-dist#^2.2.3",
     "@bower_components/notie": "jaredreich/notie.js#^3.2.0",
-    "@bower_components/reset-css": "shannonmoeller/reset-css#^2.0.2011012603",
-    "pug": "^2.0.4"
+    "@bower_components/reset-css": "shannonmoeller/reset-css#^2.0.2011012603"
   },
   "devDependencies": {
     "chokidar-cli": "^1.2.0",
     "clean-css": ">=4.1.11",
-    "jade": "^1.11.0",
     "jscs": "^3.0.3",
+    "pug-cli": "^2.0.4",
     "stylus": "^0.54.2",
     "uglify-js": "^2.6.2",
     "webfont-dl": "^0.1.2"

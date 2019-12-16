@@ -142,7 +142,7 @@ Install the development dependencies: The `npm` package (which pulls in nodejs) 
 make dev-apt-get
 ```
 
-Then npm to bootstrap the tools for building HTML from Jade, CSS from LESS etc.:
+Then npm to bootstrap the tools for building HTML from Pug, CSS from LESS etc.:
 
 ```
 npm install
