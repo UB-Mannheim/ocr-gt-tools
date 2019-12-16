@@ -24,7 +24,7 @@ CLEANCSS      = cleancss
 # UglifyJS minifies, merges and optimizes Javascript
 UGLIFYJS      = uglifyjs
 # webfont-dl is a tool to download web fonts from the Google Fonts API
-WEBFONTDL     = webfont-dl  --eot=omit
+WEBFONTDL     = webfont-dl --eot=omit --ttf=data --woff1=data
 # Pug is a templating engine
 PUG           = pug --pretty
 # Stylus is a CSS compiler
@@ -134,7 +134,7 @@ dist/fonts:
 	$(CP) ${FONT_FILES} $@
 
 dist/fonts.css: dist/fonts
-	$(WEBFONTDL) -o $@ --font-out=dist/fonts $(FONT_URLS) && sleep 1
+	$(WEBFONTDL) -o $@ --font-out=dist/fonts $(FONT_URLS) && wait
 
 dist/vendor.css: ${CSS_FILES} dist/fonts.css
 	cat dist/fonts.css ${CSS_FILES} \
