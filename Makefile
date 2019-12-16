@@ -40,7 +40,7 @@ FONT_URLS = https://fonts.googleapis.com/css?family=EB+Garamond&subset=latin,lat
 FONT_FILES = node_modules/font-awesome/fonts/fontawesome-webfont.* \
              node_modules/bootstrap/fonts/glyphicons-halflings-regular.*
 # URLs of CSS to download
-CSS_URLS = https://getbootstrap.com/examples/dashboard/dashboard.css
+CSS_URLS = https://getbootstrap.com/docs/3.4/examples/dashboard/dashboard.css
 # CSS files to bundle into one minified `dist/vendor.css`
 # NOTE: Our CSS should not be bundled here
 CSS_FILES   = node_modules/reset-css/reset.css \
@@ -138,7 +138,7 @@ dist/fonts.css: dist/fonts
 
 dist/vendor.css: ${CSS_FILES} dist/fonts.css
 	cat dist/fonts.css ${CSS_FILES} \
-	  | sed 's,\.\./fonts,./fonts,g' \
+	  | sed 's,\.\./fonts,fonts,g' \
 	  > dist/temp.css
 	$(CURL) ${CSS_URLS} >> dist/temp.css
 	$(CLEANCSS) --skip-rebase --output $@ dist/temp.css
