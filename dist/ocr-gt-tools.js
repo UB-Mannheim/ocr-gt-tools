@@ -273,14 +273,19 @@ App.prototype.init = function init() {
 
 App.prototype.savePage = function savePage() {
     var self = this;
-    this.emit('app:saving');
-    window.app.currentPage.save(function(err) {
-        if (err) {
-            self.emit('app:ajaxError', err);
-        } else {
-            self.emit('app:saved');
-        }
-    });
+    let currentPage = window.app.currentPage;
+    if (!currentPage) {
+        notie.alert(1, "Nichts zu speichern", 1);
+    } else {
+        this.emit('app:saving');
+        window.app.currentPage.save(function(err) {
+            if (err) {
+                self.emit('app:ajaxError', err);
+            } else {
+                self.emit('app:saved');
+            }
+        });
+    }
 };
 
 App.prototype.loadPage = function loadPage(url) {
@@ -299,7 +304,6 @@ App.prototype.loadPage = function loadPage(url) {
         self.emit('app:loaded');
     });
 };
-
 function Page(urlOrOpts) {
     var self = this;
     self.lines = [];
