@@ -125,7 +125,7 @@ make dev-server
 
 Navigate to [http://localhost:9090/index.html](http://localhost:9090/index.html).
 
-Drop a file, such as [this thumbnail](http://digi.bib.uni-mannheim.de/fileadmin/digi/445442158/thumbs/445442158_0126.jpg) onto the document.
+Drop a file, such as [this thumbnail](https://digi.bib.uni-mannheim.de/fileadmin/digi/445442158/thumbs/445442158_0126.jpg) onto the document.
 
 Do some transliterating and commenting.
 

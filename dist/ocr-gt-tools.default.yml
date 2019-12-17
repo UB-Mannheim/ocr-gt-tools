@@ -43,7 +43,7 @@ template:
     hires-url:      '<hostname><images-root>/<collection>/<work>/max/<work>_<page>.jpg'
     hocr-url:       '<hostname><images-root>/<collection>/<work>/hocr/<work>_<page>.hocr'
     line-image-url: '<url_prefix><correction-root>/<collection>/<work>/gt/<page>/line-%04d.png'
-    landing-page-url: 'http://digi.bib.uni-mannheim.de/en/suchergebnis/?tx_dlf[query]=<work>'
+    landing-page-url: 'https://digi.bib.uni-mannheim.de/en/suchergebnis/?tx_dlf[query]=<work>'
   path:
     correction-dir:  '<path-prefix><correction-root>/<collection>/<work>/gt/<page>'
     hocr-file:       '<path-prefix><images-root>/<collection>/<work>/hocr/<work>_<page>.hocr'
