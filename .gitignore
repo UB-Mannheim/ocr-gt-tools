@@ -5,3 +5,4 @@
 /dist/vendor
 /node_modules
 npm-debug.log
+test/.tsht
