@@ -90,8 +90,9 @@ encounter and features you'd like to have.
 
 ## Acknowledgments
 
-This is free software. You may use it under the terms of the GNU General Public
-License Version 3 (GPLv3). See [LICENSE](LICENSE) for details.
+This is free software. You may use it under the terms of the
+GNU AFFERO General Public License (AGPL) version 3 or newer.
+See [LICENSE](LICENSE) for details.
 
 This project bundles other free software:
 
