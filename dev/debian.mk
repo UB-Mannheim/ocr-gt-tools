@@ -14,8 +14,7 @@ DEBIAN_PACKAGES = \
 
 # Debian packages required for running the dev-server and rebuild the frontend
 DEV_DEBIAN_PACKAGES = \
-	npm \
-	nodejs-legacy \
+	nodejs \
 	libplack-perl \
 	curl
 
